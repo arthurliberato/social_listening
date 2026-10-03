@@ -64,7 +64,8 @@ test("template → dashboard: widgets load independently, charts render, tables 
   // KPI tiles carry a value, a delta against the previous period and a sparkline.
   const mentions = cellOf(page, "Mentions");
   await expect(mentions.getByTestId("kpi-value")).toHaveText(/\d/);
-  await expect(mentions.getByTestId("kpi-delta")).toContainText("vs previous");
+  // The trial keeps 30 days of history, so there is no earlier period to compare against.
+  await expect(mentions.getByTestId("kpi-delta")).toContainText("Not enough history");
   await expect(mentions.getByTestId("sparkline")).toBeVisible();
   // Volume chart renders with a described image role and a legend-free single series.
   const volume = cellOf(page, "Mentions over time");
@@ -209,6 +210,7 @@ test("editing: add, configure, move three ways (keyboard, menu, drag), resize, r
   await expect(where).toHaveAttribute("data-x", "0");
   expect(Number(await authors.getAttribute("data-y"))).toBeGreaterThanOrEqual(5);
   // Drag: grab the authors handle and drop it two rows lower.
+  await authors.scrollIntoViewIfNeeded();
   const hb = (await authors.getByTestId("drag-handle").boundingBox())!;
   const y0 = Number(await authors.getAttribute("data-y"));
   await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
@@ -307,11 +309,11 @@ test("HTML widgets drill too: top authors, topics and top mentions open the righ
   expect(page.url()).toContain(`author=${handle}`);
   await page.goBack();
   await settled(page, 3);
-  const topic = (
-    await cellOf(page, "Topics").getByTestId("topic-cloud").locator("button").first().innerText()
-  )
-    .split(" (")[0]!
-    .trim();
+  const topic = (await cellOf(page, "Topics")
+    .getByTestId("topic-cloud")
+    .locator("button")
+    .first()
+    .getAttribute("data-topic"))!;
   await cellOf(page, "Topics").getByTestId("topic-cloud").locator("button").first().click();
   await page.waitForURL(/mentions\?.*topic=/);
   await expect(page.getByTestId("filter-chip")).toContainText(`Topic: ${topic}`);
@@ -389,7 +391,7 @@ test("public link: Growth+ only, works without login, read-only, and can be turn
   await expect(page.getByTestId("share-internal")).toHaveValue(
     new RegExp(`/w/${slug}/dashboards/`),
   );
-  await page.getByTestId("public-toggle").check(); // trial plan: paywall, no link
+  await page.getByTestId("public-toggle").click(); // trial plan: opens the paywall, the box stays unchecked
   await expect(page.getByTestId("paywall-modal")).toContainText("Public links");
   await page.getByTestId("paywall-dismiss").click();
   await expect

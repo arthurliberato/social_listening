@@ -109,7 +109,7 @@ function Kpi({
         >
           {fmtValue(d)}
         </p>
-        {d.deltaPct !== null && (
+        {d.deltaPct !== null ? (
           <p
             className={`text-sm ${up ? "text-[var(--success)]" : down ? "text-[var(--danger)]" : "text-[var(--text-muted)]"}`}
             data-testid="kpi-delta"
@@ -118,6 +118,10 @@ function Kpi({
             <span className="sr-only">{up ? "Up" : down ? "Down" : "Unchanged"} </span>
             {Math.abs(d.deltaPct)}
             {unit} <span className="text-[var(--text-muted)]">vs previous {days} days</span>
+          </p>
+        ) : (
+          <p className="text-sm text-[var(--text-muted)]" data-testid="kpi-delta">
+            Not enough history to compare
           </p>
         )}
       </div>
@@ -147,6 +151,7 @@ function TopicCloud({
           <li key={r.topic}>
             <button
               type="button"
+              data-topic={r.topic}
               onClick={() => onDrill({ key: r.topic })}
               style={{ fontSize: size }}
               title={`${r.count.toLocaleString()} mentions`}
