@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { createUser, openFeed, pool } from "./helpers";
 
-test.afterAll(() => pool.end());
+// The shared pool (helpers.ts) lives for the whole worker; Playwright tears the process down at the end.
 
 const events = async (email: string, name: string) =>
   (

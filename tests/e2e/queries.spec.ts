@@ -16,7 +16,7 @@ async function addChip(page: Page, testId: string, ...values: string[]) {
   }
 }
 
-test.afterAll(() => pool.end());
+// The shared pool (helpers.ts) lives for the whole worker; Playwright tears the process down at the end.
 
 test("guided builder: chips compile to Boolean, live preview shows results, ⌘S saves and backfills", async ({
   page,
