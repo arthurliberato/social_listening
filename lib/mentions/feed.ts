@@ -259,7 +259,7 @@ export async function loadFeed(opts: {
       overridden: r.override_sentiment != null,
       confidence: Number(r.sentiment_conf),
       emotion: String(r.emotion_pred),
-      topics: (r.topics as string[]) ?? [],
+      topics: [...new Set((r.topics as string[]) ?? [])],
       tags: (r.tags as string[]) ?? [],
       flagged: Boolean(r.flagged),
       hasMedia: Boolean(r.has_media),

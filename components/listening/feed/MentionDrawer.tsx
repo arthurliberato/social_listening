@@ -136,8 +136,11 @@ export function MentionDrawer({
 
       <section aria-label="Topics and tags" className="flex flex-col gap-2">
         <div className="flex flex-wrap gap-2">
-          {row.topics.map((t) => (
-            <span key={t} className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-xs">
+          {row.topics.map((t, i) => (
+            <span
+              key={`${t}-${i}`}
+              className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-xs"
+            >
               {t}
             </span>
           ))}

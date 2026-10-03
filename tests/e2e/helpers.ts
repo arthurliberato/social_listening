@@ -42,6 +42,10 @@ export async function createUser(page: Page, opts: { brand?: string; prefix?: st
 /** Wait until the user's first query has finished collecting history, then return the feed's first page. */
 export async function openFeed(page: Page, slug: string, qs = "") {
   await page.goto(`/w/${slug}/mentions${qs}`);
+  // Interactions before hydration are lost; wait for the client to take over.
+  await page.waitForSelector('[data-testid="mentions-feed"][data-hydrated="true"]', {
+    timeout: 30_000,
+  });
   await page
     .waitForFunction(
       () =>

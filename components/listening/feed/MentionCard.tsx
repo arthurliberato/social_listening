@@ -131,8 +131,11 @@ export const MentionCard = forwardRef<HTMLLIElement, RowProps>(function MentionC
         <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs">
           {r.emotion}
         </span>
-        {r.topics.map((t) => (
-          <span key={t} className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-xs">
+        {r.topics.map((t, i) => (
+          <span
+            key={`${t}-${i}`}
+            className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-xs"
+          >
             {t}
           </span>
         ))}

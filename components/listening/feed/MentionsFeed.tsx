@@ -122,6 +122,8 @@ export function MentionsFeed({
   const [saveOpen, setSaveOpen] = useState(false);
   const [paywall, setPaywall] = useState<PaywallProps | null>(null);
   const [newCount, setNewCount] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
   const searchRef = useRef<HTMLInputElement>(null);
   const lastClicked = useRef<number | null>(null);
   const sChord = useRef(0);
@@ -344,17 +346,19 @@ export function MentionsFeed({
   // ---- selection -------------------------------------------------------------------------
   const toggleSelect = useCallback(
     (id: number, shift: boolean) => {
+      // Capture the anchor now: state updaters run later, after lastClicked has been overwritten.
+      const anchor = lastClicked.current;
+      const idx = rows.findIndex((r) => r.id === id);
+      lastClicked.current = idx;
       setSelected((cur) => {
         const next = new Set(cur);
-        const idx = rows.findIndex((r) => r.id === id);
-        if (shift && lastClicked.current !== null) {
-          const [a, b] = [Math.min(lastClicked.current, idx), Math.max(lastClicked.current, idx)];
+        if (shift && anchor !== null) {
+          const [a, b] = [Math.min(anchor, idx), Math.max(anchor, idx)];
           for (let i = a; i <= b; i++) next.add(rows[i]!.id);
         } else if (next.has(id)) next.delete(id);
         else next.add(id);
         return next;
       });
-      lastClicked.current = rows.findIndex((r) => r.id === id);
     },
     [rows],
   );
@@ -568,7 +572,13 @@ export function MentionsFeed({
   };
 
   return (
-    <div className="mx-auto flex max-w-[1600px] flex-col gap-3" aria-busy={pending}>
+    <div
+      className="mx-auto flex max-w-[1600px] flex-col gap-3"
+      aria-busy={pending}
+      data-testid="mentions-feed"
+      data-loaded-at={feed.loadedAt}
+      data-hydrated={hydrated}
+    >
       {paywall && <PaywallModal {...paywall} />}
       <header className="flex flex-wrap items-baseline gap-3">
         <h1 className="text-[30px] font-semibold leading-[38px]">Mentions</h1>
