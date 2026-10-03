@@ -183,7 +183,8 @@ export function QueryBuilder({
   // Report each distinct validation failure once the user pauses typing.
   const lastError = useRef("");
   useEffect(() => {
-    const code = errors[0]?.code ?? "";
+    // An empty query isn't a mistake — don't count it as a validation failure.
+    const code = errors[0]?.code === "empty" ? "" : (errors[0]?.code ?? "");
     if (!code || code === lastError.current) {
       if (!code) lastError.current = "";
       return;

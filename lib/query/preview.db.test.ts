@@ -72,14 +72,12 @@ describe("backfill job", () => {
       })
       .returning();
     if (usage)
-      await db
-        .insert(usageCounters)
-        .values({
-          accountId: a!.id,
-          period: new Date().toISOString().slice(0, 7),
-          metric: "mentions",
-          value: usage,
-        });
+      await db.insert(usageCounters).values({
+        accountId: a!.id,
+        period: new Date().toISOString().slice(0, 7),
+        metric: "mentions",
+        value: usage,
+      });
     const mk = async (text: string) =>
       (
         await db

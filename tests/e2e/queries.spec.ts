@@ -40,7 +40,8 @@ test("guided builder: chips compile to Boolean, live preview shows results, ⌘S
   await page.getByTestId("preview-mention").first().getByText("Why did this match?").click();
   await expect(page.getByTestId("preview-mention").first()).toContainText("Contains");
 
-  // Exclusions lower or keep the noise; adding `within` switches to NEAR.
+  // NEAR groups accept words and phrases but not hashtags: drop the chip, then add `within`.
+  await page.getByRole("button", { name: "Remove #juniperroast" }).click();
   await addChip(page, "guided-also", "price");
   await page.getByTestId("guided-within").fill("10");
   await expect(page.getByTestId("compiled-query")).toContainText("NEAR/10 price");
@@ -148,7 +149,9 @@ test("plan limit: paywall at 3/3, pausing frees a slot, delete needs confirmatio
   expect((await events(email, "Paywall Viewed"))[0]!.props).toMatchObject({
     paywall_trigger: "query_limit",
   });
-  expect((await events(email, "Paywall Dismissed")).length).toBeGreaterThan(0);
+  await expect
+    .poll(async () => (await events(email, "Paywall Dismissed")).length)
+    .toBeGreaterThan(0);
 
   // Saving a 4th from the builder is also blocked server-side.
   await page.goto(`/w/${slug}/queries/new`);
