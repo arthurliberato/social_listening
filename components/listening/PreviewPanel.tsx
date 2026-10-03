@@ -26,7 +26,7 @@ function Mention({
   const matchedTerms = [...new Set(ranges.map((r) => r.term))];
   return (
     <li
-      className={`rounded-md border border-[var(--border)] p-3 ${m.likelySpam ? "opacity-70" : ""}`}
+      className={`rounded-md border border-[var(--border)] p-3 ${m.likelySpam ? "bg-[var(--surface-2)]" : "bg-[var(--surface)]"}`}
       data-testid="preview-mention"
     >
       <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">
@@ -111,7 +111,7 @@ export function PreviewPanel({ state }: { state: PreviewState }) {
       )}
 
       {data && (
-        <div className={state.status === "loading" ? "opacity-60" : ""}>
+        <div aria-busy={state.status === "loading"}>
           <dl className="grid grid-cols-3 gap-3">
             <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
               <dt className="text-xs text-[var(--text-muted)]">
