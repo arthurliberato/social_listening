@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { db, exportsLog } from "@/db/client";
 import { trackServer } from "@/lib/analytics/server";
 import { userWorkspaces } from "@/lib/auth/session";
 import { accountPlan } from "@/lib/queries";
@@ -23,6 +24,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ ws: stri
   const { ws: slug } = await params;
   const ws = (await userWorkspaces(session.user.id)).find((w) => w.slug === slug);
   if (!ws) return new NextResponse("Forbidden", { status: 403 });
+  if (ws.role === "client_viewer")
+    return new NextResponse("Your role can't export", { status: 403 });
   const { plan } = await accountPlan(ws.id);
   const filters = parseFilters(new URL(req.url).searchParams);
   const feed = await loadFeed({
@@ -86,6 +89,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ ws: stri
         .join(","),
     );
   }
+  await db.insert(exportsLog).values({
+    workspaceId: ws.id,
+    userId: session.user.id,
+    kind: "mentions",
+    format: "csv",
+    label: filters.search ? `Mentions matching "${filters.search.slice(0, 60)}"` : "Mentions feed",
+    rowCount: feed.rows.length,
+  });
   await trackServer(
     "Export Downloaded",
     { userId: session.user.id, workspaceId: ws.id },
