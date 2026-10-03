@@ -10,6 +10,26 @@ const events = async (email: string, name: string) =>
       [email, name],
     )
   ).rows;
+
+/** This user's own override row for a mention (rows are per workspace; test users share the same corpus). */
+const override = async (email: string, mentionId: number) =>
+  (
+    await pool.query(
+      `SELECT o.sentiment, o.tags, o.flagged FROM mention_overrides o
+       JOIN memberships m ON m.workspace_id = o.workspace_id JOIN users u ON u.id = m.user_id
+       WHERE lower(u.email) = $1 AND o.mention_id = $2`,
+      [email, mentionId],
+    )
+  ).rows[0];
+const overrideCount = async (email: string) =>
+  (
+    await pool.query(
+      `SELECT count(*)::int AS n FROM mention_overrides o
+       JOIN memberships m ON m.workspace_id = o.workspace_id JOIN users u ON u.id = m.user_id
+       WHERE lower(u.email) = $1 AND o.flagged AND 'batch' = ANY(o.tags) AND o.sentiment = 'negative'`,
+      [email],
+    )
+  ).rows[0].n as number;
 const BRAND = "Latte Lane";
 const cards = (page: Page) => page.getByTestId("mention-card");
 
@@ -156,13 +176,7 @@ test("keyboard triage: j/k, x, s+n, f, t, Undo — edits live in mention_overrid
   );
   await expect(target.getByTestId("edited-mark")).toBeVisible();
   await expect(page.getByTestId("toast").first()).toContainText("Sentiment set to negative");
-  await expect
-    .poll(
-      async () =>
-        (await pool.query(`SELECT sentiment FROM mention_overrides WHERE mention_id = $1`, [id]))
-          .rows[0]?.sentiment,
-    )
-    .toBe("negative");
+  await expect.poll(async () => (await override(email, id))?.sentiment).toBe("negative");
   expect(
     (
       await pool.query(`SELECT sentiment_pred, sentiment_true, text FROM mentions WHERE id = $1`, [
@@ -176,12 +190,7 @@ test("keyboard triage: j/k, x, s+n, f, t, Undo — edits live in mention_overrid
 
   await page.getByTestId("toast-action").first().click(); // Undo
   await expect(target.getByTestId("edited-mark")).toHaveCount(0);
-  await expect
-    .poll(
-      async () =>
-        (await pool.query(`SELECT 1 FROM mention_overrides WHERE mention_id = $1`, [id])).rowCount,
-    )
-    .toBe(0);
+  await expect.poll(async () => await override(email, id)).toBeUndefined();
 
   await page.keyboard.press("f");
   await expect(target.getByTestId("flag-mark")).toBeVisible();
@@ -191,14 +200,7 @@ test("keyboard triage: j/k, x, s+n, f, t, Undo — edits live in mention_overrid
   await page.keyboard.press("Enter");
   await expect(target.getByTestId("tag-chip")).toHaveText("#escalate");
   await expect
-    .poll(
-      async () =>
-        (
-          await pool.query(`SELECT tags, flagged FROM mention_overrides WHERE mention_id = $1`, [
-            id,
-          ])
-        ).rows[0],
-    )
+    .poll(async () => await override(email, id))
     .toMatchObject({ tags: ["escalate"], flagged: true });
   expect((await events(email, "Keyboard Shortcut Used")).length).toBeGreaterThan(3);
 
@@ -231,16 +233,7 @@ test("bulk actions apply to the whole selection and shift-click selects a range"
       "negative",
     );
   await page.getByTestId("bulk-flag").click();
-  await expect
-    .poll(
-      async () =>
-        (
-          await pool.query(
-            `SELECT count(*)::int AS n FROM mention_overrides WHERE flagged AND 'batch' = ANY(tags) AND sentiment = 'negative'`,
-          )
-        ).rows[0].n,
-    )
-    .toBeGreaterThanOrEqual(4);
+  await expect.poll(async () => await overrideCount(email)).toBe(4);
   await expect
     .poll(async () => (await events(email, "Mentions Bulk Action Applied")).length)
     .toBeGreaterThanOrEqual(3);
