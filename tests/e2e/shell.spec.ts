@@ -10,6 +10,7 @@ const meta = () =>
     dashboardId: string;
     eventId: string;
     crisisId: string;
+    reportId: string;
     email: string;
   };
 const slugOf = () => meta().slug;
@@ -228,6 +229,41 @@ for (const theme of ["light", "dark"] as const) {
       } finally {
         if (growth) await setPlan("trial");
       }
+    });
+  }
+}
+
+// M7 screens: reports list, templates, a report (view, edit, picker, schedule dialog) and Exports.
+for (const theme of ["light", "dark"] as const) {
+  for (const screen of ["list", "new", "view", "edit", "picker", "schedule", "exports"] as const) {
+    test(`reports ${screen} has no serious a11y violations (${theme})`, async ({ page }) => {
+      test.setTimeout(90_000);
+      await page.addInitScript((t) => localStorage.setItem("rw-theme", t), theme);
+      const { slug, reportId } = meta();
+      if (screen === "list") {
+        await page.goto(`/w/${slug}/reports`);
+        await expect(page.getByTestId("report-card").first()).toBeVisible();
+      } else if (screen === "new") {
+        await page.goto(`/w/${slug}/reports/new`);
+        await expect(page.getByTestId("template-list")).toBeVisible();
+      } else if (screen === "exports") {
+        await page.goto(`/w/${slug}/exports`);
+        await expect(page.getByTestId("export-form")).toBeVisible();
+      } else {
+        await page.goto(`/w/${slug}/reports/${reportId}`);
+        await expect(page.getByTestId("report-section").first()).toBeVisible({ timeout: 30_000 });
+        await expect(page.getByTestId("section-loading")).toHaveCount(0, { timeout: 45_000 });
+        if (screen === "edit" || screen === "picker") await page.getByTestId("edit-report").click();
+        if (screen === "picker") {
+          await page.getByTestId("add-section").click();
+          await expect(page.getByTestId("widget-picker")).toBeVisible();
+        }
+        if (screen === "schedule") {
+          await page.getByTestId("open-schedule").click();
+          await expect(page.getByTestId("schedule-dialog")).toBeVisible();
+        }
+      }
+      await scan(page);
     });
   }
 }

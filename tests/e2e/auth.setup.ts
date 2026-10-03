@@ -39,9 +39,25 @@ setup("create onboarded user", async ({ page }) => {
       [w.ws, w.q, eventId, w.u],
     )
   ).rows[0].id;
+  // A saved report for the M7 a11y scans.
+  const reportId = (
+    await pool.query(
+      `INSERT INTO reports (workspace_id, name, template_id, range, sections, created_by) VALUES ($1,'Weekly brand summary','weekly_brand_summary','7d',$2::jsonb,$3) RETURNING id`,
+      [
+        w.ws,
+        JSON.stringify([
+          { id: "s0", type: "kpi", title: "Mentions", config: { metric: "mentions" } },
+          { id: "s1", type: "volume", title: "Mentions over time", config: {} },
+          { id: "s2", type: "sentiment_donut", title: "Sentiment split", config: {} },
+          { id: "s3", type: "top_mentions", title: "Top mentions", config: {} },
+        ]),
+        w.u,
+      ],
+    )
+  ).rows[0].id;
   writeFileSync(
     "tests/.auth/meta.json",
-    JSON.stringify({ slug, email, dashboardId, eventId, crisisId }),
+    JSON.stringify({ slug, email, dashboardId, eventId, crisisId, reportId }),
   );
   await page.context().storageState({ path: "tests/.auth/user.json" });
 });
