@@ -25,6 +25,7 @@ import { PLANS, type PlanTier } from "@/lib/entitlements/plans";
 import type { FeedResult, FeedRow } from "@/lib/mentions/feed";
 import {
   PAGE_SIZES,
+  clearedFilters,
   RANGE_DAYS,
   removeChip,
   toSearchParams,
@@ -644,26 +645,7 @@ export function MentionsFeed({
           onSort={(s) => go({ ...filters, sort: s, page: 1 })}
           onOpenFilters={() => setFiltersOpen(true)}
           onRemoveChip={(c: Chip) => go(removeChip(filters, c))}
-          onClearAll={() =>
-            go({
-              ...filters,
-              q: undefined,
-              search: undefined,
-              source: [],
-              sentiment: [],
-              lang: [],
-              country: [],
-              tag: [],
-              type: [],
-              author: undefined,
-              followers: undefined,
-              media: undefined,
-              flagged: undefined,
-              since: undefined,
-              spam: "hide",
-              page: 1,
-            })
-          }
+          onClearAll={() => go(clearedFilters(filters))}
           onSaveView={() => setSaveOpen(true)}
           onOpenView={(params) => startNav(() => router.push(`${pathname}?${params}`))}
           onDeleteView={(id) => void deleteView(ws, id).then(() => router.refresh())}
@@ -806,26 +788,7 @@ export function MentionsFeed({
             <Button
               className="mt-4"
               variant="secondary"
-              onClick={() =>
-                go({
-                  ...filters,
-                  q: undefined,
-                  search: undefined,
-                  source: [],
-                  sentiment: [],
-                  lang: [],
-                  country: [],
-                  tag: [],
-                  type: [],
-                  author: undefined,
-                  followers: undefined,
-                  media: undefined,
-                  flagged: undefined,
-                  since: undefined,
-                  spam: "hide",
-                  page: 1,
-                })
-              }
+              onClick={() => go(clearedFilters(filters))}
               data-testid="empty-clear"
             >
               Clear filters

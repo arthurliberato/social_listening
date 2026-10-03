@@ -91,7 +91,7 @@ export const FilterBar = forwardRef<
           ))}
         </select>
         <DateRangePicker
-          filters={p.filters}
+          value={p.filters}
           historyDays={p.historyDays}
           onChange={p.onRange}
           onLocked={p.onRangeLocked}

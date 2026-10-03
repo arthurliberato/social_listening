@@ -30,6 +30,11 @@ export interface FeedFilters {
   country: string[];
   tag: string[];
   type: string[];
+  /** Drill-down targets from dashboards. */
+  topic: string[];
+  emotion: string[];
+  dow: string[]; // 0 = Sunday (UTC)
+  hour: string[]; // 0-23 (UTC)
   author?: string;
   followers?: string; // band id
   media?: boolean;
@@ -88,6 +93,14 @@ export function parseFilters(raw: Raw): FeedFilters {
     country: list(raw, "country").map((c) => c.toUpperCase()),
     tag: list(raw, "tag"),
     type: list(raw, "type", CONTENT_TYPES),
+    topic: list(raw, "topic"),
+    emotion: list(raw, "emotion"),
+    dow: list(raw, "dow", ["0", "1", "2", "3", "4", "5", "6"]),
+    hour: list(
+      raw,
+      "hour",
+      Array.from({ length: 24 }, (_, i) => String(i)),
+    ),
     author: one(raw, "author")?.replace(/^@/, "").slice(0, 60),
     followers: FOLLOWER_BANDS.some((b) => b.id === one(raw, "followers"))
       ? one(raw, "followers")
@@ -166,6 +179,16 @@ export function activeChips(
   for (const v of f.country) out.push({ key: "country", value: v, label: `Country: ${v}` });
   for (const v of f.tag) out.push({ key: "tag", value: v, label: `Tag: ${v}` });
   for (const v of f.type) out.push({ key: "type", value: v, label: `Type: ${v}` });
+  for (const v of f.topic) out.push({ key: "topic", value: v, label: `Topic: ${v}` });
+  for (const v of f.emotion) out.push({ key: "emotion", value: v, label: `Emotion: ${v}` });
+  for (const v of f.dow)
+    out.push({
+      key: "dow",
+      value: v,
+      label: `Weekday: ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][Number(v)]}`,
+    });
+  for (const v of f.hour)
+    out.push({ key: "hour", value: v, label: `Hour: ${v.padStart(2, "0")}:00 UTC` });
   if (f.author) out.push({ key: "author", label: `Author: @${f.author}` });
   if (f.followers)
     out.push({
@@ -188,4 +211,31 @@ export function removeChip(f: FeedFilters, c: Chip): FeedFilters {
   else if (k === "spam") next.spam = "hide";
   else (next as unknown as Record<string, unknown>)[c.key] = undefined;
   return next;
+}
+
+/** Every filter reset (view, sort, range and page size are preferences and survive). */
+export function clearedFilters(f: FeedFilters): FeedFilters {
+  return {
+    ...f,
+    q: undefined,
+    search: undefined,
+    source: [],
+    sentiment: [],
+    lang: [],
+    country: [],
+    tag: [],
+    type: [],
+    topic: [],
+    emotion: [],
+    dow: [],
+    hour: [],
+    author: undefined,
+    followers: undefined,
+    media: undefined,
+    flagged: undefined,
+    since: undefined,
+    spam: "hide",
+    page: 1,
+    m: undefined,
+  };
 }

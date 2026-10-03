@@ -299,3 +299,56 @@ export const savedViews = pgTable(
   },
   (t) => [index("saved_views_workspace_idx").on(t.workspaceId)],
 );
+
+/** A workspace dashboard: a 12-column grid of widgets. */
+export const dashboards = pgTable(
+  "dashboards",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    templateId: text("template_id"),
+    createdBy: uuid("created_by").references(() => users.id),
+    /** Non-null = a public read-only link is enabled (/share/<token>). */
+    publicToken: text("public_token").unique(),
+    createdAt: ts("created_at").notNull().defaultNow(),
+    updatedAt: ts("updated_at").notNull().defaultNow(),
+  },
+  (t) => [index("dashboards_workspace_idx").on(t.workspaceId)],
+);
+
+export const widgets = pgTable(
+  "widgets",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dashboardId: uuid("dashboard_id")
+      .notNull()
+      .references(() => dashboards.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    title: text("title").notNull(),
+    /** Per-type options: scope (query ids), metric, breakdown, topN, chart style... */
+    config: jsonb("config").notNull().default({}),
+    x: integer("x").notNull(),
+    y: integer("y").notNull(),
+    w: integer("w").notNull(),
+    h: integer("h").notNull(),
+  },
+  (t) => [index("widgets_dashboard_idx").on(t.dashboardId)],
+);
+
+/** Who opened which dashboard (drives "last viewed" and the viewer count). user_id is null for public-link views. */
+export const dashboardViews = pgTable(
+  "dashboard_views",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    dashboardId: uuid("dashboard_id")
+      .notNull()
+      .references(() => dashboards.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").references(() => users.id),
+    viewedAt: ts("viewed_at").notNull().defaultNow(),
+  },
+  (t) => [index("dashboard_views_idx").on(t.dashboardId, t.viewedAt)],
+);

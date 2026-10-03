@@ -18,7 +18,8 @@
     "db:migrate": "tsx db/migrate.ts",
     "gen:events": "tsx scripts/gen-events.ts",
     "gen:grammar": "tsx scripts/gen-grammar.ts",
-    "worker": "tsx jobs/worker.ts"
+    "worker": "tsx jobs/worker.ts",
+    "test:palette": "tsx scripts/validate-charts.ts"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.47.2",
@@ -33,6 +34,7 @@
     "@node-rs/argon2": "^2.2.1",
     "@tanstack/react-table": "^8.21.3",
     "drizzle-orm": "^0.45.3",
+    "echarts": "^6.1.0",
     "lucide-react": "^0.468.0",
     "next": "^15.1.0",
     "next-auth": "^5.0.0-beta.32",
@@ -42,6 +44,8 @@
     "pg-boss": "^12.36.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -49,11 +53,13 @@
     "@eslint/eslintrc": "^3.3.7",
     "@playwright/test": "^1.49.0",
     "@tailwindcss/postcss": "^4.0.0",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^22.0.0",
     "@types/nodemailer": "^8.0.2",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/topojson-client": "^3.1.5",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.1.0",

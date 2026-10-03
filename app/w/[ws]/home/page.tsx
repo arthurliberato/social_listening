@@ -2,6 +2,7 @@ import { and, count, eq, like } from "drizzle-orm";
 import Link from "next/link";
 import { accounts, db, invitations, memberships, queries } from "@/db/client";
 import { TrackHomeView } from "@/components/home/TrackView";
+import { HomeOverview } from "@/components/dashboards/HomeOverview";
 import { requireWorkspace } from "@/lib/auth/session";
 import { estimateMentions } from "@/lib/query/estimate";
 import { simNow } from "@/lib/simclock";
@@ -95,6 +96,11 @@ export default async function Home({ params }: { params: Promise<{ ws: string }>
               Create a query
             </Link>
           </section>
+        )}
+        {firstQuery && (
+          <div className="mt-6">
+            <HomeOverview ws={slug} />
+          </div>
         )}
       </div>
       <aside

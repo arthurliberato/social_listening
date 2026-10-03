@@ -57,8 +57,8 @@ export interface FeedResult {
 
 const COUNT_CAP = 100_000;
 export const VISIT_GAP_MS = 30 * 60_000;
-const SPAM_SQL = sql`(a.bot_score >= ${SPAM_BOT_SCORE} OR m.text ~* ${SPAM_TEXT_RE})`;
-const EFFECTIVE_SENTIMENT = sql`coalesce(o.sentiment, m.sentiment_pred)`;
+export const SPAM_SQL = sql`(a.bot_score >= ${SPAM_BOT_SCORE} OR m.text ~* ${SPAM_TEXT_RE})`;
+export const EFFECTIVE_SENTIMENT = sql`coalesce(o.sentiment, m.sentiment_pred)`;
 
 export function resolveWindow(
   f: FeedFilters,
@@ -98,11 +98,16 @@ export async function buildFeedWhere(opts: {
   filters: FeedFilters;
   historyDays: number;
   since: Date | null;
+  /** Explicit window (e.g. the previous period for KPI deltas); still clamped to plan history. */
+  window?: { from: Date; to: Date };
 }) {
   const { workspaceId, filters: f } = opts;
   const qs = await workspaceQueries(workspaceId);
   const scoped = f.q ? qs.filter((q) => q.id === f.q) : qs;
-  const win = resolveWindow(f, opts.historyDays);
+  const floor = new Date(simNow().getTime() - opts.historyDays * 86_400_000);
+  const win = opts.window
+    ? { from: opts.window.from < floor ? floor : opts.window.from, to: opts.window.to }
+    : resolveWindow(f, opts.historyDays);
   const parts: SQL[] = [
     scoped.length
       ? sql`m.id IN (SELECT mention_id FROM query_matches WHERE query_id IN (${sql.join(
@@ -130,6 +135,28 @@ export async function buildFeedWhere(opts: {
   if (f.lang.length) inList(sql`m.lang`, f.lang);
   if (f.country.length) inList(sql`m.country`, f.country);
   if (f.type.length) inList(sql`m.content_type`, f.type);
+  if (f.topic.length)
+    parts.push(
+      sql`m.topics && ARRAY[${sql.join(
+        f.topic.map((x) => sql`${x}`),
+        sql`, `,
+      )}]::text[]`,
+    );
+  if (f.emotion.length) inList(sql`m.emotion_pred`, f.emotion);
+  if (f.dow.length)
+    parts.push(
+      sql`extract(dow FROM m.published_at AT TIME ZONE 'UTC')::int IN (${sql.join(
+        f.dow.map((x) => sql`${Number(x)}`),
+        sql`, `,
+      )})`,
+    );
+  if (f.hour.length)
+    parts.push(
+      sql`extract(hour FROM m.published_at AT TIME ZONE 'UTC')::int IN (${sql.join(
+        f.hour.map((x) => sql`${Number(x)}`),
+        sql`, `,
+      )})`,
+    );
   if (f.tag.length)
     parts.push(
       sql`o.tags && ARRAY[${sql.join(
@@ -178,7 +205,7 @@ const ORDER: Record<FeedFilters["sort"], SQL> = {
   negative: sql`(CASE ${EFFECTIVE_SENTIMENT} WHEN 'negative' THEN 0 WHEN 'mixed' THEN 1 ELSE 2 END), m.sentiment_conf DESC, m.id DESC`,
 };
 
-const FROM = (workspaceId: string) => sql`
+export const FROM = (workspaceId: string) => sql`
   FROM mentions m
   JOIN authors a ON a.id = m.author_id
   JOIN sources s ON s.id = m.source_id

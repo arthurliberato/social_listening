@@ -19,6 +19,25 @@
   --sentiment-neutral: #8a94a3;
   --sentiment-mixed: #cc79a7;
   --spike: #e69f00;
+  /* Chart series: validated categorical order (scripts/validate-charts.sh). Never reorder or cycle. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #4a3aa7;
+  --series-8: #e34948;
+  --chart-grid: #e1e0d9;
+  --chart-axis: #c3c2b7;
+  /* Sequential ramp (one hue, low -> high) for heatmaps and maps. */
+  --ramp-1: #cde2fb;
+  --ramp-2: #9ec5f4;
+  --ramp-3: #6da7ec;
+  --ramp-4: #3987e5;
+  --ramp-5: #256abf;
+  --ramp-6: #184f95;
+  --ramp-7: #0d366b;
   --radius-input: 4px;
   --radius-button: 6px;
   --radius-card: 8px;
@@ -46,9 +65,27 @@
     --warning: #fbbf24;
     --danger: #f87171;
     --info: #7dd3fc;
-    --sentiment-positive: #56b4e9;
-    --sentiment-negative: #ff8a4c;
+    --sentiment-positive: #2f93d6;
+    --sentiment-negative: #e06a20;
     --sentiment-neutral: #7c8796;
+    --sentiment-mixed: #c0679a;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
+    --chart-grid: #2c2c2a;
+    --chart-axis: #383835;
+    --ramp-1: #1b3a63;
+    --ramp-2: #184f95;
+    --ramp-3: #256abf;
+    --ramp-4: #3987e5;
+    --ramp-5: #6da7ec;
+    --ramp-6: #9ec5f4;
+    --ramp-7: #cde2fb;
   }
 }
 
@@ -68,7 +105,25 @@
   --warning: #fbbf24;
   --danger: #f87171;
   --info: #7dd3fc;
-  --sentiment-positive: #56b4e9;
-  --sentiment-negative: #ff8a4c;
+  --sentiment-positive: #2f93d6;
+  --sentiment-negative: #e06a20;
   --sentiment-neutral: #7c8796;
+  --sentiment-mixed: #c0679a;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+  --chart-grid: #2c2c2a;
+  --chart-axis: #383835;
+  --ramp-1: #1b3a63;
+  --ramp-2: #184f95;
+  --ramp-3: #256abf;
+  --ramp-4: #3987e5;
+  --ramp-5: #6da7ec;
+  --ramp-6: #9ec5f4;
+  --ramp-7: #cde2fb;
 }

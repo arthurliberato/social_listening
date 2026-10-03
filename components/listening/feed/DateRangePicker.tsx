@@ -4,7 +4,13 @@ import { Calendar, Lock } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PLANS, type PlanTier } from "@/lib/entitlements/plans";
-import { RANGE_DAYS, RANGES, type FeedFilters } from "@/lib/mentions/filters";
+import { RANGE_DAYS, RANGES } from "@/lib/mentions/filters";
+
+export interface RangeValue {
+  range: string;
+  from?: string;
+  to?: string;
+}
 
 const LABEL: Record<string, string> = {
   "24h": "Last 24 hours",
@@ -24,19 +30,19 @@ function planFor(days: number): string {
 }
 
 export function DateRangePicker({
-  filters,
+  value,
   historyDays,
   onChange,
   onLocked,
 }: {
-  filters: FeedFilters;
+  value: RangeValue;
   historyDays: number;
   onChange: (range: string, from?: string, to?: string) => void;
   onLocked: (range: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [from, setFrom] = useState(filters.from ?? "");
-  const [to, setTo] = useState(filters.to ?? "");
+  const [from, setFrom] = useState(value.from ?? "");
+  const [to, setTo] = useState(value.to ?? "");
   const root = useRef<HTMLDivElement>(null);
   const earliest = new Date(Date.now() - historyDays * 86_400_000).toISOString().slice(0, 10);
 
@@ -57,9 +63,9 @@ export function DateRangePicker({
   }, [open]);
 
   const label =
-    filters.range === "custom" && filters.from
-      ? `${filters.from} → ${filters.to ?? "now"}`
-      : LABEL[filters.range];
+    value.range === "custom" && value.from
+      ? `${value.from} → ${value.to ?? "now"}`
+      : LABEL[value.range];
   return (
     <div ref={root} className="relative">
       <button
@@ -87,7 +93,7 @@ export function DateRangePicker({
                 <li key={r}>
                   <button
                     type="button"
-                    aria-pressed={filters.range === r}
+                    aria-pressed={value.range === r}
                     data-testid={`range-${r}`}
                     title={locked ? `Available on ${planFor(RANGE_DAYS[r])}` : undefined}
                     onClick={() => {
@@ -99,7 +105,7 @@ export function DateRangePicker({
                         onChange(r);
                       }
                     }}
-                    className={`flex min-h-8 w-full items-center justify-between rounded px-2 text-left text-sm hover:bg-[var(--surface-2)] ${filters.range === r ? "font-semibold" : ""} ${locked ? "text-[var(--text-muted)]" : ""}`}
+                    className={`flex min-h-8 w-full items-center justify-between rounded px-2 text-left text-sm hover:bg-[var(--surface-2)] ${value.range === r ? "font-semibold" : ""} ${locked ? "text-[var(--text-muted)]" : ""}`}
                   >
                     <span>{LABEL[r]}</span>
                     {locked && (

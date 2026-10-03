@@ -5,5 +5,6 @@ export default defineConfig({
     include: ["datagen/**/*.test.ts", "lib/**/*.test.ts", "jobs/**/*.test.ts"],
     alias: { "@": new URL(".", import.meta.url).pathname },
     testTimeout: 60_000,
+    hookTimeout: 180_000,
   },
 });

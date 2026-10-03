@@ -43,6 +43,13 @@
       "when": 1791036931880,
       "tag": "0005_feed_since",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791039351248,
+      "tag": "0006_dashboards",
+      "breakpoints": true
     }
   ]
 }
