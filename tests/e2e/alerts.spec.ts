@@ -95,6 +95,7 @@ test("empty state → build an alert with a live backtest → it appears in the 
   await expect(page.getByTestId("rule-row")).toContainText("2× usual hourly volume");
   await expect(page.getByTestId("rule-row")).toContainText("email");
 
+  await expect.poll(async () => (await events(email, "Alert Created")).length).toBe(1);
   const [created] = await events(email, "Alert Created");
   expect(created.props).toMatchObject({
     alert_type: "volume_spike",
@@ -145,6 +146,7 @@ test("a fired alert: bell → alert page → acknowledge; crisis rooms need an u
 
   await page.getByTestId("acknowledge").click();
   await expect(page.getByTestId("acked")).toBeVisible();
+  await expect.poll(async () => (await events(email, "Alert Acknowledged")).length).toBe(1);
   const [ack] = await events(email, "Alert Acknowledged");
   expect(ack.props).toMatchObject({ alert_id: rule });
   expect(ack.props.time_to_ack_ms).toBeGreaterThan(0);
@@ -161,7 +163,7 @@ test("mute, unmute and delete a rule; the plan's alert limit opens a paywall", a
   await expect(row.getByTestId("rule-status")).toHaveText("Active");
   await row.getByTestId("alert-mute").click();
   await expect(row.getByTestId("rule-status")).toHaveText("Muted");
-  expect((await events(email, "Alert Muted")).length).toBe(1);
+  await expect.poll(async () => (await events(email, "Alert Muted")).length).toBe(1);
   await row.getByTestId("alert-mute").click();
   await expect(row.getByTestId("rule-status")).toHaveText("Active");
 
@@ -195,7 +197,7 @@ test("mute, unmute and delete a rule; the plan's alert limit opens a paywall", a
   await page.getByTestId("alert-delete").first().click();
   await page.getByTestId("alert-delete-confirm").click();
   await expect(page.getByTestId("rule-row")).toHaveCount(before - 1);
-  expect((await events(email, "Alert Deleted")).length).toBe(1);
+  await expect.poll(async () => (await events(email, "Alert Deleted")).length).toBe(1);
 });
 
 test("crisis room: tasks, a stakeholder update that lands in the inbox, and resolving", async ({
