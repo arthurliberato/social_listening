@@ -39,3 +39,37 @@ test("log out ends the session", async ({ page }) => {
   await page.goto(`/w/${slugOf()}/home`);
   await expect(page).toHaveURL(/\/login/);
 });
+
+// M3 screens: query list, guided builder, advanced (CodeMirror) editor.
+for (const theme of ["light", "dark"] as const) {
+  for (const screen of ["list", "guided", "advanced"] as const) {
+    test(`queries ${screen} has no serious a11y violations (${theme})`, async ({ page }) => {
+      await page.addInitScript((t) => localStorage.setItem("rw-theme", t), theme);
+      await page.goto(`/w/${slugOf()}/queries${screen === "list" ? "" : "/new"}`);
+      if (screen === "advanced") {
+        await page.getByTestId("mode-advanced").click();
+        await page.getByTestId("advanced-editor-content").click();
+        await page.keyboard.type('("Orbit Lace" OR #orbitlace) NOT job');
+        await expect(page.getByTestId("preview-count")).toBeVisible({ timeout: 15_000 });
+      } else if (screen === "guided") {
+        await page.getByTestId("guided-any").fill("Orbit Lace");
+        await page.getByTestId("guided-any").press("Enter");
+        await expect(page.getByTestId("preview-count")).toBeVisible({ timeout: 15_000 });
+      } else {
+        await expect(page.getByTestId("queries-table")).toBeVisible();
+      }
+      const { violations } = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
+        .analyze();
+      const serious = violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      expect(
+        serious,
+        JSON.stringify(
+          serious.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.html.slice(0, 120)) })),
+          null,
+          1,
+        ),
+      ).toEqual([]);
+    });
+  }
+}

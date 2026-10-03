@@ -24,10 +24,10 @@ jobs:
       - run: npm run lint
       - run: npx prettier --check .
       - run: npm run test:contrast
-      - run: npm test
       # A small corpus keeps CI fast; the full 4M-mention corpus is for local/agent runs.
       - run: npx tsx datagen/seed.ts --out data/corpus --authors 30000 --scale 0.25 --brands 6
       - run: npm run db:migrate
       - run: npm run db:load
+      - run: npm test # engine tests run against the seeded corpus
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

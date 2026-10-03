@@ -10,6 +10,7 @@ import { requireUser, userWorkspaces } from "@/lib/auth/session";
 import { hashToken } from "@/lib/auth/tokens";
 import { inviteEmail, sendEmail } from "@/lib/email/service";
 import { PLANS, can, type PlanTier } from "@/lib/entitlements/plans";
+import { enqueueBackfill } from "@/lib/jobs/boss";
 import { brandQuery } from "@/lib/query/generate";
 import { estimateMentions } from "@/lib/query/estimate";
 
@@ -110,6 +111,7 @@ export async function saveFirstQuery(): Promise<StepResult & { queryId?: string 
       createdBy: user.id,
     })
     .returning({ id: queries.id });
+  await enqueueBackfill(q!.id);
   await saveData(user.id, { firstQueryId: q!.id }, 4);
   await trackServer(
     "Query Saved",

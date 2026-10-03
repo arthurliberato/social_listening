@@ -1,8 +1,10 @@
 // Application (tenant) tables. The shared synthetic corpus lives in schema.ts.
 import { sql } from "drizzle-orm";
 import {
+  bigint,
   bigserial,
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -143,6 +145,12 @@ export const queries = pgTable(
       .default(sql`'{}'`),
     status: text("status").notNull().default("draft"), // draft|live|paused
     isFromTemplate: boolean("is_from_template").notNull().default(false),
+    builderMode: text("builder_mode").notNull().default("guided"), // guided|advanced
+    /** pending|running|done|quota_exhausted|failed */
+    backfillStatus: text("backfill_status").notNull().default("pending"),
+    backfillMatched: integer("backfill_matched").notNull().default(0),
+    backfilledAt: ts("backfilled_at"),
+    updatedAt: ts("updated_at").notNull().defaultNow(),
     createdBy: uuid("created_by").references(() => users.id),
     createdAt: ts("created_at").notNull().defaultNow(),
   },
@@ -192,4 +200,54 @@ export const invitations = pgTable(
     createdAt: ts("created_at").notNull().defaultNow(),
   },
   (t) => [index("invitations_workspace_idx").on(t.workspaceId)],
+);
+
+/** Mentions matched by a query (materialised on save/backfill and by the release job). */
+export const queryMatches = pgTable(
+  "query_matches",
+  {
+    queryId: uuid("query_id")
+      .notNull()
+      .references(() => queries.id, { onDelete: "cascade" }),
+    mentionId: bigint("mention_id", { mode: "number" }).notNull(),
+    /** Denormalised so feeds can sort and page without joining the 4M-row corpus first. */
+    publishedAt: ts("published_at").notNull(),
+    matchedAt: ts("matched_at").notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.queryId, t.mentionId] }),
+    index("query_matches_feed_idx").on(t.queryId, t.publishedAt),
+  ],
+);
+
+/** Per-query daily rollups that dashboards read instead of scanning mentions. */
+export const queryDailyStats = pgTable(
+  "query_daily_stats",
+  {
+    queryId: uuid("query_id")
+      .notNull()
+      .references(() => queries.id, { onDelete: "cascade" }),
+    day: date("day").notNull(),
+    mentions: integer("mentions").notNull(),
+    positive: integer("positive").notNull(),
+    negative: integer("negative").notNull(),
+    neutral: integer("neutral").notNull(),
+    mixed: integer("mixed").notNull(),
+    reach: bigint("reach", { mode: "number" }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.queryId, t.day] })],
+);
+
+/** Metered usage per account and calendar month (mentions collected, AI questions...). */
+export const usageCounters = pgTable(
+  "usage_counters",
+  {
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id),
+    period: text("period").notNull(), // YYYY-MM
+    metric: text("metric").notNull(), // mentions|ai_questions
+    value: bigint("value", { mode: "number" }).notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.accountId, t.period, t.metric] })],
 );
