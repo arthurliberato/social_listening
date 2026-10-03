@@ -1,0 +1,1031 @@
+{
+ "version": 1,
+ "naming": "Object Action, Title Case, past tense; properties snake_case",
+ "not_commerce": "B2B SaaS: no cart/checkout/purchase events; subscription changes are Plan/Subscription events",
+ "global_properties": [
+  "account_id",
+  "workspace_id",
+  "plan_tier",
+  "trial_day",
+  "user_role",
+  "persona_archetype",
+  "is_synthetic",
+  "agent_run_id",
+  "app_version",
+  "route",
+  "ui_theme"
+ ],
+ "groups": [
+  "account",
+  "workspace"
+ ],
+ "events": [
+  {
+   "area": "Acquisition",
+   "name": "Marketing Page Viewed",
+   "side": "client",
+   "properties": [
+    "page",
+    "referrer",
+    "utm_source",
+    "utm_medium",
+    "utm_campaign"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Acquisition",
+   "name": "Pricing Page Viewed",
+   "side": "client",
+   "properties": [
+    "billing_interval",
+    "entry_point"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Acquisition",
+   "name": "Plan Compare Toggled",
+   "side": "client",
+   "properties": [
+    "billing_interval"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Auth",
+   "name": "Sign Up Started",
+   "side": "client",
+   "properties": [],
+   "description": ""
+  },
+  {
+   "area": "Auth",
+   "name": "Sign Up Completed",
+   "side": "server",
+   "properties": [
+    "method",
+    "signup_source"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Auth",
+   "name": "Email Verified",
+   "side": "server",
+   "properties": [
+    "time_to_verify_ms"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Auth",
+   "name": "Login Completed",
+   "side": "client",
+   "properties": [
+    "method"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Auth",
+   "name": "Login Failed",
+   "side": "client",
+   "properties": [
+    "error_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Auth",
+   "name": "Password Reset Requested",
+   "side": "client",
+   "properties": [],
+   "description": ""
+  },
+  {
+   "area": "Onboarding",
+   "name": "Onboarding Step Viewed",
+   "side": "client",
+   "properties": [
+    "step_name",
+    "step_index"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Onboarding",
+   "name": "Onboarding Step Completed",
+   "side": "client",
+   "properties": [
+    "step_name",
+    "step_index",
+    "duration_ms",
+    "competitors_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Onboarding",
+   "name": "Onboarding Skipped",
+   "side": "client",
+   "properties": [
+    "step_name"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Onboarding",
+   "name": "Onboarding Completed",
+   "side": "client",
+   "properties": [
+    "duration_ms"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Onboarding",
+   "name": "Checklist Item Completed",
+   "side": "client",
+   "properties": [
+    "item_id",
+    "completed_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Query",
+   "name": "Query Builder Opened",
+   "side": "client",
+   "properties": [
+    "builder_mode",
+    "is_from_template",
+    "entry_point"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Query",
+   "name": "Query Previewed",
+   "side": "client",
+   "properties": [
+    "query_id",
+    "builder_mode",
+    "preview_result_count",
+    "noise_score",
+    "operator_count",
+    "has_near",
+    "exclusion_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Query",
+   "name": "Query Validation Failed",
+   "side": "client",
+   "properties": [
+    "builder_mode",
+    "error_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Query",
+   "name": "Query Saved",
+   "side": "client",
+   "properties": [
+    "query_id",
+    "builder_mode",
+    "operator_count",
+    "has_near",
+    "exclusion_count",
+    "noise_score",
+    "languages",
+    "sources",
+    "is_from_template"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Query",
+   "name": "Query Edited",
+   "side": "client",
+   "properties": [
+    "query_id",
+    "builder_mode"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Query",
+   "name": "Query Paused",
+   "side": "client",
+   "properties": [
+    "query_id"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Query",
+   "name": "Query Deleted",
+   "side": "client",
+   "properties": [
+    "query_id"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Query",
+   "name": "Query Backfill Completed",
+   "side": "server",
+   "properties": [
+    "query_id",
+    "backfill_days",
+    "matched_count",
+    "duration_ms"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Query",
+   "name": "AI Query Generated",
+   "side": "client",
+   "properties": [
+    "query_id",
+    "latency_ms",
+    "ai_quota_remaining"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Mentions",
+   "name": "Mentions Feed Viewed",
+   "side": "client",
+   "properties": [
+    "entry_point",
+    "result_count",
+    "view_mode"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Mentions",
+   "name": "Mention Filter Applied",
+   "side": "client",
+   "properties": [
+    "filter_type",
+    "filter_value_count",
+    "result_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Mentions",
+   "name": "Mention Opened",
+   "side": "client",
+   "properties": [
+    "source_type",
+    "entry_point"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Mentions",
+   "name": "Mention Tagged",
+   "side": "client",
+   "properties": [
+    "source_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Mentions",
+   "name": "Mention Sentiment Overridden",
+   "side": "client",
+   "properties": [
+    "from_sentiment",
+    "to_sentiment",
+    "source_type",
+    "lang"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Mentions",
+   "name": "Mention Flagged",
+   "side": "client",
+   "properties": [],
+   "description": ""
+  },
+  {
+   "area": "Mentions",
+   "name": "Mentions Bulk Action Applied",
+   "side": "client",
+   "properties": [
+    "action",
+    "bulk_size"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Mentions",
+   "name": "Saved View Created",
+   "side": "client",
+   "properties": [
+    "filter_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Insight",
+   "name": "Peak Explanation Viewed",
+   "side": "client",
+   "properties": [
+    "query_id",
+    "magnitude_x_baseline",
+    "driver_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Insight",
+   "name": "AI Summary Generated",
+   "side": "client",
+   "properties": [
+    "surface",
+    "latency_ms",
+    "ai_quota_remaining"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Insight",
+   "name": "Ask AI Question Submitted",
+   "side": "client",
+   "properties": [
+    "question_length",
+    "ai_quota_remaining",
+    "latency_ms"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Insight",
+   "name": "Ask AI Citation Opened",
+   "side": "client",
+   "properties": [
+    "citation_index"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Insight",
+   "name": "Insight Shared",
+   "side": "client",
+   "properties": [
+    "share_channel",
+    "insight_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Insight",
+   "name": "Author Profile Viewed",
+   "side": "client",
+   "properties": [
+    "author_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Insight",
+   "name": "Author Watchlisted",
+   "side": "client",
+   "properties": [],
+   "description": ""
+  },
+  {
+   "area": "Insight",
+   "name": "Topic Opened",
+   "side": "client",
+   "properties": [
+    "topic_growth_pct"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Dashboards",
+   "name": "Dashboard Created",
+   "side": "client",
+   "properties": [
+    "template_id"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Dashboards",
+   "name": "Widget Added",
+   "side": "client",
+   "properties": [
+    "widget_type",
+    "is_gated"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Dashboards",
+   "name": "Widget Configured",
+   "side": "client",
+   "properties": [
+    "widget_type",
+    "chart_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Dashboards",
+   "name": "Widget Moved",
+   "side": "client",
+   "properties": [
+    "widget_type",
+    "move_method"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Dashboards",
+   "name": "Dashboard Saved",
+   "side": "client",
+   "properties": [
+    "widgets_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Dashboards",
+   "name": "Dashboard Viewed",
+   "side": "client",
+   "properties": [
+    "dashboard_type",
+    "viewer_is_creator",
+    "widgets_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Dashboards",
+   "name": "Dashboard Shared",
+   "side": "client",
+   "properties": [
+    "share_type",
+    "recipients_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Dashboards",
+   "name": "Widget Drilled Down",
+   "side": "client",
+   "properties": [
+    "widget_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Created",
+   "side": "client",
+   "properties": [
+    "alert_type",
+    "threshold",
+    "channel",
+    "backtest_fire_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Triggered",
+   "side": "server",
+   "properties": [
+    "alert_id",
+    "alert_type",
+    "severity"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Notification Sent",
+   "side": "server",
+   "properties": [
+    "alert_id",
+    "channel"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Opened",
+   "side": "client",
+   "properties": [
+    "alert_id",
+    "time_to_open_ms"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Acknowledged",
+   "side": "client",
+   "properties": [
+    "alert_id",
+    "time_to_ack_ms"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Muted",
+   "side": "client",
+   "properties": [
+    "alert_id"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Deleted",
+   "side": "client",
+   "properties": [
+    "alert_id"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Crisis",
+   "name": "Crisis Room Opened",
+   "side": "client",
+   "properties": [
+    "crisis_id",
+    "peak_volume",
+    "negative_share"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Crisis",
+   "name": "Crisis Task Created",
+   "side": "client",
+   "properties": [
+    "crisis_id"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Crisis",
+   "name": "Stakeholder Update Sent",
+   "side": "client",
+   "properties": [
+    "crisis_id",
+    "recipients_count",
+    "is_ai_drafted"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Crisis",
+   "name": "Crisis Room Resolved",
+   "side": "client",
+   "properties": [
+    "crisis_id",
+    "duration_ms"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Reports",
+   "name": "Report Created",
+   "side": "client",
+   "properties": [
+    "template_id"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Reports",
+   "name": "Report Exported",
+   "side": "client",
+   "properties": [
+    "format",
+    "template_id"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Reports",
+   "name": "Report Scheduled",
+   "side": "client",
+   "properties": [
+    "schedule_frequency",
+    "recipients_count",
+    "has_external_recipient"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Reports",
+   "name": "Report Delivered",
+   "side": "server",
+   "properties": [
+    "report_id",
+    "recipients_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Reports",
+   "name": "Report Opened",
+   "side": "server",
+   "properties": [
+    "report_id",
+    "channel"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Reports",
+   "name": "Export Downloaded",
+   "side": "client",
+   "properties": [
+    "format",
+    "row_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Collaboration",
+   "name": "Teammate Invited",
+   "side": "client",
+   "properties": [
+    "invited_role",
+    "invite_source"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Collaboration",
+   "name": "Invite Accepted",
+   "side": "server",
+   "properties": [
+    "days_to_accept"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Collaboration",
+   "name": "Comment Added",
+   "side": "client",
+   "properties": [
+    "target_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Collaboration",
+   "name": "User Mentioned",
+   "side": "client",
+   "properties": [],
+   "description": ""
+  },
+  {
+   "area": "Workspaces",
+   "name": "Workspace Created",
+   "side": "client",
+   "properties": [
+    "workspaces_count",
+    "copied_from_template"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Workspaces",
+   "name": "Workspace Switched",
+   "side": "client",
+   "properties": [
+    "from_workspace_id"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Workspaces",
+   "name": "Workspace Archived",
+   "side": "client",
+   "properties": [],
+   "description": ""
+  },
+  {
+   "area": "Workspaces",
+   "name": "Client Viewer Added",
+   "side": "client",
+   "properties": [],
+   "description": ""
+  },
+  {
+   "area": "Plan",
+   "name": "Paywall Viewed",
+   "side": "client",
+   "properties": [
+    "paywall_trigger",
+    "required_plan"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Plan",
+   "name": "Paywall Dismissed",
+   "side": "client",
+   "properties": [
+    "paywall_trigger"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Plan",
+   "name": "Upgrade Started",
+   "side": "client",
+   "properties": [
+    "paywall_trigger",
+    "from_plan",
+    "to_plan",
+    "billing_interval"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Plan",
+   "name": "Subscription Started",
+   "side": "server",
+   "properties": [
+    "plan_tier",
+    "billing_interval",
+    "motion",
+    "mrr"
+   ],
+   "description": "Fires revenue() with plan MRR"
+  },
+  {
+   "area": "Plan",
+   "name": "Plan Upgraded",
+   "side": "server",
+   "properties": [
+    "from_plan",
+    "to_plan",
+    "billing_interval",
+    "mrr_delta"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Plan",
+   "name": "Plan Downgraded",
+   "side": "server",
+   "properties": [
+    "from_plan",
+    "to_plan",
+    "mrr_delta"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Plan",
+   "name": "Seat Added",
+   "side": "server",
+   "properties": [
+    "seats_total",
+    "mrr_delta"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Plan",
+   "name": "Payment Failed",
+   "side": "server",
+   "properties": [
+    "attempt_count"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Plan",
+   "name": "Trial Ended",
+   "side": "server",
+   "properties": [
+    "converted",
+    "queries_count",
+    "trial_day_reached"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Plan",
+   "name": "Quota Threshold Reached",
+   "side": "server",
+   "properties": [
+    "quota_type",
+    "threshold_pct"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Sales",
+   "name": "Sales Contact Requested",
+   "side": "client",
+   "properties": [
+    "entry_point",
+    "seats_requested"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Sales",
+   "name": "Demo Booked",
+   "side": "server",
+   "properties": [
+    "seats_requested"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Sales",
+   "name": "Quote Viewed",
+   "side": "client",
+   "properties": [
+    "quote_value"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Sales",
+   "name": "Quote Accepted",
+   "side": "client",
+   "properties": [
+    "quote_value"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Sales",
+   "name": "Contract Signed",
+   "side": "server",
+   "properties": [
+    "quote_value",
+    "contract_months"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Churn",
+   "name": "Cancellation Started",
+   "side": "client",
+   "properties": [
+    "tenure_days"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Churn",
+   "name": "Cancellation Reason Submitted",
+   "side": "client",
+   "properties": [
+    "reason"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Churn",
+   "name": "Save Offer Viewed",
+   "side": "client",
+   "properties": [
+    "offer_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Churn",
+   "name": "Save Offer Accepted",
+   "side": "client",
+   "properties": [
+    "offer_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Churn",
+   "name": "Subscription Canceled",
+   "side": "server",
+   "properties": [
+    "reason",
+    "tenure_days"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Churn",
+   "name": "Account Reactivated",
+   "side": "server",
+   "properties": [
+    "days_since_cancel"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Engagement",
+   "name": "Command Palette Opened",
+   "side": "client",
+   "properties": [],
+   "description": ""
+  },
+  {
+   "area": "Engagement",
+   "name": "Keyboard Shortcut Used",
+   "side": "client",
+   "properties": [
+    "shortcut",
+    "context"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Engagement",
+   "name": "Theme Changed",
+   "side": "client",
+   "properties": [
+    "ui_theme"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Engagement",
+   "name": "Help Opened",
+   "side": "client",
+   "properties": [],
+   "description": ""
+  },
+  {
+   "area": "Engagement",
+   "name": "Error Displayed",
+   "side": "client",
+   "properties": [
+    "error_code"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Engagement",
+   "name": "Empty State CTA Clicked",
+   "side": "client",
+   "properties": [
+    "empty_state_id"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Engagement",
+   "name": "Notification Opened",
+   "side": "client",
+   "properties": [
+    "notification_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Engagement",
+   "name": "Email Opened",
+   "side": "server",
+   "properties": [
+    "email_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Engagement",
+   "name": "Email Link Clicked",
+   "side": "server",
+   "properties": [
+    "email_type"
+   ],
+   "description": ""
+  },
+  {
+   "area": "Experiments",
+   "name": "Experiment Exposed",
+   "side": "client",
+   "properties": [
+    "flag_key",
+    "variant"
+   ],
+   "description": ""
+  }
+ ]
+}
