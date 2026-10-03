@@ -13,7 +13,10 @@ export default defineConfig({
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/ },
     // Specs that start signed out (they create their own users).
-    { name: "anonymous", testMatch: /onboarding\.spec\.ts|public\.spec\.ts|queries\.spec\.ts|mentions\.spec\.ts/ },
+    {
+      name: "anonymous",
+      testMatch: /onboarding\.spec\.ts|public\.spec\.ts|queries\.spec\.ts|mentions\.spec\.ts/,
+    },
     // Specs that need a signed-in, onboarded user.
     {
       name: "authed",

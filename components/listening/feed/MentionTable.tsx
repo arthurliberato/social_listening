@@ -1,7 +1,6 @@
 "use client";
 
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
 import { SentimentPill } from "@/components/listening/SentimentPill";
 import { compact, relativeTime } from "@/lib/format";
 import type { FeedRow } from "@/lib/mentions/feed";
@@ -41,96 +40,92 @@ export function MentionTable({
       <span aria-hidden>{sort === key ? "▼" : ""}</span>
     </button>
   );
-  const columns = useMemo<ColumnDef<FeedRow>[]>(
-    () => [
-      {
-        id: "select",
-        header: () => <span className="sr-only">Select</span>,
-        cell: ({ row }) => (
-          <input
-            type="checkbox"
-            checked={selected.has(row.original.id)}
-            aria-label={`Select mention by ${row.original.author.name}`}
-            data-testid="select-mention"
-            onChange={() => {}}
-            onClick={(e) => onSelect(row.original.id, (e as unknown as MouseEvent).shiftKey)}
-            className="h-4 w-4"
-          />
-        ),
-      },
-      {
-        id: "published",
-        header: () => sortHeader("Published", "newest"),
-        cell: ({ row }) => (
-          <time
-            dateTime={row.original.publishedAt}
-            className="whitespace-nowrap text-[var(--text-muted)]"
-          >
-            {relativeTime(row.original.publishedAt, now)}
-          </time>
-        ),
-      },
-      {
-        id: "author",
-        header: "Author",
-        cell: ({ row }) => (
-          <span className="whitespace-nowrap">
-            <span className="font-medium">{row.original.author.name}</span>{" "}
-            <span className="text-[var(--text-muted)]">@{row.original.author.handle}</span>
-          </span>
-        ),
-      },
-      { id: "source", header: "Source", cell: ({ row }) => row.original.sourceType },
-      {
-        id: "text",
-        header: "Mention",
-        cell: ({ row }) => (
-          <button
-            type="button"
-            onClick={() => onOpen(row.original.id)}
-            className="block max-w-lg truncate text-left underline-offset-2 hover:underline"
-            data-testid="open-mention"
-          >
-            {bodyOf(row.original)}
-          </button>
-        ),
-      },
-      {
-        id: "sentiment",
-        header: () => sortHeader("Sentiment", "negative"),
-        cell: ({ row }) => (
-          <span className="inline-flex items-center gap-2">
-            <SentimentPill sentiment={row.original.sentiment} />
-            <FlagMark flagged={row.original.flagged} />
-          </span>
-        ),
-      },
-      {
-        id: "reach",
-        header: () => (
-          <span className="block text-right">{sortHeader("Reach", "reach", "justify-end")}</span>
-        ),
-        cell: ({ row }) => (
-          <span className="block text-right tabular-nums">{compact(row.original.reach)}</span>
-        ),
-      },
-      {
-        id: "engagement",
-        header: () => (
-          <span className="block text-right">
-            {sortHeader("Engagement", "engagement", "justify-end")}
-          </span>
-        ),
-        cell: ({ row }) => (
-          <span className="block text-right tabular-nums">
-            {compact(row.original.likes + row.original.shares + row.original.comments)}
-          </span>
-        ),
-      },
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    ],
-    [selected, sort, now],
-  );
+  const columns: ColumnDef<FeedRow>[] = [
+    {
+      id: "select",
+      header: () => <span className="sr-only">Select</span>,
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={selected.has(row.original.id)}
+          aria-label={`Select mention by ${row.original.author.name}`}
+          data-testid="select-mention"
+          onChange={() => {}}
+          onClick={(e) => onSelect(row.original.id, (e as unknown as MouseEvent).shiftKey)}
+          className="h-4 w-4"
+        />
+      ),
+    },
+    {
+      id: "published",
+      header: () => sortHeader("Published", "newest"),
+      cell: ({ row }) => (
+        <time
+          dateTime={row.original.publishedAt}
+          className="whitespace-nowrap text-[var(--text-muted)]"
+        >
+          {relativeTime(row.original.publishedAt, now)}
+        </time>
+      ),
+    },
+    {
+      id: "author",
+      header: "Author",
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap">
+          <span className="font-medium">{row.original.author.name}</span>{" "}
+          <span className="text-[var(--text-muted)]">@{row.original.author.handle}</span>
+        </span>
+      ),
+    },
+    { id: "source", header: "Source", cell: ({ row }) => row.original.sourceType },
+    {
+      id: "text",
+      header: "Mention",
+      cell: ({ row }) => (
+        <button
+          type="button"
+          onClick={() => onOpen(row.original.id)}
+          className="block max-w-lg truncate text-left underline-offset-2 hover:underline"
+          data-testid="open-mention"
+        >
+          {bodyOf(row.original)}
+        </button>
+      ),
+    },
+    {
+      id: "sentiment",
+      header: () => sortHeader("Sentiment", "negative"),
+      cell: ({ row }) => (
+        <span className="inline-flex items-center gap-2">
+          <SentimentPill sentiment={row.original.sentiment} />
+          <FlagMark flagged={row.original.flagged} />
+        </span>
+      ),
+    },
+    {
+      id: "reach",
+      header: () => (
+        <span className="block text-right">{sortHeader("Reach", "reach", "justify-end")}</span>
+      ),
+      cell: ({ row }) => (
+        <span className="block text-right tabular-nums">{compact(row.original.reach)}</span>
+      ),
+    },
+    {
+      id: "engagement",
+      header: () => (
+        <span className="block text-right">
+          {sortHeader("Engagement", "engagement", "justify-end")}
+        </span>
+      ),
+      cell: ({ row }) => (
+        <span className="block text-right tabular-nums">
+          {compact(row.original.likes + row.original.shares + row.original.comments)}
+        </span>
+      ),
+    },
+  ];
   const table = useReactTable({
     data: rows,
     columns,

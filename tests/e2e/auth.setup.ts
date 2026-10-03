@@ -4,7 +4,7 @@ import { writeFileSync } from "node:fs";
 import { createUser } from "./helpers";
 
 setup("create onboarded user", async ({ page }) => {
-  const { email, slug } = await createUser(page, { prefix: "setup" });
+  const { email, slug } = await createUser(page, { prefix: "setup", brand: "Latte Lane" });
   writeFileSync("tests/.auth/meta.json", JSON.stringify({ slug, email }));
   await page.context().storageState({ path: "tests/.auth/user.json" });
 });

@@ -73,3 +73,42 @@ for (const theme of ["light", "dark"] as const) {
     });
   }
 }
+
+// M4 screens: feed views, drawer, filter dialog, shortcut help.
+for (const theme of ["light", "dark"] as const) {
+  for (const screen of ["cards", "list", "table", "drawer", "filters", "shortcuts"] as const) {
+    test(`mentions ${screen} has no serious a11y violations (${theme})`, async ({ page }) => {
+      await page.addInitScript((t) => localStorage.setItem("rw-theme", t), theme);
+      await page.goto(
+        `/w/${slugOf()}/mentions${screen === "list" ? "?view=list" : screen === "table" ? "?view=table" : ""}`,
+      );
+      await page.waitForSelector('[data-testid="mentions-feed"][data-hydrated="true"]', {
+        timeout: 30_000,
+      });
+      await expect(page.getByTestId("mention-card").first()).toBeVisible({ timeout: 45_000 });
+      if (screen === "drawer") {
+        await page.getByTestId("open-mention").first().click();
+        await expect(page.getByTestId("mention-drawer")).toBeVisible();
+        await expect(page.getByTestId("drawer-context")).toContainText("Matched by");
+      } else if (screen === "filters") {
+        await page.getByTestId("open-filters").click();
+        await expect(page.getByTestId("filter-panel")).toBeVisible();
+      } else if (screen === "shortcuts") {
+        await page.getByTestId("help").click();
+        await expect(page.getByTestId("shortcut-help")).toBeVisible();
+      }
+      const { violations } = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
+        .analyze();
+      const serious = violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      expect(
+        serious,
+        JSON.stringify(
+          serious.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.html.slice(0, 140)) })),
+          null,
+          1,
+        ),
+      ).toEqual([]);
+    });
+  }
+}

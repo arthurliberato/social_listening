@@ -194,7 +194,7 @@ export function MentionDrawer({
           </>
         )}
         {detail === null && (
-          <p className="text-[var(--text-muted)]">Context isn't available for this mention.</p>
+          <p className="text-[var(--text-muted)]">Context isn&apos;t available for this mention.</p>
         )}
       </section>
 
