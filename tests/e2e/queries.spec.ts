@@ -98,6 +98,8 @@ test("advanced editor: inline errors, blocked save, mode switching keeps state",
   });
 
   // Fix it: the preview recovers, and the warning explains operator precedence problems.
+  await editor.click(); // focus moved to the Save button
+  await page.keyboard.press("Control+End");
   await page.keyboard.type(")");
   await expect(page.getByTestId("query-issues")).toHaveCount(0);
   await expect(page.getByTestId("preview-count")).toBeVisible({ timeout: 10_000 });
