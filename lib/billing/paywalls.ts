@@ -1,0 +1,20 @@
+// Every place a paywall can appear, in one list. Adding a placement means adding it here, which keeps
+// the Upgrade page's "why you're here" line, the analytics values and the tests in step.
+export const PAYWALLS = {
+  query_limit: "You've used all the active queries on your plan",
+  alert_limit: "You've used all the alerts on your plan",
+  seat_limit: "You've used all the seats on your plan",
+  history_window: "You asked for more history than your plan keeps",
+  public_share: "Public share links aren't on your plan",
+  gated_widget: "That dashboard widget isn't on your plan",
+  sentiment_alerts: "Negative-sentiment alerts aren't on your plan",
+  crisis_room: "Crisis Rooms aren't on your plan",
+  scheduled_reports: "Scheduled reports aren't on your plan",
+  report_section_locked: "That report section isn't on your plan",
+  mention_quota: "You've used this month's mentions",
+} as const;
+
+export type PaywallTrigger = keyof typeof PAYWALLS;
+export const PAYWALL_TRIGGERS = Object.keys(PAYWALLS) as PaywallTrigger[];
+export const isPaywallTrigger = (s: string | null | undefined): s is PaywallTrigger =>
+  !!s && s in PAYWALLS;

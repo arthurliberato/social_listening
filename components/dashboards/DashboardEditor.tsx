@@ -12,6 +12,7 @@ import {
 } from "@/app/w/[ws]/dashboards/actions";
 import { DateRangePicker } from "@/components/listening/feed/DateRangePicker";
 import { PaywallModal, type PaywallProps } from "@/components/listening/PaywallModal";
+import type { PaywallTrigger } from "@/lib/billing/paywalls";
 import { Button } from "@/components/ui/button";
 import { Menu } from "@/components/ui/menu";
 import { useToast } from "@/components/ui/toast";
@@ -127,7 +128,7 @@ export function DashboardEditor({
   );
 
   const upgradeFor = useCallback(
-    (type: WidgetType, trigger: string) => {
+    (type: WidgetType, trigger: PaywallTrigger) => {
       const def = WIDGETS[type];
       const p = PLANS[planUnlocking(def.requires!)];
       setPaywall({

@@ -167,7 +167,7 @@ export default async function QueriesPage({
       {tier === "trial" && atLimit && (
         <p className="mt-3 text-sm text-[var(--text-muted)]">
           Pause or delete a query to free a slot, or compare{" "}
-          <Link href="/upgrade" className="underline">
+          <Link href="/upgrade?from=mention_quota" className="underline">
             plans
           </Link>
           .

@@ -21,7 +21,7 @@ export function QuotaMeter({ used, limit, pct }: { used: number; limit: number; 
         {used.toLocaleString()} / {limit.toLocaleString()}
       </span>
       {pct >= 80 && (
-        <Link href="/upgrade" className="underline" data-testid="quota-upgrade">
+        <Link href="/upgrade?from=mention_quota" className="underline" data-testid="quota-upgrade">
           Upgrade
         </Link>
       )}

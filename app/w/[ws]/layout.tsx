@@ -7,7 +7,8 @@ import { Topbar } from "@/components/shell/Topbar";
 import { requireWorkspace } from "@/lib/auth/session";
 import { getMentionUsage } from "@/lib/usage";
 import { desc, eq, and, count } from "drizzle-orm";
-import { alertEvents, alertRules, db } from "@/db/client";
+import { accounts, alertEvents, alertRules, db } from "@/db/client";
+import { BillingBanner } from "@/components/shell/BillingBanner";
 import { simNow } from "@/lib/simclock";
 
 export default async function WorkspaceLayout({
@@ -22,6 +23,7 @@ export default async function WorkspaceLayout({
   if (!user.emailVerifiedAt) redirect("/verify");
   if (!user.onboardingCompletedAt) redirect("/onboarding");
   const usage = await getMentionUsage(ws.accountId);
+  const [acct] = await db.select().from(accounts).where(eq(accounts.id, ws.accountId));
   const [[unread], recent] = await Promise.all([
     db
       .select({ n: count() })
@@ -43,7 +45,7 @@ export default async function WorkspaceLayout({
   ]);
   return (
     <ToastProvider>
-      <div className="flex h-screen flex-col">
+      <div className="flex h-screen flex-col" data-plan={acct?.planTier}>
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-[var(--primary)] focus:px-3 focus:py-2 focus:text-[var(--primary-contrast)]"
@@ -60,6 +62,12 @@ export default async function WorkspaceLayout({
           unreadAlerts={unread?.n ?? 0}
           recentAlerts={recent.map((r) => ({ ...r, firedAt: r.firedAt.toISOString() }))}
           now={simNow().getTime()}
+          canManageBilling={ws.realRole === "owner" || ws.realRole === "admin"}
+        />
+        <BillingBanner
+          acct={acct!}
+          canManage={ws.realRole === "owner" || ws.realRole === "admin"}
+          now={simNow()}
         />
         {usage.pct >= 80 && (
           <p
@@ -70,7 +78,7 @@ export default async function WorkspaceLayout({
             {usage.pct >= 100
               ? "You've used all your monthly mentions. New mentions have stopped collecting; existing ones stay visible."
               : `You've used ${usage.pct}% of your monthly mentions.`}{" "}
-            <a href="/upgrade" className="underline">
+            <a href="/upgrade?from=mention_quota" className="underline">
               See plans
             </a>
           </p>

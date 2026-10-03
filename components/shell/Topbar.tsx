@@ -17,12 +17,14 @@ export function Topbar({
   unreadAlerts,
   recentAlerts,
   now,
+  canManageBilling,
 }: {
   ws: string;
   slug: string;
   unreadAlerts: number;
   recentAlerts: NotificationItem[];
   now: number;
+  canManageBilling: boolean;
   userName: string;
   usage: { used: number; limit: number; pct: number };
 }) {
@@ -49,7 +51,7 @@ export function Topbar({
         </button>
         <NotificationsMenu ws={slug} unread={unreadAlerts} items={recentAlerts} now={now} />
         <ThemeToggle />
-        <UserMenu name={userName} />
+        <UserMenu name={userName} canManageBilling={canManageBilling} />
       </div>
     </header>
   );

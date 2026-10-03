@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics/client";
+import type { PaywallTrigger } from "@/lib/billing/paywalls";
 
 export interface PaywallProps {
-  trigger: string;
+  trigger: PaywallTrigger;
   title: string;
   /** What is locked / why the user hit the wall. */
   reason: string;
@@ -27,6 +28,8 @@ export function PaywallModal(p: PaywallProps) {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const plan = p.planLabel.toLowerCase();
+  const fromPlan = () => document.querySelector<HTMLElement>("[data-plan]")?.dataset.plan ?? null;
   const close = () => {
     track("Paywall Dismissed", { paywall_trigger: p.trigger });
     p.onClose();
@@ -54,11 +57,13 @@ export function PaywallModal(p: PaywallProps) {
       {p.priceLine && <p className="mt-4 text-sm font-medium">{p.priceLine}</p>}
       <div className="mt-6 flex flex-wrap gap-3">
         <Link
-          href={`/upgrade?from=${encodeURIComponent(p.trigger)}`}
+          href={`/upgrade?from=${p.trigger}&plan=${plan}`}
           onClick={() =>
             track("Upgrade Started", {
               paywall_trigger: p.trigger,
-              to_plan: p.planLabel.toLowerCase(),
+              from_plan: fromPlan(),
+              to_plan: plan,
+              billing_interval: "monthly",
             })
           }
           className="inline-flex min-h-9 items-center rounded-md bg-[var(--primary)] px-4 text-sm font-medium text-[var(--primary-contrast)]"
@@ -67,7 +72,7 @@ export function PaywallModal(p: PaywallProps) {
           Upgrade to {p.planLabel}
         </Link>
         <Link
-          href="/upgrade"
+          href={`/upgrade?from=${p.trigger}`}
           className="inline-flex min-h-9 items-center rounded-md border border-[var(--border)] px-4 text-sm font-medium"
         >
           Compare plans

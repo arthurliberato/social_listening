@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { backtestAction, createAlert, type BacktestResult } from "@/app/w/[ws]/alerts/actions";
 import { PaywallModal, type PaywallProps } from "@/components/listening/PaywallModal";
+import type { PaywallTrigger } from "@/lib/billing/paywalls";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { track } from "@/lib/analytics/client";
@@ -84,7 +85,7 @@ export function AlertBuilder({
     return () => clearTimeout(t);
   }, [ws, queryId, type, a, b]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const openPaywall = (trigger: string, reason: string, to: PlanTier) => {
+  const openPaywall = (trigger: PaywallTrigger, reason: string, to: PlanTier) => {
     const p = PLANS[to];
     setPaywall({
       trigger,

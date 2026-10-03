@@ -260,6 +260,69 @@ export async function subscribe(
   return { ok: true, invoiceNumber: inv.number };
 }
 
+/** The unused part of what this period actually cost (a discounted renewal credits less than list price). */
+async function periodCredit(acct: Account, now: Date): Promise<number> {
+  if (!acct.currentPeriodStart || !acct.currentPeriodEnd) return 0;
+  const from = { tier: acct.planTier as PlanTier, interval: acct.billingInterval as Interval };
+  const [paid] = await db
+    .select({ net: invoices.amountCents })
+    .from(invoices)
+    .where(
+      and(
+        eq(invoices.accountId, acct.id),
+        eq(invoices.status, "paid"),
+        eq(invoices.periodStart, acct.currentPeriodStart),
+      ),
+    )
+    .orderBy(sql`${invoices.createdAt} DESC`)
+    .limit(1);
+  const list = periodPriceCents(from.tier, from.interval) ?? 0;
+  return unusedCreditCents({
+    ...from,
+    periodStart: acct.currentPeriodStart,
+    periodEnd: acct.currentPeriodEnd,
+    now,
+    discountPct: paid && list ? Math.max(0, Math.round((1 - paid.net / list) * 100)) : 0,
+  });
+}
+
+export type ChangePreview =
+  | { ok: true; kind: "same" }
+  | { ok: true; kind: "upgrade"; creditCents: number; chargeCents: number; newPriceCents: number }
+  | { ok: true; kind: "downgrade"; effectiveOn: Date; blockers: string[] }
+  | Fail;
+
+/** What a plan change would do, without doing it. */
+export async function previewChange(
+  o: { accountId: string; tier: string; interval: Interval },
+  now: Date = simNow(),
+): Promise<ChangePreview> {
+  const acct = await getAccount(o.accountId);
+  if (!acct || acct.billingStatus !== "active" || !acct.currentPeriodEnd)
+    return { ok: false, error: "You don't have an active plan to change." };
+  if (!isPaidTier(o.tier)) return { ok: false, error: "Choose Starter, Growth or Agency." };
+  const from = { tier: acct.planTier as PlanTier, interval: acct.billingInterval as Interval };
+  const to = { tier: o.tier as PlanTier, interval: o.interval };
+  if (from.tier === to.tier && from.interval === to.interval) return { ok: true, kind: "same" };
+  if (isUpgrade(from, to)) {
+    const credit = await periodCredit(acct, now);
+    const price = periodPriceCents(to.tier, to.interval)!;
+    return {
+      ok: true,
+      kind: "upgrade",
+      creditCents: credit,
+      newPriceCents: price,
+      chargeCents: Math.max(0, price - credit),
+    };
+  }
+  return {
+    ok: true,
+    kind: "downgrade",
+    effectiveOn: acct.currentPeriodEnd,
+    blockers: await downgradeBlockers(acct.id, to.tier),
+  };
+}
+
 export type ChangeResult =
   | { ok: true; applied: "now"; invoiceNumber: string; chargedCents: number; creditCents: number }
   | { ok: true; applied: "scheduled"; on: Date }
@@ -296,27 +359,7 @@ export async function changePlan(
   if (isUpgrade(from, to)) {
     const method = await defaultMethod(acct.id);
     if (!method) return { ok: false, error: "Add a card first." };
-    // Credit what this period actually cost (a discounted renewal credits less than list price).
-    const [paid] = await db
-      .select({ net: invoices.amountCents })
-      .from(invoices)
-      .where(
-        and(
-          eq(invoices.accountId, acct.id),
-          eq(invoices.status, "paid"),
-          eq(invoices.periodStart, acct.currentPeriodStart),
-        ),
-      )
-      .orderBy(sql`${invoices.createdAt} DESC`)
-      .limit(1);
-    const list = periodPriceCents(from.tier, from.interval) ?? 0;
-    const credit = unusedCreditCents({
-      ...from,
-      periodStart: acct.currentPeriodStart,
-      periodEnd: acct.currentPeriodEnd,
-      now,
-      discountPct: paid && list ? Math.max(0, Math.round((1 - paid.net / list) * 100)) : 0,
-    });
+    const credit = await periodCredit(acct, now);
     const price = periodPriceCents(to.tier, to.interval)!;
     const charge = Math.max(0, price - credit);
     const res = await getProvider().charge({

@@ -7,6 +7,7 @@ import type { DraftWidget } from "@/components/dashboards/DashboardGrid";
 import { WidgetConfigDialog } from "@/components/dashboards/WidgetConfigDialog";
 import { WidgetPicker } from "@/components/dashboards/WidgetPicker";
 import { PaywallModal, type PaywallProps } from "@/components/listening/PaywallModal";
+import type { PaywallTrigger } from "@/lib/billing/paywalls";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Menu } from "@/components/ui/menu";
@@ -83,7 +84,7 @@ export function ReportView({
       JSON.stringify(sections) !== JSON.stringify(saved.sections));
 
   const upsell = (
-    trigger: string,
+    trigger: PaywallTrigger,
     title: string,
     reason: string,
     to: PlanTier,
