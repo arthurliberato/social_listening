@@ -51,12 +51,35 @@ async function copyGz(table: string, columns: readonly string[], file: string) {
     columns,
     (stdin) =>
       new Promise<void>((resolve, reject) => {
-        const z = spawn("zcat", [file]);
+        const z = spawn("zcat", [file], { stdio: ["ignore", "pipe", "inherit"] });
+        let code: number | null = null;
+        let drained = false;
+        const done = () => {
+          if (!drained || code === null) return;
+          code === 0 ? resolve() : reject(new Error(`zcat ${file} exited ${code}`));
+        };
+        // Resolve only after zcat's output has been fully handed to psql, not merely when it exits.
+        z.stdout.on("end", () => {
+          drained = true;
+          done();
+        });
+        z.on("exit", (c) => {
+          code = c ?? 1;
+          done();
+        });
         z.stdout.pipe(stdin, { end: false });
-        z.on("exit", (c) => (c === 0 ? resolve() : reject(new Error(`zcat ${file}`))));
       }),
   );
 }
+
+// Dropped before the bulk load and rebuilt after: far faster than per-row index maintenance.
+const INDEXES = [
+  "CREATE INDEX mentions_published_idx ON mentions (published_at)",
+  "CREATE INDEX mentions_brand_published_idx ON mentions (brand_id, published_at)",
+  "CREATE INDEX mentions_tsv_idx ON mentions USING gin (tsv)",
+  "CREATE INDEX mentions_story_idx ON mentions (story_id)",
+];
+const indexName = (sql: string) => /INDEX (\w+)/.exec(sql)![1]!;
 
 const q = (v: string | number | null) =>
   v === null ? "\\N" : String(v).replace(/\\/g, "\\\\").replace(/\t/g, " ").replace(/\n/g, " ");
@@ -69,35 +92,9 @@ async function main() {
   const sources = JSON.parse(readFileSync(join(dir, "sources.json"), "utf8"));
   const stories = JSON.parse(readFileSync(join(dir, "stories.json"), "utf8"));
 
-  // Fresh load: apply the generated migration to an empty schema.
-  psql("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
-  for (const f of readdirSync("db/migrations")
-    .filter((f) => f.endsWith(".sql"))
-    .sort()) {
-    const sql = readFileSync(join("db/migrations", f), "utf8").replaceAll(
-      "--> statement-breakpoint",
-      "",
-    );
-    const r = spawnSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-q"], {
-      input: sql,
-      encoding: "utf8",
-    });
-    if (r.status !== 0) throw new Error(`${f}: ${r.stderr}`);
-  }
-  const indexes = spawnSync(
-    "psql",
-    [
-      url,
-      "-At",
-      "-c",
-      "select indexname || '|' || indexdef from pg_indexes where tablename='mentions' and indexname like 'mentions\\_%' escape '\\' and indexname <> 'mentions_pkey'",
-    ],
-    { encoding: "utf8" },
-  )
-    .stdout.trim()
-    .split("\n")
-    .filter(Boolean);
-  for (const i of indexes) psql(`DROP INDEX ${i.split("|")[0]}`);
+  // Corpus tables only: tenant/app tables are left untouched. Run `npm run db:migrate` first.
+  psql("TRUNCATE mentions, authors, stories, brands, sources RESTART IDENTITY CASCADE");
+  for (const i of INDEXES) psql(`DROP INDEX IF EXISTS ${indexName(i)}`);
 
   await copy("sources", ["id", "type", "display_name", "reach_multiplier"], (w) => {
     for (const s of sources)
@@ -184,7 +181,7 @@ async function main() {
     await copyGz("mentions", manifest.mentionColumns, join(dir, "mentions", f));
     console.error(`loaded ${f}`);
   }
-  for (const i of indexes) psql(i.split("|")[1]!);
+  for (const i of INDEXES) psql(i);
   psql("ANALYZE");
   console.error("done");
 }

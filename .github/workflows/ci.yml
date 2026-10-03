@@ -3,6 +3,18 @@ on: [push, pull_request]
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: ripplewise, POSTGRES_PASSWORD: ripplewise, POSTGRES_DB: ripplewise }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ripplewise" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://ripplewise:ripplewise@localhost:5432/ripplewise
+      AUTH_SECRET: ci-only-secret-0123456789abcdef0123456789
+      AUTH_TRUST_HOST: "true"
+      APP_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -10,6 +22,12 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      - run: npx prettier --check .
       - run: npm run test:contrast
+      - run: npm test
+      # A small corpus keeps CI fast; the full 4M-mention corpus is for local/agent runs.
+      - run: npx tsx datagen/seed.ts --out data/corpus --authors 30000 --scale 0.25 --brands 6
+      - run: npm run db:migrate
+      - run: npm run db:load
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

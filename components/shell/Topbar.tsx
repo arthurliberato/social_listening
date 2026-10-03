@@ -1,10 +1,11 @@
 import { Bell, HelpCircle } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { UserMenu } from "./UserMenu";
 
 const iconButton =
   "inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-[var(--surface-2)]";
 
-export function Topbar({ ws }: { ws: string }) {
+export function Topbar({ ws, userName }: { ws: string; userName: string }) {
   return (
     <header
       role="banner"
@@ -23,6 +24,7 @@ export function Topbar({ ws }: { ws: string }) {
           <Bell size={16} aria-hidden />
         </button>
         <ThemeToggle />
+        <UserMenu name={userName} />
       </div>
     </header>
   );

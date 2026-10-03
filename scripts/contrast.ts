@@ -52,7 +52,10 @@ const PAIRS: [string, string, number][] = [
 ];
 
 let failed = 0;
-for (const [name, theme] of [["light", light], ["dark", dark]] as const) {
+for (const [name, theme] of [
+  ["light", light],
+  ["dark", dark],
+] as const) {
   for (const [fg, bg, min] of PAIRS) {
     const r = ratio(theme[fg]!, theme[bg]!);
     const ok = r >= min;

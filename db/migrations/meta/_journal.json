@@ -8,6 +8,20 @@
       "when": 1791033377561,
       "tag": "0000_corpus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791033876839,
+      "tag": "0001_app",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791034043791,
+      "tag": "0002_invitations",
+      "breakpoints": true
     }
   ]
 }

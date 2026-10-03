@@ -1,5 +1,8 @@
+import { redirect } from "next/navigation";
+import { Identity } from "@/components/analytics/Identity";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { Topbar } from "@/components/shell/Topbar";
+import { requireWorkspace } from "@/lib/auth/session";
 
 export default async function WorkspaceLayout({
   children,
@@ -8,7 +11,10 @@ export default async function WorkspaceLayout({
   children: React.ReactNode;
   params: Promise<{ ws: string }>;
 }) {
-  const { ws } = await params;
+  const { ws: slug } = await params;
+  const { user, ws } = await requireWorkspace(slug);
+  if (!user.emailVerifiedAt) redirect("/verify");
+  if (!user.onboardingCompletedAt) redirect("/onboarding");
   return (
     <div className="flex h-screen flex-col">
       <a
@@ -17,9 +23,10 @@ export default async function WorkspaceLayout({
       >
         Skip to main content
       </a>
-      <Topbar ws={ws} />
+      <Identity userId={user.id} accountId={ws.accountId} workspaceId={ws.id} />
+      <Topbar ws={ws.name} userName={user.name} />
       <div className="flex min-h-0 flex-1">
-        <Sidebar ws={ws} />
+        <Sidebar ws={slug} />
         <main id="main" tabIndex={-1} className="flex-1 overflow-y-auto p-6">
           {children}
         </main>

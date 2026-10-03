@@ -2,6 +2,7 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "tests/e2e",
+  workers: 1,
   use: {
     baseURL: "http://localhost:3000",
     // Cloud sandboxes ship a pre-installed Chromium; set to use it instead of downloading.
@@ -9,9 +10,21 @@ export default defineConfig({
       ? { executablePath: process.env.PW_CHROMIUM_PATH }
       : {},
   },
+  projects: [
+    { name: "setup", testMatch: /auth\.setup\.ts/ },
+    // Specs that start signed out (they create their own users).
+    { name: "anonymous", testMatch: /onboarding\.spec\.ts|public\.spec\.ts/ },
+    // Specs that need a signed-in, onboarded user.
+    {
+      name: "authed",
+      testMatch: /shell\.spec\.ts/,
+      dependencies: ["setup"],
+      use: { storageState: "tests/.auth/user.json" },
+    },
+  ],
   webServer: {
     command: "npm run dev",
-    url: "http://localhost:3000",
+    url: "http://localhost:3000/login",
     reuseExistingServer: true,
     timeout: 120_000,
   },
