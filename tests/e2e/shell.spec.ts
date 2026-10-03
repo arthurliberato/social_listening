@@ -3,8 +3,12 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
 // Read lazily: the setup project writes this file after specs are collected.
-const slugOf = () =>
-  (JSON.parse(readFileSync("tests/.auth/meta.json", "utf8")) as { slug: string }).slug;
+const meta = () =>
+  JSON.parse(readFileSync("tests/.auth/meta.json", "utf8")) as {
+    slug: string;
+    dashboardId: string;
+  };
+const slugOf = () => meta().slug;
 
 for (const theme of ["light", "dark"] as const) {
   test(`shell has no serious a11y violations (${theme})`, async ({ page }) => {
@@ -96,6 +100,49 @@ for (const theme of ["light", "dark"] as const) {
       } else if (screen === "shortcuts") {
         await page.getByTestId("help").click();
         await expect(page.getByTestId("shortcut-help")).toBeVisible();
+      }
+      const { violations } = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
+        .analyze();
+      const serious = violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      expect(
+        serious,
+        JSON.stringify(
+          serious.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.html.slice(0, 140)) })),
+          null,
+          1,
+        ),
+      ).toEqual([]);
+    });
+  }
+}
+
+// M5 screens: dashboard list, view, edit mode and its dialogs.
+for (const theme of ["light", "dark"] as const) {
+  for (const screen of ["list", "view", "edit", "picker", "config", "share"] as const) {
+    test(`dashboards ${screen} has no serious a11y violations (${theme})`, async ({ page }) => {
+      await page.addInitScript((t) => localStorage.setItem("rw-theme", t), theme);
+      const base = `/w/${slugOf()}/dashboards`;
+      await page.goto(screen === "list" ? base : `${base}/${meta().dashboardId}`);
+      if (screen === "list") {
+        await expect(page.getByTestId("dashboard-card").first()).toBeVisible();
+      } else {
+        await expect(page.getByTestId("widget").first()).toBeVisible({ timeout: 30_000 });
+        await expect(page.getByTestId("widget-loading")).toHaveCount(0, { timeout: 45_000 });
+      }
+      if (screen !== "list" && screen !== "view" && screen !== "share") {
+        await page.getByTestId("edit-dashboard").click();
+        if (screen === "picker") {
+          await page.getByTestId("add-widget").click();
+          await expect(page.getByTestId("widget-picker")).toBeVisible();
+        } else if (screen === "config") {
+          await page.getByTestId("widget-menu").first().click();
+          await page.getByRole("menuitem", { name: /configure|edit/i }).click();
+          await expect(page.getByTestId("widget-config")).toBeVisible();
+        }
+      } else if (screen === "share") {
+        await page.getByTestId("share-dashboard").click();
+        await expect(page.getByTestId("share-dialog")).toBeVisible();
       }
       const { violations } = await new AxeBuilder({ page })
         .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
