@@ -228,7 +228,7 @@ test("crisis room: tasks, a stakeholder update that lands in the inbox, and reso
   await expect(page.getByTestId("task")).toHaveCount(1);
   await page.getByTestId("task").getByRole("checkbox").check();
   await expect(page.getByTestId("task").getByRole("checkbox")).toBeChecked();
-  expect((await events(email, "Crisis Task Created")).length).toBe(1);
+  await expect.poll(async () => (await events(email, "Crisis Task Created")).length).toBe(1);
 
   // The update is pre-drafted from live numbers; sending needs a recipient.
   await expect(page.getByTestId("update-body")).toHaveValue(/mentions, \d+% negative/);
@@ -237,12 +237,9 @@ test("crisis room: tasks, a stakeholder update that lands in the inbox, and reso
   await page.getByTestId("recipient-E2E User").check();
   await page.getByTestId("send-update").click();
   await expect(page.getByTestId("update-sent")).toContainText("Sent to 1 person");
-  const [upd] = await events(email, "Stakeholder Update Sent");
-  expect(upd.props).toMatchObject({
-    crisis_id: crisisId,
-    recipients_count: 1,
-    is_ai_drafted: false,
-  });
+  await expect
+    .poll(async () => (await events(email, "Stakeholder Update Sent"))[0]?.props)
+    .toMatchObject({ crisis_id: crisisId, recipients_count: 1, is_ai_drafted: false });
   await page.goto("/inbox");
   await expect(
     page.getByTestId("inbox-message").filter({ hasText: "Update:" }).first(),
@@ -252,7 +249,9 @@ test("crisis room: tasks, a stakeholder update that lands in the inbox, and reso
   await page.getByTestId("resolve").click();
   await page.getByTestId("resolve-confirm").click();
   await expect(page.getByTestId("room-status")).toContainText("Resolved");
-  expect((await events(email, "Crisis Room Resolved"))[0]!.props.duration_ms).toBeGreaterThan(0);
+  await expect
+    .poll(async () => (await events(email, "Crisis Room Resolved"))[0]?.props.duration_ms)
+    .toBeGreaterThan(0);
   await page.getByTestId("reopen").click();
   await expect(page.getByTestId("room-status")).toHaveText("Open");
 

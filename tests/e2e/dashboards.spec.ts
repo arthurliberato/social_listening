@@ -219,10 +219,10 @@ test("editing: add, configure, move three ways (keyboard, menu, drag), resize, r
   await expect(page.getByTestId("dashboard-grid")).toHaveAttribute("data-dragging", "true");
   await page.mouse.up();
   await expect.poll(async () => Number(await authors.getAttribute("data-y"))).not.toBe(y0);
-  const moved = await events(email, "Widget Moved");
-  expect(moved.map((e) => e.props.move_method)).toEqual(
-    expect.arrayContaining(["keyboard", "menu", "drag"]),
-  );
+  // Client events reach Postgres through an async POST, so poll instead of reading once.
+  await expect
+    .poll(async () => (await events(email, "Widget Moved")).map((e) => e.props.move_method))
+    .toEqual(expect.arrayContaining(["keyboard", "menu", "drag"]));
 
   // Remove with Undo.
   await authors.getByTestId("widget-menu").click();
