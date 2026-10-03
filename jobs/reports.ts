@@ -5,8 +5,9 @@ import { nextRun, type Frequency } from "@/lib/reports/schedule";
 import { simNow } from "@/lib/simclock";
 
 /**
- * Send every scheduled report that is due. A schedule is claimed (its next run advanced) in a single
- * UPDATE before sending, so overlapping runs can never send the same report twice.
+ * Send every scheduled report that is due. A schedule is claimed (its next run moved into the future) in a
+ * single UPDATE that only matches while it is still due, so overlapping runs can never send the same
+ * report twice. (Matching on "still due" rather than the exact old timestamp avoids microsecond rounding.)
  */
 export async function runDueReports(
   now: Date = simNow(),
@@ -26,7 +27,13 @@ export async function runDueReports(
     const claimed = await db
       .update(reportSchedules)
       .set({ nextRunAt: nextRun(now, when), lastRunAt: now })
-      .where(and(eq(reportSchedules.id, s.id), eq(reportSchedules.nextRunAt, s.nextRunAt)))
+      .where(
+        and(
+          eq(reportSchedules.id, s.id),
+          eq(reportSchedules.active, true),
+          lte(reportSchedules.nextRunAt, now),
+        ),
+      )
       .returning({ id: reportSchedules.id });
     if (!claimed.length) continue; // another run got it
     try {

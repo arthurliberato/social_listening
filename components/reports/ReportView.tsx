@@ -144,6 +144,8 @@ export function ReportView({
     if (!r.ok) return setError(r.error);
     setSaved({ ...saved, ...next });
     setEditing(false);
+    // Leave ?edit=1 behind so a reload shows the report, not the editor.
+    window.history.replaceState(null, "", `/w/${ws}/reports/${saved.id}`);
     router.refresh();
   };
   const cancel = () => {
@@ -153,6 +155,7 @@ export function ReportView({
     setSections(saved.sections);
     setEditing(false);
     setError("");
+    window.history.replaceState(null, "", `/w/${ws}/reports/${saved.id}`);
   };
   const remove = async () => {
     setBusy("delete");

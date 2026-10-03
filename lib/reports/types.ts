@@ -1,7 +1,7 @@
 // Report shape shared by the builder UI, the server actions, the PDF/CSV exporters and the scheduler.
 import { z } from "zod";
 import { WIDGET_TYPES, type WidgetType } from "@/lib/dashboards/catalog";
-import { ConfigSchema } from "@/lib/dashboards/service";
+import { ConfigSchema } from "@/lib/dashboards/schema";
 
 export const RANGES = ["7d", "30d", "90d"] as const;
 export type ReportRange = (typeof RANGES)[number];

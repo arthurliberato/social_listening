@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { runDueReports } from "../../jobs/reports";
 import { createUser, pool } from "./helpers";
 
-test.setTimeout(150_000);
+test.setTimeout(120_000);
 
 const events = async (email: string, name: string) =>
   (
@@ -90,6 +90,7 @@ test("empty state → template → every section loads, with a table twin → ed
   await page.getByTestId("cfg-apply").click();
   await page.getByTestId("save-report").click();
   await expect(page.getByTestId("report-title")).toHaveText("Monday brief");
+  await expect(page).not.toHaveURL(/edit=1/);
 
   // It persists, and a section's chart has a table twin.
   await page.reload();
@@ -116,10 +117,6 @@ test("exports: PDF and CSV download, are logged on Exports, and fire the events"
   const { email, slug } = await createUser(page, { brand: "Latte Lane" });
   await queryReady(slug);
   const id = await fromTemplate(page, slug, "executive_overview");
-  await page
-    .getByTestId("save-report")
-    .click()
-    .catch(() => {});
   await page.goto(`/w/${slug}/reports/${id}`);
   await loaded(page);
 
@@ -185,7 +182,9 @@ test("scheduling is a paywall on trial; on Growth it saves, and a copy lands in 
   await page.getByTestId("sch-weekday").selectOption("1");
   await page.getByTestId("sch-hour").selectOption("9");
   await expect(page.getByTestId("sch-summary")).toContainText("Every Monday at 09:00 UTC");
-  await page.getByTestId("sch-save").click(); // no recipient picked yet
+  // The dialog starts with you ticked; with nobody ticked it refuses to save.
+  await page.getByTestId("sch-recipient-E2E User").uncheck();
+  await page.getByTestId("sch-save").click();
   await expect(page.getByTestId("sch-error")).toContainText("at least one recipient");
   await page.getByTestId("sch-recipient-E2E User").check();
   await page.getByTestId("sch-external").fill("client@example.com");
@@ -205,16 +204,16 @@ test("scheduling is a paywall on trial; on Growth it saves, and a copy lands in 
   await expect(page.getByTestId("schedule-badge")).toContainText("Every Monday at 09:00 UTC");
 
   await page.goto("/inbox");
-  const msg = page.getByTestId("inbox-message").filter({ hasText: "Monday" }).first();
+  const msg = page.getByTestId("inbox-message").filter({ hasText: "Weekly brand summary" }).first();
   await expect(msg).toBeVisible();
   await expect(msg).toContainText("Open the full report");
   // Seeing the message loads its pixel, which is the open.
   await polled(email, "Email Opened").toBe(1);
-  await polled(email, "Report Opened").toBe(1);
-  expect((await events(email, "Report Opened"))[0]!.props).toMatchObject({
-    report_id: id,
-    channel: "email",
-  });
+  // (Report Opened also fires for in-app views; count only the email channel here.)
+  const emailOpens = async () =>
+    (await events(email, "Report Opened")).filter((e) => e.props.channel === "email");
+  await expect.poll(async () => (await emailOpens()).length).toBe(1);
+  expect((await emailOpens())[0]!.props).toMatchObject({ report_id: id });
   await page.reload();
   await page.waitForTimeout(600);
   expect((await events(email, "Email Opened")).length).toBe(1); // once per message
@@ -255,7 +254,12 @@ test("a scheduled run that is due sends to the inbox once", async ({ page }) => 
   await expect(
     page.getByTestId("inbox-message").filter({ hasText: "Weekly brand summary" }),
   ).toHaveCount(1);
-  await polled(email, "Report Opened").toBe(1);
+  await expect
+    .poll(
+      async () =>
+        (await events(email, "Report Opened")).filter((e) => e.props.channel === "email").length,
+    )
+    .toBe(1);
 });
 
 test("a section whose query was deleted shows its own error; the rest still load", async ({
@@ -264,10 +268,6 @@ test("a section whose query was deleted shows its own error; the rest still load
   const { slug } = await createUser(page, { brand: "Latte Lane" });
   await queryReady(slug);
   const id = await fromTemplate(page, slug, "crisis_recap");
-  await page
-    .getByTestId("save-report")
-    .click()
-    .catch(() => {});
   await pool.query(
     `UPDATE reports SET sections = jsonb_set(sections, '{0,config}', '{"queryId":"00000000-0000-4000-8000-000000000000"}') WHERE id = $1`,
     [id],

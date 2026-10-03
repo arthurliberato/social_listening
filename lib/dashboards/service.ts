@@ -15,19 +15,10 @@ import {
   type WidgetType,
 } from "./catalog";
 import { loadWidget, type DataCtx } from "./data";
-import type { WidgetResult } from "./types";
+import { ConfigSchema } from "./schema";
 
-export const ConfigSchema = z
-  .object({
-    queryId: z.string().uuid().optional(),
-    metric: z
-      .enum([...new Set([...KPI_METRICS, ...VOLUME_METRICS])] as [string, ...string[]])
-      .optional(),
-    breakdown: z.enum(BREAKDOWNS).optional(),
-    topN: z.number().int().min(3).max(20).optional(),
-    style: z.enum(["line", "area"]).optional(),
-  })
-  .strict();
+export { ConfigSchema };
+import type { WidgetResult } from "./types";
 
 export const WidgetSchema = z.object({
   id: z.string().max(64).optional(),
