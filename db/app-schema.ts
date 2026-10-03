@@ -120,6 +120,8 @@ export const emails = pgTable(
     subject: text("subject").notNull(),
     bodyText: text("body_text").notNull(),
     openedAt: ts("opened_at"),
+    /** First click on a tracked link in the body. */
+    clickedAt: ts("clicked_at"),
     createdAt: ts("created_at").notNull().defaultNow(),
   },
   (t) => [index("emails_user_idx").on(t.toUserId, t.createdAt)],
@@ -471,4 +473,100 @@ export const crisisUpdates = pgTable(
     sentAt: ts("sent_at").notNull().defaultNow(),
   },
   (t) => [index("crisis_updates_idx").on(t.crisisId, t.sentAt)],
+);
+
+/** A report: an ordered list of sections (each a dashboard-style widget) over one date range. */
+export const reports = pgTable(
+  "reports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    templateId: text("template_id"),
+    /** Preset date range: 7d | 30d | 90d ... */
+    range: text("range").notNull().default("30d"),
+    /** [{ id, type, title, config }] */
+    sections: jsonb("sections").notNull().default([]),
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+    updatedAt: ts("updated_at").notNull().defaultNow(),
+  },
+  (t) => [index("reports_workspace_idx").on(t.workspaceId)],
+);
+
+/** At most one recurring schedule per report. */
+export const reportSchedules = pgTable(
+  "report_schedules",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    reportId: uuid("report_id")
+      .notNull()
+      .unique()
+      .references(() => reports.id, { onDelete: "cascade" }),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    frequency: text("frequency").notNull(), // daily|weekly|monthly
+    weekday: integer("weekday").notNull().default(1), // 0=Sun..6=Sat (weekly)
+    dayOfMonth: integer("day_of_month").notNull().default(1), // 1..28 (monthly)
+    hourUtc: integer("hour_utc").notNull().default(8),
+    recipientIds: uuid("recipient_ids")
+      .array()
+      .notNull()
+      .default(sql`'{}'`),
+    externalEmails: text("external_emails")
+      .array()
+      .notNull()
+      .default(sql`'{}'`),
+    active: boolean("active").notNull().default(true),
+    nextRunAt: ts("next_run_at").notNull(),
+    lastRunAt: ts("last_run_at"),
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("report_schedules_due_idx").on(t.active, t.nextRunAt)],
+);
+
+/** One emailed copy of a report to one person; opens and clicks land here. */
+export const reportDeliveries = pgTable(
+  "report_deliveries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    reportId: uuid("report_id")
+      .notNull()
+      .references(() => reports.id, { onDelete: "cascade" }),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    scheduleId: uuid("schedule_id").references(() => reportSchedules.id, { onDelete: "set null" }),
+    emailId: uuid("email_id").references(() => emails.id, { onDelete: "set null" }),
+    userId: uuid("user_id").references(() => users.id),
+    /** schedule | manual (a "send me a copy now") */
+    trigger: text("trigger").notNull().default("schedule"),
+    deliveredAt: ts("delivered_at").notNull().defaultNow(),
+    openedAt: ts("opened_at"),
+    clickedAt: ts("clicked_at"),
+  },
+  (t) => [index("report_deliveries_report_idx").on(t.reportId, t.deliveredAt)],
+);
+
+/** Every file a person downloaded from Exports or a report (the Exports page history). */
+export const exportsLog = pgTable(
+  "exports_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").references(() => users.id),
+    kind: text("kind").notNull(), // mentions|report
+    format: text("format").notNull(), // csv|pdf
+    label: text("label").notNull(),
+    rowCount: integer("row_count"),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("exports_log_workspace_idx").on(t.workspaceId, t.createdAt)],
 );

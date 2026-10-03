@@ -9,6 +9,7 @@ const config: NextConfig = {
     "@node-rs/argon2",
     "@amplitude/analytics-node",
     "nodemailer",
+    "pdfkit",
   ],
 };
 export default config;

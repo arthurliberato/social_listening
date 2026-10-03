@@ -1,5 +1,6 @@
 import { getBoss, QUEUES } from "@/lib/jobs/boss";
 import { runBackfill } from "./backfill";
+import { runDueReports } from "./reports";
 import { runReleaseAll } from "./release";
 
 let started = false;
@@ -16,6 +17,11 @@ export async function startWorkers() {
   await boss.schedule(QUEUES.release, "*/5 * * * *");
   await boss.work(QUEUES.release, async () => {
     await runReleaseAll();
+  });
+  // Scheduled reports go out within five minutes of their due time.
+  await boss.schedule(QUEUES.reports, "*/5 * * * *");
+  await boss.work(QUEUES.reports, async () => {
+    await runDueReports();
   });
 }
 

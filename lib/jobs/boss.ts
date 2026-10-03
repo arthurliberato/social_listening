@@ -1,6 +1,6 @@
 import { PgBoss } from "pg-boss";
 
-export const QUEUES = { backfill: "backfill", release: "release" } as const;
+export const QUEUES = { backfill: "backfill", release: "release", reports: "reports" } as const;
 
 const g = globalThis as unknown as { __boss?: Promise<PgBoss> };
 

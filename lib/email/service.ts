@@ -11,6 +11,8 @@ export const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
  * SMTP_URL is set, also delivered to Mailpit. Delivery failures never fail the request.
  */
 export async function sendEmail(o: {
+  /** Pre-chosen id, so the body can carry tracked links that point back at this message. */
+  id?: string;
   toUserId?: string | null;
   to: string;
   type: EmailType;
@@ -20,6 +22,7 @@ export async function sendEmail(o: {
   const [row] = await db
     .insert(emails)
     .values({
+      ...(o.id ? { id: o.id } : {}),
       toUserId: o.toUserId ?? null,
       toAddress: o.to,
       type: o.type,

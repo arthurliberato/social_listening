@@ -1,6 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { db, emails } from "@/db/client";
 import { requireUser } from "@/lib/auth/session";
+import { isTracked } from "@/lib/email/tracking";
 
 export const metadata = { title: "Inbox · Ripplewise" };
 export const dynamic = "force-dynamic";
@@ -44,6 +45,11 @@ export default async function InboxPage() {
             <pre className="mt-3 whitespace-pre-wrap font-sans text-sm">
               <Linkified text={m.bodyText} />
             </pre>
+            {isTracked(m.type) && (
+              // The open pixel, as a real mail client would load it: seeing the message is the open.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={`/api/t/o/${m.id}`} alt="" width={1} height={1} className="h-px w-px" />
+            )}
           </li>
         ))}
       </ul>
