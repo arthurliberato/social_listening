@@ -1,5 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { accounts, db, queries, workspaces } from "@/db/client";
+import { evaluateAlerts } from "@/lib/alerts/engine";
 import { trackServer } from "@/lib/analytics/server";
 import { limits, visibleUntil, type PlanTier } from "@/lib/entitlements/plans";
 import { compile, compileFilters } from "@/lib/query/compile";
@@ -73,6 +74,13 @@ export async function runRelease(
       ...(exhausted ? { backfillStatus: "quota_exhausted" } : {}),
     })
     .where(eq(queries.id, queryId));
+
+  // Alerts see exactly what the release just made visible, so they fire within this cycle.
+  try {
+    await evaluateAlerts(queryId, until);
+  } catch (e) {
+    console.error("[alerts] evaluation failed for query", queryId, e);
+  }
 
   const ctx = { userId: q.createdBy, workspaceId: q.workspaceId, accountId: ws!.accountId };
   const after = Math.min(100, Math.round(((usage.used + matched) / usage.limit) * 100));

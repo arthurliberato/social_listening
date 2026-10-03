@@ -16,6 +16,7 @@ export interface Entitlements {
   askAiPerMonth: number;
   features: {
     sentimentAlerts: boolean;
+    crisisRoom: boolean;
     scheduledReports: boolean;
     whiteLabel: boolean;
     shareOfVoice: boolean;
@@ -30,6 +31,7 @@ export interface Entitlements {
 
 const none = {
   sentimentAlerts: false,
+  crisisRoom: false,
   scheduledReports: false,
   whiteLabel: false,
   shareOfVoice: false,
@@ -82,6 +84,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     features: {
       ...none,
       sentimentAlerts: true,
+      crisisRoom: true,
       scheduledReports: true,
       shareOfVoice: true,
       emotionWidget: true,
@@ -102,6 +105,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     features: {
       ...none,
       sentimentAlerts: true,
+      crisisRoom: true,
       scheduledReports: true,
       shareOfVoice: true,
       emotionWidget: true,
@@ -122,6 +126,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     askAiPerMonth: 5_000,
     features: {
       sentimentAlerts: true,
+      crisisRoom: true,
       scheduledReports: true,
       whiteLabel: true,
       shareOfVoice: true,

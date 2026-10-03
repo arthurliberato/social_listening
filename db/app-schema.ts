@@ -352,3 +352,123 @@ export const dashboardViews = pgTable(
   },
   (t) => [index("dashboard_views_idx").on(t.dashboardId, t.viewedAt)],
 );
+
+/** A workspace's alert rule, evaluated by the release job whenever new mentions land for its query. */
+export const alertRules = pgTable(
+  "alert_rules",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    queryId: uuid("query_id")
+      .notNull()
+      .references(() => queries.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    /** volume_spike | sentiment_drop | influencer */
+    type: text("type").notNull(),
+    /** Thresholds; shape depends on `type` (validated in lib/alerts/rules.ts). */
+    params: jsonb("params").notNull().default({}),
+    /** in_app, email */
+    channels: text("channels")
+      .array()
+      .notNull()
+      .default(sql`'{in_app}'`),
+    /** Minimum minutes between two firings of the same rule. */
+    cooldownMin: integer("cooldown_min").notNull().default(60),
+    status: text("status").notNull().default("active"), // active|muted
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+    updatedAt: ts("updated_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("alert_rules_workspace_idx").on(t.workspaceId),
+    index("alert_rules_query_idx").on(t.queryId),
+  ],
+);
+
+/** One firing of a rule. Doubles as the in-app notification (status new -> opened -> acknowledged). */
+export const alertEvents = pgTable(
+  "alert_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ruleId: uuid("rule_id")
+      .notNull()
+      .references(() => alertRules.id, { onDelete: "cascade" }),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    /** Simulated time of the data window's end (when the condition was observed). */
+    firedAt: ts("fired_at").notNull(),
+    severity: text("severity").notNull(), // info|warning|critical
+    summary: text("summary").notNull(),
+    /** Window stats: counts, baseline, negative share, ... (rendered on the alert page). */
+    details: jsonb("details").notNull().default({}),
+    status: text("status").notNull().default("new"), // new|opened|acknowledged
+    openedAt: ts("opened_at"),
+    acknowledgedAt: ts("acknowledged_at"),
+    acknowledgedBy: uuid("acknowledged_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("alert_events_workspace_idx").on(t.workspaceId, t.firedAt),
+    index("alert_events_rule_idx").on(t.ruleId, t.firedAt),
+  ],
+);
+
+/** A crisis room: a shared workspace for coordinating a response to a spike. */
+export const crises = pgTable(
+  "crises",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    queryId: uuid("query_id")
+      .notNull()
+      .references(() => queries.id, { onDelete: "cascade" }),
+    alertEventId: uuid("alert_event_id").references(() => alertEvents.id, { onDelete: "set null" }),
+    title: text("title").notNull(),
+    status: text("status").notNull().default("open"), // open|resolved
+    /** The window the room analyses: starts a little before the spike, open-ended while the room is open. */
+    windowStart: ts("window_start").notNull(),
+    openedAt: ts("opened_at").notNull().defaultNow(),
+    openedBy: uuid("opened_by").references(() => users.id),
+    resolvedAt: ts("resolved_at"),
+    resolvedBy: uuid("resolved_by").references(() => users.id),
+  },
+  (t) => [index("crises_workspace_idx").on(t.workspaceId, t.openedAt)],
+);
+
+export const crisisTasks = pgTable(
+  "crisis_tasks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    crisisId: uuid("crisis_id")
+      .notNull()
+      .references(() => crises.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    assigneeId: uuid("assignee_id").references(() => users.id),
+    doneAt: ts("done_at"),
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("crisis_tasks_idx").on(t.crisisId)],
+);
+
+/** Stakeholder updates sent from a crisis room (the emails themselves live in `emails`). */
+export const crisisUpdates = pgTable(
+  "crisis_updates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    crisisId: uuid("crisis_id")
+      .notNull()
+      .references(() => crises.id, { onDelete: "cascade" }),
+    subject: text("subject").notNull(),
+    body: text("body").notNull(),
+    recipientsCount: integer("recipients_count").notNull(),
+    sentBy: uuid("sent_by").references(() => users.id),
+    sentAt: ts("sent_at").notNull().defaultNow(),
+  },
+  (t) => [index("crisis_updates_idx").on(t.crisisId, t.sentAt)],
+);

@@ -408,3 +408,97 @@ export function geoOption(d: Of<"geo">, t: ChartTheme): EChartsOption {
     ],
   };
 }
+
+// ---- hourly volume, split into negative and other (alerts and crisis rooms) -------------------
+export interface HourPoint {
+  t: number;
+  count: number;
+  negative: number;
+}
+export const hourLabel = (t: number) =>
+  new Date(t).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    hour12: false,
+    timeZone: "UTC",
+  }) + ":00";
+
+export function hourlyOption(
+  hours: HourPoint[],
+  t: ChartTheme,
+  marks: { t: number }[] = [],
+): EChartsOption {
+  const labels = hours.map((h) => hourLabel(h.t));
+  const other = t.series[0]!;
+  const neg = t.sentiment.negative;
+  const markLine = marks.length
+    ? {
+        silent: true,
+        symbol: "none",
+        label: { show: false },
+        lineStyle: { color: t.spike, width: 1.5, type: "dashed" as const },
+        data: marks
+          .map((m) => hours.findIndex((h) => h.t === Math.floor(m.t / 3_600_000) * 3_600_000))
+          .filter((i) => i >= 0)
+          .map((i) => ({ xAxis: labels[i]! })),
+      }
+    : undefined;
+  return {
+    ...base(t),
+    grid: { left: 8, right: 16, top: 16, bottom: 8, containLabel: true },
+    xAxis: {
+      type: "category",
+      data: labels,
+      axisLine: { lineStyle: { color: t.axis, width: 1 } },
+      axisTick: { show: false },
+      axisLabel: { color: t.muted, fontSize: 12, hideOverlap: true },
+    },
+    yAxis: valueAxis(t),
+    tooltip: {
+      ...tooltipBase(t),
+      trigger: "axis",
+      axisPointer: { type: "shadow", shadowStyle: { color: t.grid, opacity: 0.4 } },
+      formatter: (raw: unknown) => {
+        const items = raw as {
+          axisValue: string;
+          seriesName: string;
+          value: number;
+          color: string;
+        }[];
+        return `<div style="margin-bottom:4px;color:${t.muted}">${esc(items[0]!.axisValue)} UTC</div>${[
+          ...items,
+        ]
+          .reverse()
+          .map((i) => keyRow(t, i.color, i.seriesName, i.value.toLocaleString()))
+          .join("")}`;
+      },
+    },
+    series: [
+      {
+        type: "bar",
+        name: "Other mentions",
+        stack: "hour",
+        data: hours.map((h) => h.count - h.negative),
+        itemStyle: { color: other, borderColor: t.surface, borderWidth: 1 },
+        barMaxWidth: 28,
+        emphasis: { focus: "series" },
+      },
+      {
+        type: "bar",
+        name: "Negative mentions",
+        stack: "hour",
+        data: hours.map((h) => h.negative),
+        itemStyle: {
+          color: neg,
+          borderColor: t.surface,
+          borderWidth: 1,
+          borderRadius: [4, 4, 0, 0],
+        },
+        barMaxWidth: 28,
+        emphasis: { focus: "series" },
+        markLine,
+      },
+    ],
+  };
+}
