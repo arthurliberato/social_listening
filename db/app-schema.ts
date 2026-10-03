@@ -87,6 +87,10 @@ export const memberships = pgTable(
       .notNull()
       .references(() => accounts.id),
     role: text("role").notNull(), // owner|admin|editor|viewer|client_viewer
+    /** When the user last opened the mentions feed (drives "unread" and "since last visit"). */
+    feedSeenAt: ts("feed_seen_at"),
+    /** Start of the current visit: mentions published after this are "unread". Stable within a visit. */
+    feedSinceAt: ts("feed_since_at"),
     createdAt: ts("created_at").notNull().defaultNow(),
   },
   (t) => [primaryKey({ columns: [t.userId, t.workspaceId] })],
@@ -150,6 +154,8 @@ export const queries = pgTable(
     backfillStatus: text("backfill_status").notNull().default("pending"),
     backfillMatched: integer("backfill_matched").notNull().default(0),
     backfilledAt: ts("backfilled_at"),
+    /** The release job matches mentions published after this instant (set when backfill finishes). */
+    releasedThrough: ts("released_through"),
     updatedAt: ts("updated_at").notNull().defaultNow(),
     createdBy: uuid("created_by").references(() => users.id),
     createdAt: ts("created_at").notNull().defaultNow(),
@@ -250,4 +256,46 @@ export const usageCounters = pgTable(
     value: bigint("value", { mode: "number" }).notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.accountId, t.period, t.metric] })],
+);
+
+/**
+ * A workspace's edits to a mention. User edits never mutate the shared corpus: the effective
+ * sentiment is coalesce(override.sentiment, mentions.sentiment_pred).
+ */
+export const mentionOverrides = pgTable(
+  "mention_overrides",
+  {
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    mentionId: bigint("mention_id", { mode: "number" }).notNull(),
+    sentiment: text("sentiment"), // null = keep the classifier's value
+    tags: text("tags")
+      .array()
+      .notNull()
+      .default(sql`'{}'`),
+    flagged: boolean("flagged").notNull().default(false),
+    updatedBy: uuid("updated_by").references(() => users.id),
+    updatedAt: ts("updated_at").notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.workspaceId, t.mentionId] }),
+    index("mention_overrides_flag_idx").on(t.workspaceId, t.flagged),
+  ],
+);
+
+/** Saved feed filters (shareable "views"). `params` is the URL query string of the feed. */
+export const savedViews = pgTable(
+  "saved_views",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    params: text("params").notNull(),
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("saved_views_workspace_idx").on(t.workspaceId)],
 );

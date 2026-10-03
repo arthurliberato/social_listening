@@ -1,5 +1,6 @@
 import { getBoss, QUEUES } from "@/lib/jobs/boss";
 import { runBackfill } from "./backfill";
+import { runReleaseAll } from "./release";
 
 let started = false;
 
@@ -10,6 +11,11 @@ export async function startWorkers() {
   const boss = await getBoss();
   await boss.work<{ queryId: string }>(QUEUES.backfill, { localConcurrency: 2 }, async (jobs) => {
     for (const job of jobs) await runBackfill(job.data.queryId);
+  });
+  // Reveal newly published mentions every 5 minutes (a plan's refresh tier decides what it sees).
+  await boss.schedule(QUEUES.release, "*/5 * * * *");
+  await boss.work(QUEUES.release, async () => {
+    await runReleaseAll();
   });
 }
 

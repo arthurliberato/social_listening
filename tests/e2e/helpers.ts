@@ -38,3 +38,24 @@ export async function createUser(page: Page, opts: { brand?: string; prefix?: st
   const slug = new URL(page.url()).pathname.split("/")[2]!;
   return { email, slug };
 }
+
+/** Wait until the user's first query has finished collecting history, then return the feed's first page. */
+export async function openFeed(page: Page, slug: string, qs = "") {
+  await page.goto(`/w/${slug}/mentions${qs}`);
+  await page
+    .waitForFunction(
+      () =>
+        document.querySelector('[data-testid="mention-card"]') ||
+        document.querySelector('[data-testid="feed-empty"]'),
+      null,
+      { timeout: 30_000 },
+    )
+    .catch(() => {});
+  if (await page.getByTestId("feed-collecting").count()) {
+    await expect(page.getByTestId("mention-card").first())
+      .toBeVisible({ timeout: 45_000 })
+      .catch(async () => {
+        await page.reload();
+      });
+  }
+}

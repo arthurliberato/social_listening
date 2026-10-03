@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 // Runs before paint so the saved theme never flashes the wrong palette.
-const themeScript = `try{var t=localStorage.getItem("rw-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+const themeScript = `try{var t=localStorage.getItem("rw-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;if(localStorage.getItem("rw-sidebar")==="collapsed")document.documentElement.dataset.sidebar="collapsed"}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

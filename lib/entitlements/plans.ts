@@ -194,3 +194,15 @@ export function can(
         : { ok: true };
   }
 }
+
+const REFRESH_MS: Record<RefreshTier, number> = {
+  realtime: 5 * 60_000,
+  hourly: 3_600_000,
+  "12h": 12 * 3_600_000,
+};
+
+/** The newest instant a plan can see: data refreshes in steps (12h / hourly / 5 min), not continuously. */
+export function visibleUntil(tier: PlanTier, now: Date): Date {
+  const g = REFRESH_MS[PLANS[tier].refresh];
+  return new Date(Math.floor(now.getTime() / g) * g);
+}

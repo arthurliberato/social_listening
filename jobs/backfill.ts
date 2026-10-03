@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import { accounts, db, queries, workspaces } from "@/db/client";
 import { trackServer } from "@/lib/analytics/server";
-import { limits, type PlanTier } from "@/lib/entitlements/plans";
+import { limits, visibleUntil, type PlanTier } from "@/lib/entitlements/plans";
 import { compile, compileFilters } from "@/lib/query/compile";
 import { analyze } from "@/lib/query/lint";
 import { simNow } from "@/lib/simclock";
@@ -27,7 +27,7 @@ export async function runBackfill(queryId: string, actorUserId?: string | null):
   }
   await db.update(queries).set({ backfillStatus: "running" }).where(eq(queries.id, queryId));
 
-  const end = simNow();
+  const end = visibleUntil(acct!.planTier as PlanTier, simNow());
   const start = new Date(end.getTime() - plan.historyDays * 86_400_000);
   const before = await getMentionUsage(ws!.accountId);
   const predicate = sql`published_at >= ${start} AND published_at < ${end} AND ${compile(analysis.ast)} AND ${compileFilters({ sources: q.sources, languages: q.languages, countries: q.countries })}`;
@@ -69,6 +69,7 @@ export async function runBackfill(queryId: string, actorUserId?: string | null):
       backfillStatus: exhausted ? "quota_exhausted" : "done",
       backfillMatched: matched,
       backfilledAt: new Date(),
+      releasedThrough: end,
     })
     .where(eq(queries.id, queryId));
 

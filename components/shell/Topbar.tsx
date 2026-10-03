@@ -1,3 +1,5 @@
+"use client";
+
 import { Bell, HelpCircle } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { QuotaMeter } from "./QuotaMeter";
@@ -27,7 +29,13 @@ export function Topbar({
       <div className="ml-auto flex items-center gap-3">
         <QuotaMeter {...usage} />
         {/* Help stays in the same spot on every screen (WCAG 3.2.6). */}
-        <button type="button" aria-label="Help" data-testid="help" className={iconButton}>
+        <button
+          type="button"
+          aria-label="Help and keyboard shortcuts"
+          data-testid="help"
+          className={iconButton}
+          onClick={() => window.dispatchEvent(new Event("rw-open-shortcuts"))}
+        >
           <HelpCircle size={16} aria-hidden />
         </button>
         <button type="button" aria-label="Notifications" className={iconButton}>
