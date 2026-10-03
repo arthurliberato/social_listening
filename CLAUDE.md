@@ -43,6 +43,16 @@ No agent-only shortcuts or hidden endpoints. Stable `data-testid` + accessible n
 /docs/tracking-plan.json    event + property schema (source of truth)
 /tests/e2e                  one spec per key flow
 
+## Analytics architecture
+- One `track()` wrapper fans out per `destinations` in /docs/tracking-plan.json:
+  - Amplitude: all events.
+  - GA4: lead/funnel events only, renamed via each event's `ga4_name`. Use a separate GA4 property
+    for synthetic traffic; set GA4 `user_id` to the same UUID as Amplitude. Never send email/names.
+  - Warehouse (BigQuery): Postgres `analytics_events` mirror batch-loaded, plus Amplitude Export API
+    pulls and GA4 native BigQuery export. Account-level analysis happens here.
+- On sign-up, persist `signup_attribution_fields` (ga_client_id, ga_session_id, UTMs, gclid, referrer)
+  on the user row so leads join to product behavior.
+
 ## Non-negotiable rules
 1. Entitlements enforced server-side AND reflected in UI (locks, tooltips, paywalls).
 2. Every user-visible interaction listed in /docs/tracking-plan.json fires exactly one event
