@@ -21,6 +21,7 @@ async function addChip(page: Page, testId: string, ...values: string[]) {
 test("guided builder: chips compile to Boolean, live preview shows results, ⌘S saves and backfills", async ({
   page,
 }) => {
+  test.setTimeout(90_000); // signup + onboarding + backfill wait
   const { email, slug } = await createUser(page);
   await page.goto(`/w/${slug}/queries/new?entry=list`);
   await expect(page.getByTestId("preview-panel")).toContainText("Add a term");
