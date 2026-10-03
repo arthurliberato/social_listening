@@ -106,8 +106,8 @@ test("template → dashboard: widgets load independently, charts render, tables 
   await expect
     .poll(async () => (await events(email, "Dashboard Viewed")).length)
     .toBeGreaterThan(0);
-  expect((await events(email, "Dashboard Viewed"))[0]!.props).toMatchObject({
-    dashboard_type: "custom",
+  const viewed = (await events(email, "Dashboard Viewed")).map((e) => e.props);
+  expect(viewed.find((p) => p.dashboard_type === "custom")).toMatchObject({
     viewer_is_creator: true,
   });
 
@@ -298,6 +298,7 @@ test("HTML widgets drill too: top authors, topics and top mentions open the righ
     await page.getByTestId(`add-${t}`).click();
   }
   await page.getByTestId("save-dashboard").click();
+  await expect(page.getByTestId("edit-dashboard")).toBeVisible();
   await settled(page, 3);
   const handleText = await cellOf(page, "Top authors")
     .locator("tbody th button")

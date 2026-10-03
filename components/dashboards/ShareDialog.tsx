@@ -29,6 +29,8 @@ export function ShareDialog({
   const ref = useRef<HTMLDialogElement>(null);
   const toast = useToast();
   const [token, setToken] = useState(initial);
+  // Optimistic: the checkbox flips at once and rolls back if the server refuses.
+  const [on, setOn] = useState(!!initial);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     const el = ref.current;
@@ -57,6 +59,7 @@ export function ShareDialog({
       onUpgrade();
       return;
     }
+    setOn(enabled);
     setBusy(true);
     const r = await setPublicLink(ws, id, enabled);
     setBusy(false);
@@ -67,7 +70,10 @@ export function ShareDialog({
           ? "Public link turned on."
           : "Public link turned off. The old link no longer works.",
       );
-    } else toast.error(r.error);
+    } else {
+      setOn(!enabled);
+      toast.error(r.error);
+    }
   };
 
   return (
@@ -118,7 +124,7 @@ export function ShareDialog({
         <label className="mt-2 flex items-center gap-2 text-sm">
           <input
             type="checkbox"
-            checked={!!token}
+            checked={on}
             disabled={busy || !canEdit}
             onChange={(e) => void toggle(e.target.checked)}
             data-testid="public-toggle"
