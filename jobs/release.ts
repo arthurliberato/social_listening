@@ -1,5 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { accounts, db, queries, workspaces } from "@/db/client";
+import { isReadOnly } from "@/lib/billing/lifecycle";
 import { evaluateAlerts } from "@/lib/alerts/engine";
 import { trackServer } from "@/lib/analytics/server";
 import { limits, visibleUntil, type PlanTier } from "@/lib/entitlements/plans";
@@ -27,6 +28,7 @@ export async function runRelease(
   if (!q || q.status !== "live" || !q.releasedThrough) return null; // not backfilled yet
   const [ws] = await db.select().from(workspaces).where(eq(workspaces.id, q.workspaceId));
   const [acct] = await db.select().from(accounts).where(eq(accounts.id, ws!.accountId));
+  if (isReadOnly(acct!.billingStatus)) return null; // locked or cancelled: collection is paused
   const tier = acct!.planTier as PlanTier;
   const until = visibleUntil(tier, now);
   if (until <= q.releasedThrough) return { queryId, matched: 0, exhausted: false };

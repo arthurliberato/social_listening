@@ -1,5 +1,6 @@
 import { getBoss, QUEUES } from "@/lib/jobs/boss";
 import { runBackfill } from "./backfill";
+import { runBillingLifecycle } from "@/lib/billing/lifecycle";
 import { runDueReports } from "./reports";
 import { runReleaseAll } from "./release";
 
@@ -22,6 +23,11 @@ export async function startWorkers() {
   await boss.schedule(QUEUES.reports, "*/5 * * * *");
   await boss.work(QUEUES.reports, async () => {
     await runDueReports();
+  });
+  // Trial reminders, trial end and lock, renewals, payment retries and cancellations taking effect.
+  await boss.schedule(QUEUES.billing, "*/5 * * * *");
+  await boss.work(QUEUES.billing, async () => {
+    await runBillingLifecycle();
   });
 }
 

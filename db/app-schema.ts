@@ -29,8 +29,74 @@ export const accounts = pgTable("accounts", {
   companySizeBand: integer("company_size_band"),
   trialStartAt: ts("trial_start_at"),
   trialEndAt: ts("trial_end_at"),
+  /** trialing | grace | locked | active | past_due | canceled. Locked and canceled accounts are read-only. */
+  billingStatus: text("billing_status").notNull().default("trialing"),
+  currentPeriodStart: ts("current_period_start"),
+  currentPeriodEnd: ts("current_period_end"),
+  /** The customer cancelled; access continues until the period ends. */
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+  canceledAt: ts("canceled_at"),
+  cancelReason: text("cancel_reason"),
+  /** A downgrade (or switch to monthly) that takes effect at the next renewal. */
+  pendingTier: text("pending_tier"),
+  pendingInterval: text("pending_interval"),
+  /** Save-offer discount: percent off the next N renewals. */
+  discountPct: integer("discount_pct").notNull().default(0),
+  discountCyclesLeft: integer("discount_cycles_left").notNull().default(0),
+  /** Set when the save offer is first shown, so it is never offered twice. */
+  saveOfferShownAt: ts("save_offer_shown_at"),
+  dunningAttempts: integer("dunning_attempts").notNull().default(0),
+  nextRetryAt: ts("next_retry_at"),
+  /** Which lifecycle emails have gone out (reminder3d, reminder1d, ended, locked...). */
+  lifecycle: jsonb("lifecycle").notNull().default({}),
   createdAt: ts("created_at").notNull().defaultNow(),
 });
+
+/** Cards on file. Only what a receipt shows is kept; the card number itself is never stored. */
+export const paymentMethods = pgTable(
+  "payment_methods",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    brand: text("brand").notNull(),
+    last4: text("last4").notNull(),
+    expMonth: integer("exp_month").notNull(),
+    expYear: integer("exp_year").notNull(),
+    holderName: text("holder_name").notNull().default(""),
+    /** How the (simulated) provider treats charges: ok | fail_renewal. */
+    behavior: text("behavior").notNull().default("ok"),
+    isDefault: boolean("is_default").notNull().default(true),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("payment_methods_account_idx").on(t.accountId)],
+);
+
+export const invoices = pgTable(
+  "invoices",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    seq: bigserial("seq", { mode: "number" }).notNull(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    /** subscription | upgrade | renewal | retry */
+    kind: text("kind").notNull(),
+    description: text("description").notNull(),
+    amountCents: integer("amount_cents").notNull(),
+    discountCents: integer("discount_cents").notNull().default(0),
+    status: text("status").notNull(), // paid | failed
+    failureReason: text("failure_reason"),
+    periodStart: ts("period_start"),
+    periodEnd: ts("period_end"),
+    paymentMethodId: uuid("payment_method_id").references(() => paymentMethods.id, {
+      onDelete: "set null",
+    }),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("invoices_account_idx").on(t.accountId, t.createdAt)],
+);
 
 /** A brand or client (Amplitude group "workspace"). `slug` is the /w/:slug route segment. */
 export const workspaces = pgTable("workspaces", {

@@ -64,6 +64,13 @@
       "when": 1791055602510,
       "tag": "0008_special_the_fallen",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791062139009,
+      "tag": "0009_early_butterfly",
+      "breakpoints": true
     }
   ]
 }

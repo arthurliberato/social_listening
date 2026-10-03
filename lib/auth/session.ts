@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { db, memberships, users, workspaces } from "@/db/client";
+import { accounts, db, memberships, users, workspaces } from "@/db/client";
 
 export async function requireUser() {
   const session = await auth();
@@ -27,10 +27,19 @@ export async function userWorkspaces(userId: string) {
     .orderBy(workspaces.createdAt);
 }
 
-/** Resolve a /w/:slug route to a workspace the signed-in user belongs to, or redirect. */
+/**
+ * Resolve a /w/:slug route to a workspace the signed-in user belongs to, or redirect.
+ * When the account is locked or cancelled the effective role drops to "viewer", so every server action's
+ * edit-role check refuses writes and every screen hides its edit controls: read-only, enforced in one place.
+ */
 export async function requireWorkspace(slug: string) {
   const user = await requireUser();
   const ws = (await userWorkspaces(user.id)).find((w) => w.slug === slug);
   if (!ws) redirect("/403");
-  return { user, ws };
+  const [acct] = await db
+    .select({ status: accounts.billingStatus })
+    .from(accounts)
+    .where(eq(accounts.id, ws.accountId));
+  const locked = acct?.status === "locked" || acct?.status === "canceled";
+  return { user, ws: { ...ws, role: locked ? "viewer" : ws.role, realRole: ws.role, locked } };
 }

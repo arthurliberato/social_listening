@@ -1,7 +1,18 @@
 // Alert evaluation against a workspace's matched mentions. Called by the release job whenever a
 // query's data advances, so an alert fires within one release cycle of its condition being true.
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import { alertEvents, alertRules, db, memberships, queries, users, workspaces } from "@/db/client";
+import {
+  accounts,
+  alertEvents,
+  alertRules,
+  db,
+  memberships,
+  queries,
+  users,
+  workspaces,
+} from "@/db/client";
+import { isReadOnly } from "@/lib/billing/lifecycle";
+import { limits, type PlanTier } from "@/lib/entitlements/plans";
 import { trackServer } from "@/lib/analytics/server";
 import { APP_URL, sendEmail } from "@/lib/email/service";
 import { EFFECTIVE_SENTIMENT, SPAM_SQL } from "@/lib/mentions/feed";
@@ -12,6 +23,7 @@ import {
   denseBuckets,
   evaluate,
   parseParams,
+  TYPE_INFO,
   type AlertType,
   type Bucket,
   type Observation,
@@ -115,11 +127,17 @@ export async function evaluateAlerts(queryId: string, until: Date): Promise<Fire
     .where(and(eq(alertRules.queryId, queryId), eq(alertRules.status, "active")));
   if (!rules.length) return [];
   const [ws] = await db.select().from(workspaces).where(eq(workspaces.id, q.workspaceId));
+  const [acct] = await db.select().from(accounts).where(eq(accounts.id, ws!.accountId));
+  if (isReadOnly(acct!.billingStatus)) return [];
+  const plan = limits(acct!.planTier as PlanTier);
   const obs = await observe(q.workspaceId, queryId, until);
   const fired: Fired[] = [];
 
   for (const rule of rules) {
     const type = rule.type as AlertType;
+    // A downgrade switches off rule types the plan no longer includes, immediately.
+    const needs = TYPE_INFO[type].feature;
+    if (needs && !plan.features[needs]) continue;
     const parsed = parseParams(type, rule.params);
     if (!parsed.ok) continue;
     const verdict = evaluate(type, parsed.params as Params[typeof type], obs);

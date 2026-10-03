@@ -2,7 +2,16 @@ import { createTransport } from "nodemailer";
 import { db, emails } from "@/db/client";
 
 export type EmailType =
-  "verify_email" | "invite" | "welcome" | "digest" | "alert" | "report" | "receipt" | "dunning";
+  | "verify_email"
+  | "invite"
+  | "welcome"
+  | "digest"
+  | "alert"
+  | "report"
+  | "receipt"
+  | "dunning"
+  | "trial"
+  | "billing";
 
 export const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
 

@@ -1,5 +1,7 @@
 import { and, eq, lte } from "drizzle-orm";
-import { db, reports, reportSchedules } from "@/db/client";
+import { accounts, db, reports, reportSchedules, workspaces } from "@/db/client";
+import { isReadOnly } from "@/lib/billing/lifecycle";
+import { limits, type PlanTier } from "@/lib/entitlements/plans";
 import { deliverReport } from "@/lib/reports/deliver";
 import { nextRun, type Frequency } from "@/lib/reports/schedule";
 import { simNow } from "@/lib/simclock";
@@ -18,6 +20,18 @@ export async function runDueReports(
     .where(and(eq(reportSchedules.active, true), lte(reportSchedules.nextRunAt, now)));
   const out: { scheduleId: string; sent: number }[] = [];
   for (const s of due) {
+    // Read-only accounts, and plans without scheduled reports, don't send (nothing is claimed, so it resumes if they return).
+    const [acct] = await db
+      .select({ status: accounts.billingStatus, tier: accounts.planTier })
+      .from(workspaces)
+      .innerJoin(accounts, eq(accounts.id, workspaces.accountId))
+      .where(eq(workspaces.id, s.workspaceId));
+    if (
+      !acct ||
+      isReadOnly(acct.status) ||
+      !limits(acct.tier as PlanTier).features.scheduledReports
+    )
+      continue;
     const when = {
       frequency: s.frequency as Frequency,
       weekday: s.weekday,
