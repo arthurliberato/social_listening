@@ -35,15 +35,7 @@ async function ready(page: Page, slug: string) {
 }
 async function newFromTemplate(page: Page, slug: string, template: string) {
   await page.goto(`/w/${slug}/dashboards`);
-  await page.waitForLoadState("networkidle");
-  await page
-    .getByTestId(
-      page.url().includes("dashboards") && (await page.getByTestId("dashboards-empty").count())
-        ? "new-dashboard"
-        : "new-dashboard",
-    )
-    .first()
-    .click();
+  await page.getByTestId("new-dashboard").click();
   await page.getByTestId(`template-${template}`).click();
   await page.waitForURL(/dashboards\/[0-9a-f-]{36}\?edit=1/);
 }
@@ -299,14 +291,8 @@ test("HTML widgets drill too: top authors, topics and top mentions open the righ
   const { slug } = await createUser(page, { brand: BRAND });
   await ready(page, slug);
   await newFromTemplate(page, slug, "blank");
-  for (const t of ["top_authors", "topic_cloud", "top_mentions"]) {
-    await page
-      .getByTestId(
-        page.url().includes("edit") && (await page.getByTestId("dash-empty").count())
-          ? "empty-add"
-          : "add-widget",
-      )
-      .click();
+  for (const [i, t] of ["top_authors", "topic_cloud", "top_mentions"].entries()) {
+    await page.getByTestId(i === 0 ? "empty-add" : "add-widget").click();
     await page.getByTestId(`add-${t}`).click();
   }
   await page.getByTestId("save-dashboard").click();

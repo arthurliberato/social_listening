@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { NewDashboardButton } from "@/components/dashboards/NewDashboardButton";
+import { NewDashboardProvider, NewDashboardTrigger } from "@/components/dashboards/NewDashboard";
 import { requireWorkspace } from "@/lib/auth/session";
 import { workspaceAccount } from "@/lib/dashboards/service";
 import { canEdit } from "@/lib/queries";
@@ -37,81 +37,84 @@ export default async function DashboardsPage({ params }: { params: Promise<{ ws:
   const editable = canEdit(ws.role);
 
   return (
-    <div className="mx-auto max-w-[1600px]">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-[30px] font-semibold leading-[38px]">Dashboards</h1>
-        <div className="ml-auto">
-          {editable && <NewDashboardButton ws={slug} features={plan.features} />}
+    <NewDashboardProvider ws={slug} features={plan.features}>
+      <div className="mx-auto max-w-[1600px]">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-[30px] font-semibold leading-[38px]">Dashboards</h1>
+          <div className="ml-auto">{editable && <NewDashboardTrigger />}</div>
         </div>
+        {rows.length === 0 ? (
+          <section
+            className="mt-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-10 text-center"
+            data-testid="dashboards-empty"
+          >
+            <h2 className="text-xl font-semibold">Build your first dashboard</h2>
+            <p className="mx-auto mt-2 max-w-md text-[var(--text-muted)]">
+              Start from a template — brand health, competitor benchmark, campaign tracker, crisis
+              monitor or an executive summary — and make it yours.
+            </p>
+            {editable && (
+              <div className="mt-4">
+                <NewDashboardTrigger label="Choose a template" testId="new-dashboard-empty" />
+              </div>
+            )}
+          </section>
+        ) : (
+          <ul
+            className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            data-testid="dashboard-list"
+          >
+            {rows.map((d) => (
+              <li
+                key={d.id}
+                className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4"
+                data-testid="dashboard-card"
+              >
+                <h2 className="font-semibold">
+                  <Link
+                    href={`/w/${slug}/dashboards/${d.id}`}
+                    className="underline-offset-2 hover:underline"
+                  >
+                    {d.name}
+                  </Link>
+                </h2>
+                {d.description && (
+                  <p className="mt-1 line-clamp-2 text-sm text-[var(--text-muted)]">
+                    {d.description}
+                  </p>
+                )}
+                <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-[var(--text-muted)]">
+                  <div>
+                    <dt className="sr-only">Owner</dt>
+                    <dd>By {d.owner ?? "—"}</dd>
+                  </div>
+                  <div>
+                    <dt className="sr-only">Widgets</dt>
+                    <dd>
+                      {d.widgets} widget{d.widgets === 1 ? "" : "s"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="sr-only">Last viewed</dt>
+                    <dd>
+                      {d.last_viewed
+                        ? `Viewed ${relativeTime(new Date(d.last_viewed).toISOString())}`
+                        : "Not viewed yet"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="sr-only">Viewers</dt>
+                    <dd>
+                      {d.viewers} viewer{d.viewers === 1 ? "" : "s"}
+                      {d.is_public ? " · public link" : ""}
+                    </dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-      {rows.length === 0 ? (
-        <section
-          className="mt-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-10 text-center"
-          data-testid="dashboards-empty"
-        >
-          <h2 className="text-xl font-semibold">Build your first dashboard</h2>
-          <p className="mx-auto mt-2 max-w-md text-[var(--text-muted)]">
-            Start from a template — brand health, competitor benchmark, campaign tracker, crisis
-            monitor or an executive summary — and make it yours.
-          </p>
-          {editable && (
-            <div className="mt-4">
-              <NewDashboardButton ws={slug} features={plan.features} label="Choose a template" />
-            </div>
-          )}
-        </section>
-      ) : (
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="dashboard-list">
-          {rows.map((d) => (
-            <li
-              key={d.id}
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4"
-              data-testid="dashboard-card"
-            >
-              <h2 className="font-semibold">
-                <Link
-                  href={`/w/${slug}/dashboards/${d.id}`}
-                  className="underline-offset-2 hover:underline"
-                >
-                  {d.name}
-                </Link>
-              </h2>
-              {d.description && (
-                <p className="mt-1 line-clamp-2 text-sm text-[var(--text-muted)]">
-                  {d.description}
-                </p>
-              )}
-              <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-[var(--text-muted)]">
-                <div>
-                  <dt className="sr-only">Owner</dt>
-                  <dd>By {d.owner ?? "—"}</dd>
-                </div>
-                <div>
-                  <dt className="sr-only">Widgets</dt>
-                  <dd>
-                    {d.widgets} widget{d.widgets === 1 ? "" : "s"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="sr-only">Last viewed</dt>
-                  <dd>
-                    {d.last_viewed
-                      ? `Viewed ${relativeTime(new Date(d.last_viewed).toISOString())}`
-                      : "Not viewed yet"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="sr-only">Viewers</dt>
-                  <dd>
-                    {d.viewers} viewer{d.viewers === 1 ? "" : "s"}
-                    {d.is_public ? " · public link" : ""}
-                  </dd>
-                </div>
-              </dl>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    </NewDashboardProvider>
   );
 }
