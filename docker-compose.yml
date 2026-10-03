@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    ports: ["3000:3000"]
+    environment:
+      DATABASE_URL: postgres://ripplewise:ripplewise@postgres:5432/ripplewise
+      SMTP_URL: smtp://mailpit:1025
+    depends_on: [postgres, mailpit]
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ripplewise
+      POSTGRES_PASSWORD: ripplewise
+      POSTGRES_DB: ripplewise
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+  mailpit:
+    image: axllent/mailpit
+    ports: ["8025:8025", "1025:1025"]
+volumes:
+  pgdata:
