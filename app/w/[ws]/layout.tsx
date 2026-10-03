@@ -6,6 +6,9 @@ import { Sidebar } from "@/components/shell/Sidebar";
 import { Topbar } from "@/components/shell/Topbar";
 import { requireWorkspace } from "@/lib/auth/session";
 import { getMentionUsage } from "@/lib/usage";
+import { desc, eq, and, count } from "drizzle-orm";
+import { alertEvents, alertRules, db } from "@/db/client";
+import { simNow } from "@/lib/simclock";
 
 export default async function WorkspaceLayout({
   children,
@@ -19,6 +22,25 @@ export default async function WorkspaceLayout({
   if (!user.emailVerifiedAt) redirect("/verify");
   if (!user.onboardingCompletedAt) redirect("/onboarding");
   const usage = await getMentionUsage(ws.accountId);
+  const [[unread], recent] = await Promise.all([
+    db
+      .select({ n: count() })
+      .from(alertEvents)
+      .where(and(eq(alertEvents.workspaceId, ws.id), eq(alertEvents.status, "new"))),
+    db
+      .select({
+        id: alertEvents.id,
+        title: alertRules.name,
+        summary: alertEvents.summary,
+        firedAt: alertEvents.firedAt,
+        status: alertEvents.status,
+      })
+      .from(alertEvents)
+      .innerJoin(alertRules, eq(alertRules.id, alertEvents.ruleId))
+      .where(eq(alertEvents.workspaceId, ws.id))
+      .orderBy(desc(alertEvents.firedAt))
+      .limit(5),
+  ]);
   return (
     <ToastProvider>
       <div className="flex h-screen flex-col">
@@ -30,7 +52,15 @@ export default async function WorkspaceLayout({
         </a>
         <Identity userId={user.id} accountId={ws.accountId} workspaceId={ws.id} />
         <GlobalShortcuts ws={slug} />
-        <Topbar ws={ws.name} userName={user.name} usage={usage} />
+        <Topbar
+          ws={ws.name}
+          slug={slug}
+          userName={user.name}
+          usage={usage}
+          unreadAlerts={unread?.n ?? 0}
+          recentAlerts={recent.map((r) => ({ ...r, firedAt: r.firedAt.toISOString() }))}
+          now={simNow().getTime()}
+        />
         {usage.pct >= 80 && (
           <p
             role="status"

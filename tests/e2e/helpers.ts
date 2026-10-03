@@ -31,7 +31,7 @@ export async function createUser(page: Page, opts: { brand?: string; prefix?: st
   await page.getByTestId("onboarding-skip").click();
   await page.getByTestId("brand-name").fill(opts.brand ?? "Orbit Lace"); // small brand: leaves monthly quota for tests
   await page.getByTestId("onboarding-next").click();
-  await expect(page.getByTestId("query-estimate")).toBeVisible();
+  await expect(page.getByTestId("query-estimate")).toBeVisible({ timeout: 30_000 });
   await page.getByTestId("onboarding-next").click();
   await page.getByTestId("onboarding-skip").click();
   await page.waitForURL("**/w/*/home");

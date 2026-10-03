@@ -1,6 +1,7 @@
 "use client";
 
-import { Bell, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
+import { NotificationsMenu, type NotificationItem } from "./NotificationsMenu";
 import { ThemeToggle } from "./ThemeToggle";
 import { QuotaMeter } from "./QuotaMeter";
 import { UserMenu } from "./UserMenu";
@@ -10,10 +11,18 @@ const iconButton =
 
 export function Topbar({
   ws,
+  slug,
   userName,
   usage,
+  unreadAlerts,
+  recentAlerts,
+  now,
 }: {
   ws: string;
+  slug: string;
+  unreadAlerts: number;
+  recentAlerts: NotificationItem[];
+  now: number;
   userName: string;
   usage: { used: number; limit: number; pct: number };
 }) {
@@ -38,9 +47,7 @@ export function Topbar({
         >
           <HelpCircle size={16} aria-hidden />
         </button>
-        <button type="button" aria-label="Notifications" className={iconButton}>
-          <Bell size={16} aria-hidden />
-        </button>
+        <NotificationsMenu ws={slug} unread={unreadAlerts} items={recentAlerts} now={now} />
         <ThemeToggle />
         <UserMenu name={userName} />
       </div>

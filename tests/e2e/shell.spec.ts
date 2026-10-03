@@ -1,12 +1,16 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
+import { pool } from "./helpers";
 
 // Read lazily: the setup project writes this file after specs are collected.
 const meta = () =>
   JSON.parse(readFileSync("tests/.auth/meta.json", "utf8")) as {
     slug: string;
     dashboardId: string;
+    eventId: string;
+    crisisId: string;
+    email: string;
   };
 const slugOf = () => meta().slug;
 
@@ -156,6 +160,74 @@ for (const theme of ["light", "dark"] as const) {
           1,
         ),
       ).toEqual([]);
+    });
+  }
+}
+
+// M6 screens: alerts, builder, a fired alert, the bell, and crisis rooms (locked on trial, open on Growth).
+const scan = async (page: import("@playwright/test").Page) => {
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
+    .analyze();
+  const serious = violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(
+    serious,
+    JSON.stringify(
+      serious.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.html.slice(0, 140)) })),
+      null,
+      1,
+    ),
+  ).toEqual([]);
+};
+for (const theme of ["light", "dark"] as const) {
+  for (const screen of [
+    "alerts",
+    "builder",
+    "event",
+    "bell",
+    "crisis-locked",
+    "crisis-list",
+    "crisis-room",
+  ] as const) {
+    test(`alerts ${screen} has no serious a11y violations (${theme})`, async ({ page }) => {
+      test.setTimeout(90_000);
+      await page.addInitScript((t) => localStorage.setItem("rw-theme", t), theme);
+      const { slug, eventId, crisisId, email } = meta();
+      const growth = screen === "crisis-list" || screen === "crisis-room";
+      const setPlan = (plan: string) =>
+        pool.query(
+          `UPDATE accounts SET plan_tier = $2 WHERE id IN (SELECT m.account_id FROM memberships m JOIN users u ON u.id = m.user_id WHERE lower(u.email) = $1)`,
+          [email, plan],
+        );
+      if (growth) await setPlan("growth");
+      try {
+        if (screen === "alerts") {
+          await page.goto(`/w/${slug}/alerts`);
+          await expect(page.getByTestId("rule-row").first()).toBeVisible();
+        } else if (screen === "builder") {
+          await page.goto(`/w/${slug}/alerts/new`);
+          await expect(page.getByTestId("backtest-count")).toBeVisible({ timeout: 30_000 });
+        } else if (screen === "event") {
+          await page.goto(`/w/${slug}/alerts/events/${eventId}`);
+          await expect(page.getByTestId("hourly-chart")).toBeVisible({ timeout: 30_000 });
+        } else if (screen === "bell") {
+          await page.goto(`/w/${slug}/home`);
+          await page.getByTestId("notifications").click();
+          await expect(page.getByTestId("notifications-all")).toBeVisible();
+        } else if (screen === "crisis-locked") {
+          await page.goto(`/w/${slug}/crisis`);
+          await expect(page.getByTestId("crisis-locked")).toBeVisible();
+        } else if (screen === "crisis-list") {
+          await page.goto(`/w/${slug}/crisis`);
+          await expect(page.getByTestId("crisis-row").first()).toBeVisible();
+        } else {
+          await page.goto(`/w/${slug}/crisis/${crisisId}`);
+          await expect(page.getByTestId("room-kpis")).toBeVisible({ timeout: 30_000 });
+        }
+        await scan(page);
+      } finally {
+        if (growth) await setPlan("trial");
+      }
     });
   }
 }

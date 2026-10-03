@@ -18,6 +18,7 @@ export function Menu({
   buttonClassName = "",
   disabled,
   align = "left",
+  caret = true,
 }: {
   label: ReactNode;
   items: MenuItem[];
@@ -25,6 +26,8 @@ export function Menu({
   buttonClassName?: string;
   disabled?: boolean;
   align?: "left" | "right";
+  /** Show the ▾ affordance (off for icon-only triggers). */
+  caret?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const id = useId();
@@ -73,7 +76,7 @@ export function Menu({
         className={`inline-flex min-h-8 items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-sm hover:bg-[var(--surface-2)] disabled:opacity-100 disabled:text-[var(--text-muted)] ${buttonClassName}`}
       >
         {label}
-        <span aria-hidden>▾</span>
+        {caret && <span aria-hidden>▾</span>}
       </button>
       {open && (
         <ul
