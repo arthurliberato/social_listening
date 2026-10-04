@@ -71,6 +71,13 @@
       "when": 1791062139009,
       "tag": "0009_early_butterfly",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791079449180,
+      "tag": "0010_daily_lady_mastermind",
+      "breakpoints": true
     }
   ]
 }

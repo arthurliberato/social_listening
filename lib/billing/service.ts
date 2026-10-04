@@ -12,13 +12,12 @@ import {
 } from "@/db/client";
 import { trackServer } from "@/lib/analytics/server";
 import { sendEmail } from "@/lib/email/service";
-import { limits, PLANS, type PlanTier } from "@/lib/entitlements/plans";
+import { PLANS, type PlanTier } from "@/lib/entitlements/plans";
 import { simNow } from "@/lib/simclock";
 import { checkCard, type CardInput } from "./cards";
-import { canceledEmail, paymentFailedEmail, receiptEmail } from "./emails";
+import { canceledEmail, receiptEmail } from "./emails";
 import {
   addPeriod,
-  applyDiscount,
   daysBetween,
   isPaidTier,
   isUpgrade,
@@ -188,7 +187,7 @@ export async function subscribe(
   const tier = o.tier as PlanTier;
   const price = periodPriceCents(tier, o.interval)!;
 
-  let method = await defaultMethod(o.accountId);
+  const method = await defaultMethod(o.accountId);
   let methodId: string | null = method?.id ?? null;
   let behavior = (method?.behavior ?? "ok") as "ok" | "fail_renewal";
   let newCard = false;

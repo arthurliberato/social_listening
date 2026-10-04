@@ -1,15 +1,8 @@
 // One snapshot of everything a plan limits, for the Usage page and for checking a downgrade fits.
-import { and, count, eq, gt, isNull } from "drizzle-orm";
-import {
-  alertRules,
-  db,
-  invitations,
-  memberships,
-  queries,
-  usageCounters,
-  workspaces,
-} from "@/db/client";
+import { and, count, eq, isNull } from "drizzle-orm";
+import { alertRules, db, queries, usageCounters, workspaces } from "@/db/client";
 import { limits, type PlanTier } from "@/lib/entitlements/plans";
+import { seatUsage } from "@/lib/team/seats";
 import { periodOf } from "@/lib/usage";
 
 export interface Meter {
@@ -54,20 +47,7 @@ export async function accountUsage(accountId: string, tier: PlanTier): Promise<M
     .from(alertRules)
     .innerJoin(workspaces, eq(workspaces.id, alertRules.workspaceId))
     .where(eq(workspaces.accountId, accountId));
-  const [m] = await db
-    .select({ n: count() })
-    .from(memberships)
-    .where(eq(memberships.accountId, accountId));
-  const [inv] = await db
-    .select({ n: count() })
-    .from(invitations)
-    .where(
-      and(
-        eq(invitations.accountId, accountId),
-        isNull(invitations.acceptedAt),
-        gt(invitations.expiresAt, new Date()),
-      ),
-    );
+  const seats = await seatUsage(accountId);
   const [w] = await db
     .select({ n: count() })
     .from(workspaces)
@@ -105,9 +85,9 @@ export async function accountUsage(accountId: string, tier: PlanTier): Promise<M
     meter(
       "seats",
       "Seats",
-      (m?.n ?? 0) + (inv?.n ?? 0),
+      seats.used,
       p.seats,
-      "People in your workspaces, plus invitations that haven't been accepted yet.",
+      "People who work in your workspaces (counted once, even in several) plus invitations not yet accepted. Client viewers are free.",
     ),
     meter(
       "workspaces",

@@ -1,15 +1,13 @@
 "use server";
 
-import { and, count, eq, gt, isNull } from "drizzle-orm";
-import { randomBytes } from "node:crypto";
+import { count, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { accounts, db, invitations, memberships, queries, users } from "@/db/client";
+import { accounts, db, queries, users } from "@/db/client";
 import { trackServer } from "@/lib/analytics/server";
 import { requireUser, userWorkspaces } from "@/lib/auth/session";
-import { hashToken } from "@/lib/auth/tokens";
-import { inviteEmail, sendEmail } from "@/lib/email/service";
-import { PLANS, can, type PlanTier } from "@/lib/entitlements/plans";
+import { can, type PlanTier } from "@/lib/entitlements/plans";
+import { inviteMembers } from "@/lib/team/invites";
 import { enqueueBackfill } from "@/lib/jobs/boss";
 import { brandQuery } from "@/lib/query/generate";
 import { estimateMentions } from "@/lib/query/estimate";
@@ -129,70 +127,20 @@ export async function saveFirstQuery(): Promise<StepResult & { queryId?: string 
 export async function sendInvites(rawEmails: string[]): Promise<StepResult & { sent?: number }> {
   const user = await requireUser();
   const ws = (await userWorkspaces(user.id))[0]!;
-  const acct = (await db.select().from(accounts).where(eq(accounts.id, ws.accountId)).limit(1))[0]!;
-  const list = [...new Set(rawEmails.map((e) => e.trim().toLowerCase()).filter(Boolean))];
-  if (!list.every((e) => z.string().email().safeParse(e).success))
-    return { ok: false, error: "One of those email addresses looks invalid." };
-
-  const [{ members } = { members: 0 }] = await db
-    .select({ members: count() })
-    .from(memberships)
-    .where(eq(memberships.accountId, ws.accountId));
-  // Pending invitations hold a seat, so repeated calls can't exceed the plan's limit.
-  const pending = await db
-    .select({ email: invitations.email })
-    .from(invitations)
-    .where(
-      and(
-        eq(invitations.accountId, ws.accountId),
-        isNull(invitations.acceptedAt),
-        gt(invitations.expiresAt, new Date()),
-      ),
-    );
-  const alreadyInvited = new Set(pending.map((p) => p.email.toLowerCase()));
-  let used = members + pending.length;
-  let sent = 0;
-  for (const email of list) {
-    if (alreadyInvited.has(email)) continue;
-    const gate = can(acct.planTier as PlanTier, "invite_member", {
-      activeQueries: 0,
-      seats: used,
-      workspaces: 0,
-      alerts: 0,
-    });
-    if (!gate.ok) {
-      await trackServer(
-        "Paywall Viewed",
-        { userId: user.id, workspaceId: ws.id },
-        { paywall_trigger: "seat_limit", required_plan: gate.upgradeTo },
-      );
-      return {
-        ok: false,
-        error: `${gate.reason} Upgrade to ${PLANS[gate.upgradeTo].label} to add more teammates.`,
-        sent,
-      };
-    }
-    const raw = randomBytes(24).toString("base64url");
-    await db.insert(invitations).values({
-      workspaceId: ws.id,
-      accountId: ws.accountId,
-      email,
-      role: "editor",
-      tokenHash: hashToken(raw),
-      invitedBy: user.id,
-      source: "onboarding",
-      expiresAt: new Date(Date.now() + 7 * 86_400_000),
-    });
-    const m = inviteEmail({ inviter: user.name, workspace: ws.name, token: raw });
-    await sendEmail({ to: email, type: "invite", subject: m.subject, text: m.text });
-    await trackServer(
-      "Teammate Invited",
-      { userId: user.id, workspaceId: ws.id },
-      { invited_role: "editor", invite_source: "onboarding" },
-    );
-    used++;
-    sent++;
-  }
+  const { results, upgradeTo } = await inviteMembers({
+    workspaceId: ws.id,
+    actor: { id: user.id, name: user.name, role: ws.role },
+    emails: rawEmails,
+    role: "editor",
+    source: "onboarding",
+  });
+  const sent = results.filter((r) => r.status === "sent").length;
+  const bad = results.find((r) => r.status === "invalid");
+  if (bad) return { ok: false, error: "One of those email addresses looks invalid.", sent };
+  const blocked = results.find((r) => r.status === "seat_limit");
+  if (blocked)
+    return { ok: false, error: blocked.reason ?? "You've reached your seat limit.", sent };
+  void upgradeTo;
   await saveData(user.id, {}, 5);
   if (sent)
     await trackServer(

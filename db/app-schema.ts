@@ -636,3 +636,39 @@ export const exportsLog = pgTable(
   },
   (t) => [index("exports_log_workspace_idx").on(t.workspaceId, t.createdAt)],
 );
+
+/** Who did what, when. Written for team, workspace, billing, sharing and branding changes. */
+export const auditLog = pgTable(
+  "audit_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    seq: bigserial("seq", { mode: "number" }).notNull(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "set null" }),
+    /** Null for system actions (the billing clock, an expired invite). */
+    actorUserId: uuid("actor_user_id").references(() => users.id, { onDelete: "set null" }),
+    /** Dotted verb, e.g. member.invited, member.role_changed, plan.upgraded. */
+    action: text("action").notNull(),
+    targetType: text("target_type"),
+    targetId: text("target_id"),
+    /** Human-readable context (names and roles, never secrets). */
+    meta: jsonb("meta").notNull().default({}),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("audit_log_account_idx").on(t.accountId, t.seq)],
+);
+
+/** White-label settings for what clients see (share pages, report PDFs, the client viewer's top bar). */
+export const workspaceBranding = pgTable("workspace_branding", {
+  workspaceId: uuid("workspace_id")
+    .primaryKey()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
+  displayName: text("display_name").notNull().default(""),
+  /** Hex colour, e.g. #1f6feb. Validated for contrast against white text. */
+  accent: text("accent").notNull().default(""),
+  footerText: text("footer_text").notNull().default(""),
+  hidePoweredBy: boolean("hide_powered_by").notNull().default(false),
+  updatedAt: ts("updated_at").notNull().defaultNow(),
+});

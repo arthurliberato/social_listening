@@ -62,10 +62,21 @@ export function verifyEmail(token: string) {
   };
 }
 
-export function inviteEmail(o: { inviter: string; workspace: string; token: string }) {
-  const link = `${APP_URL}/signup?invite=${o.token}`;
+export function inviteEmail(o: {
+  inviter: string;
+  workspace: string;
+  token: string;
+  role?: string;
+}) {
+  const link = `${APP_URL}/invite/${o.token}`;
+  const as =
+    o.role === "client_viewer"
+      ? " as a client (you'll see dashboards and reports)"
+      : o.role
+        ? ` as ${/^[aeiou]/i.test(o.role) ? "an" : "a"} ${o.role}`
+        : "";
   return {
     subject: `${o.inviter} invited you to ${o.workspace} on Ripplewise`,
-    text: `${o.inviter} invited you to join the "${o.workspace}" workspace.\n\nAccept the invitation:\n${link}\n\nThis invitation expires in 7 days.`,
+    text: `${o.inviter} invited you to join the "${o.workspace}" workspace${as}.\n\nAccept the invitation (sign in, or create your account, from this link):\n${link}\n\nThis invitation expires in 7 days. If you weren't expecting it, you can ignore this email.`,
   };
 }

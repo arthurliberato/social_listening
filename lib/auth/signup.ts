@@ -2,6 +2,7 @@ import { and, eq, gt, isNull, sql } from "drizzle-orm";
 import { accounts, db, invitations, memberships, users, workspaces } from "@/db/client";
 import { trackServer } from "@/lib/analytics/server";
 import { hashToken, issueToken } from "@/lib/auth/tokens";
+import { afterJoin } from "@/lib/team/invites";
 import { hashPassword } from "@/lib/auth/password";
 import { sendEmail, verifyEmail } from "@/lib/email/service";
 import { TRIAL_DAYS } from "@/lib/entitlements/plans";
@@ -158,12 +159,15 @@ export async function createAccountAndUser(i: SignupInput): Promise<SignupResult
     },
   );
   if (invite) {
-    const days = Math.max(0, Math.round((now.getTime() - invite.createdAt.getTime()) / 86_400_000));
-    await trackServer(
-      "Invite Accepted",
-      { userId: out.user.id, accountId: out.accountId, workspaceId: out.workspaceId },
-      { days_to_accept: days },
-    );
+    await afterJoin({
+      accountId: out.accountId,
+      workspaceId: out.workspaceId,
+      userId: out.user.id,
+      role: invite.role,
+      invitedAt: invite.createdAt,
+      newMember: true,
+      now,
+    });
   } else {
     await sendVerification(out.user.id, email);
   }

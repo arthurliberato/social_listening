@@ -4,9 +4,6 @@ import { z } from "zod";
 import { accounts, db, queries, workspaces } from "@/db/client";
 import { limits, type Entitlements, type PlanTier } from "@/lib/entitlements/plans";
 import {
-  BREAKDOWNS,
-  KPI_METRICS,
-  VOLUME_METRICS,
   WIDGETS,
   WIDGET_TYPES,
   isWidgetType,
