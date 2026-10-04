@@ -5,7 +5,7 @@ A social listening platform made up of synthetic autonomous agents users and men
 
 Ripplewise is a fictitious B2B social listening product: it watches public conversation about a brand, tells the team when something is happening, and helps them explain it. It is built as a real product (onboarding, plans and limits, roles, billing states, alerts, reports, an AI assistant, an analytics plan) rather than a demo, and every external service in it is simulated and labelled as such. All data is synthetic.
 
-Start with [docs/product.md](docs/product.md) for the product thinking: the problem, the decisions behind it, how it measures itself, and what is unfinished.
+Start with [docs/product.md](docs/product.md) for the product thinking: the problem, the decisions behind it, how it measures itself, and what is unfinished. To see it work, follow the [20-minute guided tour](docs/tour.md).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/07-crisis-room-dark.jpg">

@@ -2,7 +2,7 @@
 
 Ripplewise is a fictitious social listening product for brand, communications and agency teams. It watches public conversation about a brand, tells the team when something is happening, and helps them explain it to the people who need to know. All data is synthetic (4M generated mentions across 40 fictitious brands); nothing is scraped.
 
-This page is the product thinking behind the build: who it is for, the decisions that shape it, how it measures itself, and what is honestly unfinished. Screens are in [`docs/screenshots`](screenshots) (light and dark).
+This page is the product thinking behind the build: who it is for, the decisions that shape it, how it measures itself, and what is honestly unfinished. Screens are in [`docs/screenshots`](screenshots) (light and dark), and [`docs/tour.md`](tour.md) is a 20-minute walkthrough of the running product.
 
 ## The job
 
