@@ -15,6 +15,7 @@ import {
   type Params,
 } from "@/lib/alerts/rules";
 import { alertCount, backtestRule } from "@/lib/alerts/service";
+import { itemCompleted } from "@/lib/checklist";
 import { can, PLANS, planUnlocking, type PlanTier } from "@/lib/entitlements/plans";
 import { accountPlan, canEdit } from "@/lib/queries";
 
@@ -122,6 +123,7 @@ export async function createAlert(
       createdBy: user.id,
     })
     .returning({ id: alertRules.id });
+  await itemCompleted({ userId: user.id, workspaceId: ws.id }, "set_alert");
   revalidatePath(`/w/${slug}/alerts`);
   return { ok: true, id: row!.id };
 }

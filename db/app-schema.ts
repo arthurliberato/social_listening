@@ -792,3 +792,11 @@ export const authorWatchlist = pgTable(
   },
   (t) => [primaryKey({ columns: [t.workspaceId, t.authorId] })],
 );
+
+/** Failed password logins per (hashed) email, for throttling guessing. Unknown emails are tracked too, so locking never reveals who has an account. */
+export const loginThrottle = pgTable("login_throttle", {
+  keyHash: text("key_hash").primaryKey(),
+  failures: integer("failures").notNull().default(0),
+  windowStart: ts("window_start").notNull(),
+  lockedUntil: ts("locked_until"),
+});

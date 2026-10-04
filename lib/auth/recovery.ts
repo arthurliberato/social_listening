@@ -3,6 +3,7 @@
 import { eq, sql } from "drizzle-orm";
 import { db, users } from "@/db/client";
 import { hashPassword } from "@/lib/auth/password";
+import { clearFailures } from "@/lib/auth/throttle";
 import { consumeToken, issueToken, recentTokenCount, revokeTokens } from "@/lib/auth/tokens";
 import { APP_URL, sendEmail } from "@/lib/email/service";
 
@@ -63,6 +64,7 @@ export async function resetPassword(token: string, password: string): Promise<Re
     .where(eq(users.id, userId))
     .returning();
   await revokeTokens(userId, ["reset_password", "magic_link"]);
+  await clearFailures(u!.email);
   await sendEmail({
     toUserId: userId,
     to: u!.email,

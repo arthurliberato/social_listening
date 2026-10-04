@@ -6,6 +6,7 @@ import authConfig from "./auth.config";
 import { db, users } from "./db/client";
 import { trackServer } from "./lib/analytics/server";
 import { verifyPassword } from "./lib/auth/password";
+import { clearFailures, lockedUntil, recordFailure } from "./lib/auth/throttle";
 import { consumeToken } from "./lib/auth/tokens";
 
 declare module "@auth/core/jwt" {
@@ -37,6 +38,7 @@ const tokenProvider = (id: string, type: string, method: string) =>
       }
       const [user] = await db.select().from(users).where(eq(users.id, userId));
       if (!user) return null;
+      await clearFailures(user.email);
       await db
         .update(users)
         .set({
@@ -82,6 +84,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const parsed = Creds.safeParse(raw);
         if (!parsed.success) return null;
         const email = parsed.data.email.toLowerCase();
+        // Enforced here, not just in the form, so posting straight to the auth endpoint is throttled too.
+        if (await lockedUntil(email)) {
+          await trackServer("Login Failed", {}, { error_type: "throttled" });
+          return null;
+        }
         const user = (
           await db
             .select()
@@ -90,13 +97,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             .limit(1)
         )[0];
         if (!user) {
+          await recordFailure(email);
           await trackServer("Login Failed", {}, { error_type: "unknown_email" });
           return null;
         }
         if (!(await verifyPassword(user.passwordHash, parsed.data.password))) {
+          await recordFailure(email);
           await trackServer("Login Failed", { userId: user.id }, { error_type: "bad_password" });
           return null;
         }
+        await clearFailures(email);
         await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
         await trackServer("Login Completed", { userId: user.id }, { method: "password" });
         return { id: user.id, name: user.name };

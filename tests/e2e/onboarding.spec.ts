@@ -115,7 +115,9 @@ test("bad credentials show an error and record Login Failed; no account enumerat
   page,
 }) => {
   await page.goto("/login");
-  await page.getByTestId("login-email").fill("nobody@example.test");
+  await page
+    .getByTestId("login-email")
+    .fill(`nobody-${Date.now()}-${Math.random().toString(36).slice(2, 6)}@example.test`);
   await page.getByTestId("login-password").fill("wrong-password-123");
   await page.getByTestId("login-submit").click();
   await expect(page.getByTestId("login-error")).toContainText("don't match");

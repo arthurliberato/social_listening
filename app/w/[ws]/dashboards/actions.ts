@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { dashboards, db, widgets } from "@/db/client";
 import { audit } from "@/lib/audit";
+import { itemCompleted } from "@/lib/checklist";
 import { trackServer } from "@/lib/analytics/server";
 import { requireWorkspace } from "@/lib/auth/session";
 import { WIDGETS, widgetAllowed, type WidgetType } from "@/lib/dashboards/catalog";
@@ -74,6 +75,7 @@ export async function createDashboard(
     { userId: user.id, workspaceId: ws.id },
     { template_id: tpl?.id ?? "blank" },
   );
+  await itemCompleted({ userId: user.id, workspaceId: ws.id }, "build_dashboard");
   revalidatePath(`/w/${slug}/dashboards`);
   return { ok: true, id, skipped };
 }

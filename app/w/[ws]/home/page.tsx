@@ -1,6 +1,7 @@
-import { and, count, eq, like } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import Link from "next/link";
-import { accounts, db, invitations, memberships, queries } from "@/db/client";
+import { accounts, db, queries } from "@/db/client";
+import { checklist } from "@/lib/checklist";
 import { TrackHomeView } from "@/components/home/TrackView";
 import { HomeOverview } from "@/components/dashboards/HomeOverview";
 import { requireWorkspace } from "@/lib/auth/session";
@@ -21,22 +22,7 @@ export default async function Home({ params }: { params: Promise<{ ws: string }>
       ? await showSalesCard(ws.accountId, simNow())
       : false;
   const [acct] = await db.select().from(accounts).where(eq(accounts.id, ws.accountId));
-  const [{ nq } = { nq: 0 }] = await db
-    .select({ nq: count() })
-    .from(queries)
-    .where(eq(queries.workspaceId, ws.id));
-  const [{ nx } = { nx: 0 }] = await db
-    .select({ nx: count() })
-    .from(queries)
-    .where(and(eq(queries.workspaceId, ws.id), like(queries.booleanText, "% NOT %")));
-  const [{ ni } = { ni: 0 }] = await db
-    .select({ ni: count() })
-    .from(invitations)
-    .where(eq(invitations.workspaceId, ws.id));
-  const [{ nm } = { nm: 0 }] = await db
-    .select({ nm: count() })
-    .from(memberships)
-    .where(eq(memberships.workspaceId, ws.id));
+  const { items, doneCount } = await checklist(ws.id);
   const firstQuery = (
     await db.select().from(queries).where(eq(queries.workspaceId, ws.id)).limit(1)
   )[0];
@@ -44,14 +30,6 @@ export default async function Home({ params }: { params: Promise<{ ws: string }>
     ? await estimateMentions([firstQuery.name.replace(/ \(brand\)$/, "")])
     : null;
 
-  const items = [
-    { id: "create_query", label: "Create your first query", done: nq > 0 },
-    { id: "refine_query", label: "Refine it with an exclusion", done: nx > 0 },
-    { id: "set_alert", label: "Set an alert", done: false },
-    { id: "build_dashboard", label: "Build a dashboard", done: false },
-    { id: "invite_teammate", label: "Invite a teammate", done: ni > 0 || nm > 1 },
-  ];
-  const doneCount = items.filter((i) => i.done).length;
   const daysLeft = acct?.trialEndAt
     ? Math.max(0, Math.ceil((acct.trialEndAt.getTime() - simNow().getTime()) / 86_400_000))
     : null;

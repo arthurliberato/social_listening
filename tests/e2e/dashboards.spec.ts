@@ -51,6 +51,7 @@ const cellOf = (page: Page, title: string) =>
 test("template → dashboard: widgets load independently, charts render, tables mirror them, saves persist", async ({
   page,
 }) => {
+  test.setTimeout(120_000); // the first visit compiles the editor and chart bundle on a cold dev server
   const { email, slug } = await createUser(page, { brand: BRAND });
   await ready(page, slug);
   await page.goto(`/w/${slug}/dashboards`);
@@ -450,4 +451,30 @@ test("Home shows the same KPI tiles and volume chart", async ({ page }) => {
   await expect(overview.getByTestId("chart-volume")).toHaveAttribute("data-ready", "true", {
     timeout: 20_000,
   });
+});
+
+test("building a dashboard ticks the Home checklist, and says so only the first time", async ({
+  page,
+}) => {
+  const { email, slug } = await createUser(page, { brand: BRAND });
+  await page.goto(`/w/${slug}/home`);
+  await expect(page.locator('[data-checklist-item="build_dashboard"]')).toHaveAttribute(
+    "data-done",
+    "false",
+  );
+  await newFromTemplate(page, slug, "brand_health");
+  await newFromTemplate(page, slug, "executive_summary");
+  await page.goto(`/w/${slug}/home`);
+  await expect(page.locator('[data-checklist-item="build_dashboard"]')).toHaveAttribute(
+    "data-done",
+    "true",
+  );
+  await expect
+    .poll(
+      async () =>
+        (await events(email, "Checklist Item Completed")).filter(
+          (e) => e.props.item_id === "build_dashboard",
+        ).length,
+    )
+    .toBe(1);
 });

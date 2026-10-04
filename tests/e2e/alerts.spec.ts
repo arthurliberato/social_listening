@@ -103,6 +103,21 @@ test("empty state → build an alert with a live backtest → it appears in the 
     channel: "in_app+email",
   });
   expect(typeof created.props.backtest_fire_count).toBe("number");
+
+  // The Home checklist notices, and says so once.
+  await page.goto(`/w/${slug}/home`);
+  await expect(page.locator('[data-checklist-item="set_alert"]')).toHaveAttribute(
+    "data-done",
+    "true",
+  );
+  await expect
+    .poll(
+      async () =>
+        (await events(email, "Checklist Item Completed")).filter(
+          (e) => e.props.item_id === "set_alert",
+        ).length,
+    )
+    .toBe(1);
 });
 
 test("a fired alert: bell → alert page → acknowledge; crisis rooms need an upgrade", async ({
