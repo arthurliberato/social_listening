@@ -267,3 +267,155 @@ for (const theme of ["light", "dark"] as const) {
     });
   }
 }
+
+// M8 screens: pricing, plans, usage, billing (trial and paid), checkout, cancel, and the banner states.
+type Page = import("@playwright/test").Page;
+async function withAccount(
+  email: string,
+  state: "paid" | "past_due" | "locked",
+  fn: () => Promise<void>,
+) {
+  const acct = (
+    await pool.query(
+      `SELECT a.id, a.plan_tier, a.billing_status FROM accounts a JOIN memberships m ON m.account_id = a.id JOIN users u ON u.id = m.user_id WHERE lower(u.email) = $1`,
+      [email],
+    )
+  ).rows[0];
+  const set = (sql: string, args: unknown[] = []) => pool.query(sql, [acct.id, ...args]);
+  try {
+    if (state === "paid" || state === "past_due") {
+      await set(
+        `UPDATE accounts SET plan_tier = 'growth', billing_status = $2, current_period_start = now() - interval '5 days', current_period_end = now() + interval '25 days', next_retry_at = now() + interval '1 day' WHERE id = $1`,
+        [state === "paid" ? "active" : "past_due"],
+      );
+      await set(
+        `INSERT INTO payment_methods (account_id, brand, last4, exp_month, exp_year, holder_name) VALUES ($1,'Visa','4242',12,2030,'Pat Owner')`,
+      );
+      await set(
+        `INSERT INTO invoices (account_id, kind, description, amount_cents, status, failure_reason, period_start, period_end) VALUES ($1,'subscription','Growth plan, monthly',24900,'paid',NULL, now() - interval '5 days', now() + interval '25 days'), ($1,'renewal','Growth plan, monthly',24900,$2,$3, now() - interval '35 days', now() - interval '5 days')`,
+        [
+          state === "paid" ? "paid" : "failed",
+          state === "paid" ? null : "Your card was declined (insufficient funds).",
+        ],
+      );
+    } else {
+      await set(`UPDATE accounts SET billing_status = 'locked' WHERE id = $1`);
+    }
+    await fn();
+  } finally {
+    await set(`DELETE FROM invoices WHERE account_id = $1`);
+    await set(`DELETE FROM payment_methods WHERE account_id = $1`);
+    await set(
+      `UPDATE accounts SET plan_tier = $2, billing_status = $3, current_period_start = NULL, current_period_end = NULL, next_retry_at = NULL, cancel_at_period_end = false, save_offer_shown_at = NULL WHERE id = $1`,
+      [acct.plan_tier, acct.billing_status],
+    );
+  }
+}
+const cases: {
+  name: string;
+  state?: "paid" | "past_due" | "locked";
+  run: (p: Page, slug: string) => Promise<void>;
+}[] = [
+  {
+    name: "pricing",
+    run: async (p) => {
+      await p.goto("/pricing");
+      await expect(p.getByTestId("plan-growth")).toBeVisible();
+    },
+  },
+  {
+    name: "upgrade",
+    run: async (p) => {
+      await p.goto("/upgrade?from=crisis_room&plan=growth");
+      await expect(p.getByTestId("upgrade-why")).toBeVisible();
+    },
+  },
+  {
+    name: "usage",
+    run: async (p) => {
+      await p.goto("/settings/usage");
+      await expect(p.getByTestId("meters")).toBeVisible();
+    },
+  },
+  {
+    name: "billing trial",
+    run: async (p) => {
+      await p.goto("/settings/billing");
+      await expect(p.getByTestId("plan-card")).toBeVisible();
+    },
+  },
+  {
+    name: "checkout",
+    run: async (p) => {
+      await p.goto("/settings/billing/checkout?plan=growth&interval=monthly");
+      await expect(p.getByTestId("card-form")).toBeVisible();
+      await p.getByTestId("card-submit").click();
+      await expect(p.getByTestId("card-error-number")).toBeVisible();
+    },
+  },
+  {
+    name: "billing paid",
+    state: "paid",
+    run: async (p) => {
+      await p.goto("/settings/billing");
+      await expect(p.getByTestId("invoice-table")).toBeVisible();
+    },
+  },
+  {
+    name: "billing past due",
+    state: "past_due",
+    run: async (p) => {
+      await p.goto("/settings/billing");
+      await expect(p.getByTestId("update-card")).toBeVisible();
+    },
+  },
+  {
+    name: "cancel reason",
+    state: "paid",
+    run: async (p) => {
+      await p.goto("/settings/billing/cancel");
+      await expect(p.getByTestId("cancel-reason")).toBeVisible();
+    },
+  },
+  {
+    name: "cancel confirm",
+    state: "paid",
+    run: async (p) => {
+      await p.goto("/settings/billing/cancel");
+      await p.getByTestId("reason-too_expensive").check();
+      await p.getByTestId("reason-continue").click();
+      await expect(p.getByTestId("cancel-confirm")).toBeVisible();
+    },
+  },
+  {
+    name: "banner past due",
+    state: "past_due",
+    run: async (p, slug) => {
+      await p.goto(`/w/${slug}/home`);
+      await expect(p.getByTestId("billing-banner")).toBeVisible();
+    },
+  },
+  {
+    name: "banner read-only",
+    state: "locked",
+    run: async (p, slug) => {
+      await p.goto(`/w/${slug}/home`);
+      await expect(p.getByTestId("billing-banner")).toBeVisible();
+    },
+  },
+];
+for (const theme of ["light", "dark"] as const) {
+  for (const c of cases) {
+    test(`billing ${c.name} has no serious a11y violations (${theme})`, async ({ page }) => {
+      test.setTimeout(90_000);
+      await page.addInitScript((t) => localStorage.setItem("rw-theme", t), theme);
+      const { slug, email } = meta();
+      const body = async () => {
+        await c.run(page, slug);
+        await scan(page);
+      };
+      if (c.state) await withAccount(email, c.state, body);
+      else await body();
+    });
+  }
+}

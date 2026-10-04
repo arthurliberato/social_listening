@@ -20,8 +20,18 @@ const REASONS: [string, string][] = [
  * Cancel in three steps from Billing: (1) Cancel plan, (2) say why, (3) confirm. The save offer appears at
  * most once per account, on the confirm step, with equal-weight buttons, and never blocks cancelling.
  */
-export function CancelFlow({ endsOn, tenureDays }: { endsOn: string; tenureDays: number }) {
-  const [step, setStep] = useState<"reason" | "confirm" | "done" | "kept">("reason");
+export function CancelFlow({
+  endsOn,
+  tenureDays,
+  alreadyCanceled,
+}: {
+  endsOn: string;
+  tenureDays: number;
+  alreadyCanceled: boolean;
+}) {
+  const [step, setStep] = useState<"reason" | "confirm" | "done" | "kept">(
+    alreadyCanceled ? "done" : "reason",
+  );
   const [reason, setReason] = useState("");
   const [offer, setOffer] = useState(false);
   const [busy, setBusy] = useState<"next" | "cancel" | "offer" | null>(null);
@@ -30,10 +40,10 @@ export function CancelFlow({ endsOn, tenureDays }: { endsOn: string; tenureDays:
   const heading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    if (started.current) return;
+    if (started.current || alreadyCanceled) return;
     started.current = true;
     track("Cancellation Started", { tenure_days: tenureDays });
-  }, [tenureDays]);
+  }, [tenureDays, alreadyCanceled]);
   useEffect(() => heading.current?.focus(), [step]);
 
   const next = async (e: React.FormEvent) => {

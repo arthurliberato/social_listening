@@ -16,7 +16,7 @@ export default defineConfig({
     {
       name: "anonymous",
       testMatch:
-        /onboarding\.spec\.ts|public\.spec\.ts|queries\.spec\.ts|mentions\.spec\.ts|dashboards\.spec\.ts|alerts\.spec\.ts|reports\.spec\.ts/,
+        /onboarding\.spec\.ts|public\.spec\.ts|queries\.spec\.ts|mentions\.spec\.ts|dashboards\.spec\.ts|alerts\.spec\.ts|reports\.spec\.ts|billing\.spec\.ts/,
     },
     // Specs that need a signed-in, onboarded user.
     {
