@@ -187,7 +187,7 @@ test("viewers can read queries but not change them", async ({ page }) => {
   await expect(page.getByTestId("new-query")).toHaveCount(0);
   await expect(page.getByText("View only").first()).toBeVisible();
   await page.getByTestId("query-row").first().getByRole("link").first().click();
-  await expect(page.getByText("view-only access")).toBeVisible();
+  await expect(page.getByText("view-only access")).toBeVisible({ timeout: 20_000 }); // first visit compiles the page
   await expect(page.getByTestId("save-query")).toBeDisabled();
   await expect(page.getByTestId("query-name")).toBeDisabled();
 });
