@@ -54,3 +54,54 @@ export const AUDIT_LABEL: Record<string, string> = {
   "dashboard.shared_publicly": "Turned on a public dashboard link",
   "dashboard.unshared": "Turned off a public dashboard link",
 };
+
+/** One line of detail for an entry, built only from what was recorded. */
+export function auditDetail(
+  action: string,
+  meta: Record<string, unknown>,
+  target: string | null,
+): string {
+  const m = (k: string) => (meta[k] === undefined || meta[k] === null ? "" : String(meta[k]));
+  switch (action) {
+    case "member.invited":
+    case "member.invite_resent":
+    case "member.invite_revoked":
+      return `${target ?? ""}${m("role") ? ` as ${m("role").replace("_", " ")}` : ""}`;
+    case "member.role_changed":
+      return `${m("name")}: ${m("from").replace("_", " ")} → ${m("to").replace("_", " ")}`;
+    case "member.removed":
+    case "member.left":
+      return `${m("name")} (${m("role").replace("_", " ")})`;
+    case "member.joined":
+      return m("role") ? `as ${m("role").replace("_", " ")}` : "";
+    case "workspace.created":
+      return `${m("name")}${meta.copied ? " (copied layouts)" : ""}`;
+    case "workspace.renamed":
+      return `${m("from")} → ${m("to")}`;
+    case "workspace.archived":
+      return `${m("name")}${meta.paused_queries ? `, ${m("paused_queries")} queries paused` : ""}`;
+    case "workspace.restored":
+      return m("name");
+    case "branding.updated":
+      return m("display_name") ? `Brand name: ${m("display_name")}` : "";
+    case "plan.subscribed":
+    case "plan.upgraded":
+    case "plan.downgrade_scheduled":
+      return `${m("plan")} (${m("interval")})`;
+    case "plan.canceled":
+      return m("reason").replace("_", " ");
+    case "dashboard.shared_publicly":
+    case "dashboard.unshared":
+      return m("name");
+    default:
+      return "";
+  }
+}
+
+export const AUDIT_CATEGORIES: Record<string, { label: string; prefixes: string[] }> = {
+  all: { label: "Everything", prefixes: [] },
+  people: { label: "People and invitations", prefixes: ["member."] },
+  workspaces: { label: "Workspaces", prefixes: ["workspace."] },
+  billing: { label: "Plan and billing", prefixes: ["plan.", "card."] },
+  sharing: { label: "Sharing and branding", prefixes: ["dashboard.", "branding."] },
+};

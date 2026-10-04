@@ -11,6 +11,7 @@ export interface MyWorkspace {
   role: string;
   accountId: string;
   archivedAt: Date | null;
+  type: string;
 }
 
 /** Every workspace the person belongs to, archived ones included (so they can be restored). */
@@ -23,6 +24,7 @@ export async function myWorkspacesAll(userId: string): Promise<MyWorkspace[]> {
       role: memberships.role,
       accountId: workspaces.accountId,
       archivedAt: workspaces.archivedAt,
+      type: workspaces.workspaceType,
     })
     .from(memberships)
     .innerJoin(workspaces, eq(workspaces.id, memberships.workspaceId))

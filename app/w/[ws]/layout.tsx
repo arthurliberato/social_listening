@@ -74,12 +74,14 @@ export default async function WorkspaceLayout({
           workspaces={myWorkspaces.map((w) => ({ id: w.id, slug: w.slug, name: w.name }))}
           currentId={ws.id}
         />
-        <BillingBanner
-          acct={acct!}
-          canManage={ws.realRole === "owner" || ws.realRole === "admin"}
-          now={simNow()}
-        />
-        {usage.pct >= 80 && (
+        {!isClient && (
+          <BillingBanner
+            acct={acct!}
+            canManage={ws.realRole === "owner" || ws.realRole === "admin"}
+            now={simNow()}
+          />
+        )}
+        {!isClient && usage.pct >= 80 && (
           <p
             role="status"
             data-testid="quota-banner"
