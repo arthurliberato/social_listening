@@ -774,3 +774,17 @@ export const accountScores = pgTable(
   },
   (t) => [primaryKey({ columns: [t.accountId, t.day] })],
 );
+
+/** Authors a workspace has chosen to keep an eye on. */
+export const authorWatchlist = pgTable(
+  "author_watchlist",
+  {
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    authorId: integer("author_id").notNull(),
+    addedBy: uuid("added_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.workspaceId, t.authorId] })],
+);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { track } from "@/lib/analytics/client";
@@ -26,7 +26,10 @@ export function QuotePanel({
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
 
+  const viewed = useRef(false);
   useEffect(() => {
+    if (viewed.current) return;
+    viewed.current = true;
     track("Quote Viewed", { quote_value: valueUsd });
   }, [valueUsd]);
 
