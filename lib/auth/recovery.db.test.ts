@@ -30,9 +30,9 @@ const tokenIn = (body: string, path: string) =>
 
 describe("password reset", () => {
   it("answers silently for an unknown address and emails a known one", async () => {
-    const before = (await db.select().from(emails)).length;
-    await requestPasswordReset(`nobody-${rnd()}@example.test`);
-    expect((await db.select().from(emails)).length).toBe(before);
+    const ghost = `nobody-${rnd()}@example.test`;
+    await requestPasswordReset(ghost);
+    expect(await db.select().from(emails).where(eq(emails.toAddress, ghost))).toHaveLength(0);
     const u = await user();
     await requestPasswordReset(u.email.toUpperCase());
     const [m] = await mailsTo(u.email, "Reset your%");

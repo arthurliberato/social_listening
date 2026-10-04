@@ -48,7 +48,7 @@ export const WidgetFrame = forwardRef<HTMLElement, FrameProps>(function WidgetFr
       data-selected={p.selected || undefined}
       className={`flex h-full min-h-0 flex-col rounded-lg border bg-[var(--surface)] ${p.selected ? "border-[var(--primary)] ring-2 ring-[var(--primary)]" : "border-[var(--border)]"}`}
     >
-      <header className="flex items-start gap-1 px-3 pt-3">
+      <header className="flex flex-wrap items-start gap-1 px-3 pt-3">
         {p.editing && (
           <button
             type="button"
@@ -61,43 +61,45 @@ export const WidgetFrame = forwardRef<HTMLElement, FrameProps>(function WidgetFr
             <GripVertical size={16} aria-hidden />
           </button>
         )}
-        <div className="min-w-0 flex-1">
-          <h3 id={`w-${p.id}`} className="truncate text-sm font-semibold">
+        <div className="min-w-[6.5rem] flex-1">
+          <h3 id={`w-${p.id}`} className="line-clamp-2 text-sm font-semibold">
             {p.title}
           </h3>
           <p className="truncate text-xs text-[var(--text-muted)]" data-testid="widget-subtitle">
             {subtitle}
           </p>
         </div>
-        <InfoPopover title={p.title}>
-          <p className="font-medium">{def.label}</p>
-          <p className="mt-1 text-[var(--text-muted)]">{def.howCalculated}</p>
-        </InfoPopover>
-        {p.canTable && (
-          <button
-            type="button"
-            aria-pressed={p.view === "table"}
-            aria-label={
-              p.view === "table" ? `Show ${p.title} as a chart` : `View ${p.title} as a table`
-            }
-            data-testid="widget-table-toggle"
-            onClick={() => p.onView(p.view === "table" ? "chart" : "table")}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-[var(--surface-2)]"
-          >
-            {p.view === "table" ? (
-              <BarChart3 size={16} aria-hidden />
-            ) : (
-              <Table2 size={16} aria-hidden />
-            )}
-          </button>
-        )}
-        <Menu
-          label={<span className="sr-only">Widget options for {p.title}</span>}
-          testId="widget-menu"
-          align="right"
-          items={p.menu}
-          buttonClassName="!min-h-7 !px-1.5 border-transparent"
-        />
+        <div className="ml-auto flex items-center gap-1">
+          <InfoPopover title={p.title}>
+            <p className="font-medium">{def.label}</p>
+            <p className="mt-1 text-[var(--text-muted)]">{def.howCalculated}</p>
+          </InfoPopover>
+          {p.canTable && (
+            <button
+              type="button"
+              aria-pressed={p.view === "table"}
+              aria-label={
+                p.view === "table" ? `Show ${p.title} as a chart` : `View ${p.title} as a table`
+              }
+              data-testid="widget-table-toggle"
+              onClick={() => p.onView(p.view === "table" ? "chart" : "table")}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-[var(--surface-2)]"
+            >
+              {p.view === "table" ? (
+                <BarChart3 size={16} aria-hidden />
+              ) : (
+                <Table2 size={16} aria-hidden />
+              )}
+            </button>
+          )}
+          <Menu
+            label={<span className="sr-only">Widget options for {p.title}</span>}
+            testId="widget-menu"
+            align="right"
+            items={p.menu}
+            buttonClassName="!min-h-7 !px-1.5 border-transparent"
+          />
+        </div>
       </header>
       <div className="min-h-0 flex-1 p-3">{p.children}</div>
     </section>

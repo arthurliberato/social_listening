@@ -183,3 +183,15 @@ describe("tooltips treat names as untrusted", () => {
     ).toBe(false);
   });
 });
+
+describe("hourly chart axis labels", () => {
+  it("shows few enough labels that a long window never runs them together", async () => {
+    const { labelEvery } = await import("./options");
+    expect(labelEvery(6)).toBe(1);
+    expect(labelEvery(24)).toBe(3);
+    expect(labelEvery(48)).toBe(6);
+    expect(labelEvery(168)).toBe(24);
+    for (const n of [1, 12, 24, 72, 168, 720, 5000])
+      expect(n / labelEvery(n)).toBeLessThanOrEqual(8 + 1);
+  });
+});

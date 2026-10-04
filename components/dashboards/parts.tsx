@@ -10,9 +10,13 @@ export interface LegendItem {
 }
 
 /** Always present for 2+ series: identity never relies on colour matching alone. Text wears text tokens. */
-export function Legend({ items }: { items: LegendItem[] }) {
+export function Legend({ items, stacked }: { items: LegendItem[]; stacked?: boolean }) {
   return (
-    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs" aria-label="Legend" data-testid="legend">
+    <ul
+      className={`text-xs ${stacked ? "flex shrink-0 flex-col gap-1.5" : "flex flex-wrap gap-x-4 gap-y-1"}`}
+      aria-label="Legend"
+      data-testid="legend"
+    >
       {items.map((i) => (
         <li key={i.label} className="flex items-center gap-1.5">
           <span

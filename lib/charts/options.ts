@@ -66,7 +66,13 @@ const dayAxis = (t: ChartTheme, days: string[]) => ({
   boundaryGap: false,
   axisLine: { lineStyle: { color: t.axis, width: 1 } },
   axisTick: { show: false },
-  axisLabel: { color: t.muted, fontSize: 12, hideOverlap: true, formatter: dayLabel },
+  axisLabel: {
+    color: t.muted,
+    fontSize: 12,
+    hideOverlap: true,
+    padding: [0, 8, 0, 8],
+    formatter: dayLabel,
+  },
 });
 
 // ---- volume over time ------------------------------------------------------------------------
@@ -424,6 +430,12 @@ export const hourLabel = (t: number) =>
     timeZone: "UTC",
   }) + ":00";
 
+/** Hours between axis labels so that roughly eight or fewer are shown. */
+export function labelEvery(points: number): number {
+  const want = Math.ceil(points / 8);
+  return [1, 3, 6, 12, 24, 48, 96, 168].find((n) => n >= want) ?? Math.ceil(want / 168) * 168;
+}
+
 export function hourlyOption(
   hours: HourPoint[],
   t: ChartTheme,
@@ -452,7 +464,13 @@ export function hourlyOption(
       data: labels,
       axisLine: { lineStyle: { color: t.axis, width: 1 } },
       axisTick: { show: false },
-      axisLabel: { color: t.muted, fontSize: 12, hideOverlap: true },
+      // A label every 1, 3, 6, 12 or 24 hours (on the hour boundary), few enough that they never run together.
+      axisLabel: {
+        color: t.muted,
+        fontSize: 12,
+        hideOverlap: true,
+        interval: (i: number) => (hours[i]!.t / 3_600_000) % labelEvery(hours.length) === 0,
+      },
     },
     yAxis: valueAxis(t),
     tooltip: {

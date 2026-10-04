@@ -257,7 +257,7 @@ export function WidgetBody({
     case "sentiment_donut":
       return (
         <div className="flex h-full flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="min-w-0 flex-1">
+          <div className="min-w-[9rem] flex-1">
             <EChart
               option={donutOption(d, theme)}
               height={Math.max(120, chartH)}
@@ -267,6 +267,7 @@ export function WidgetBody({
             />
           </div>
           <Legend
+            stacked
             items={d.parts.map((p) => ({
               label: p.sentiment[0]!.toUpperCase() + p.sentiment.slice(1),
               color: theme.sentiment[p.sentiment as keyof ChartTheme["sentiment"]],
