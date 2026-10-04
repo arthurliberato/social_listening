@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { and, eq, gt, isNull, sql } from "drizzle-orm";
 import { accounts, db, invitations, memberships, users, workspaces } from "@/db/client";
 import { trackServer } from "@/lib/analytics/server";
@@ -59,6 +60,8 @@ export interface SignupInput {
   inviteToken?: string | null;
   attribution: Record<string, string>;
   sim: SimContext;
+  /** Created through a simulated identity provider: no password, email already vouched for. */
+  oauth?: string;
 }
 
 export type SignupResult =
@@ -83,7 +86,8 @@ export async function createAccountAndUser(i: SignupInput): Promise<SignupResult
   if (invite && invite.email.toLowerCase() !== email)
     return { ok: false, error: "invite_email_mismatch" };
 
-  const passwordHash = await hashPassword(i.password);
+  // OAuth accounts get a random password nobody knows, so password login stays impossible until a reset.
+  const passwordHash = await hashPassword(i.oauth ? randomBytes(32).toString("hex") : i.password);
   const now = simNow();
   const out = await db.transaction(async (tx) => {
     const [user] = await tx
@@ -98,7 +102,8 @@ export async function createAccountAndUser(i: SignupInput): Promise<SignupResult
         agentRunId: i.sim.run,
         agentModel: i.sim.model,
         // Invited teammates arrive through an emailed link, which proves they own the address.
-        emailVerifiedAt: invite ? now : null,
+        emailVerifiedAt: invite || i.oauth ? now : null,
+        oauthProvider: i.oauth ?? null,
         onboardingCompletedAt: invite ? now : null,
       })
       .returning();
@@ -153,7 +158,7 @@ export async function createAccountAndUser(i: SignupInput): Promise<SignupResult
     "Sign Up Completed",
     { userId: out.user.id, accountId: out.accountId, workspaceId: out.workspaceId },
     {
-      method: "password",
+      method: i.oauth ? `oauth_${i.oauth}` : "password",
       signup_source:
         i.attribution.utm_source ?? i.attribution.referrer ?? (invite ? "invite" : "direct"),
     },
@@ -168,7 +173,7 @@ export async function createAccountAndUser(i: SignupInput): Promise<SignupResult
       newMember: true,
       now,
     });
-  } else {
+  } else if (!i.oauth) {
     await sendVerification(out.user.id, email);
   }
   return { ok: true, userId: out.user.id };

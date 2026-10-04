@@ -1,0 +1,9 @@
+# Sign-in methods
+
+**Password** (Argon2id) with email verification, as before.
+
+**Forgot password** (`/forgot` → emailed link → `/reset`). The form gives the same answer for every address, so it can't be used to find out who has an account. Links are single use, expire after an hour, and are limited to 3 per account per hour. Opening the link doesn't use it up (only submitting a new password does), so mail scanners can't burn it. Changing the password signs out every existing session: the session token carries the account's password-change stamp from sign-in and is rejected once it no longer matches. It also retires pending login links, marks the email verified, and emails the owner. (Failed-login throttling is not built yet.)
+
+**Magic link** (`/login` → "Email me a login link instead"). Same rules: identical answer for every address, 15-minute single-use token, 5 per hour. The link lands on a page where logging in is a deliberate click, again so scanners can't use it up. A `next` path is carried through only if it is a same-site path.
+
+**Northstar ID (simulated provider)** (`/oauth/northstar/*`). A stand-in for a real OAuth provider so the whole sign-in-with-a-provider path can be built and tested. The authorize screen says plainly that it is simulated. Because anyone can pick any username there, it is boxed in: identities exist only as `username@northstar-id.test`; it can sign in only accounts it created itself (`users.oauth_provider`), never a password account, even one on its own domain; the flow uses a per-browser `state` cookie and a signed 2-minute code, which becomes a single-use login token. First use creates a verified, passwordless account and trial workspace (`Sign Up Completed` with method `oauth_northstar`); later uses sign back in (`Login Completed`). A real provider would replace `lib/auth/oauth-sim.ts` and keep the rest.

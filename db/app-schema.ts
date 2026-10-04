@@ -119,6 +119,10 @@ export const users = pgTable(
     passwordHash: text("password_hash").notNull(),
     name: text("name").notNull(),
     emailVerifiedAt: ts("email_verified_at"),
+    /** Sessions issued before this moment are signed out (set on password change). */
+    passwordChangedAt: ts("password_changed_at"),
+    /** Set when the account was created through a simulated identity provider; only that provider may sign it in. */
+    oauthProvider: text("oauth_provider"),
     roleSelected: text("role_selected"), // analyst|social|comms|agency|exec|admin
     goals: text("goals")
       .array()
