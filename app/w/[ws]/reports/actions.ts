@@ -5,6 +5,7 @@ import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, memberships, reports, reportSchedules, users } from "@/db/client";
+import { auditIn } from "@/lib/audit";
 import { requireWorkspace } from "@/lib/auth/session";
 import { widgetAllowed } from "@/lib/dashboards/catalog";
 import { workspaceAccount } from "@/lib/dashboards/service";
@@ -45,6 +46,13 @@ export async function createReport(
       createdBy: user.id,
     })
     .returning({ id: reports.id });
+  await auditIn(
+    ws,
+    user.id,
+    "report.created",
+    { type: "report", id: row!.id },
+    { name: tpl?.label ?? "Untitled report" },
+  );
   revalidatePath(`/w/${slug}/reports`);
   return { ok: true, id: row!.id, skipped: wanted.length - sections.length };
 }
@@ -61,7 +69,7 @@ export async function saveReport(
   id: string,
   input: unknown,
 ): Promise<{ ok: true } | Fail> {
-  const { ws } = await requireWorkspace(slug);
+  const { user, ws } = await requireWorkspace(slug);
   if (!canEdit(ws.role)) return { ok: false, error: NO_EDIT };
   const r = await getReport(ws.id, id);
   if (!r) return { ok: false, error: "That report no longer exists." };
@@ -79,17 +87,19 @@ export async function saveReport(
     .update(reports)
     .set({ ...p.data, updatedAt: new Date() })
     .where(eq(reports.id, id));
+  await auditIn(ws, user.id, "report.updated", { type: "report", id }, { name: p.data.name });
   revalidatePath(`/w/${slug}/reports`);
   revalidatePath(`/w/${slug}/reports/${id}`);
   return { ok: true };
 }
 
 export async function deleteReport(slug: string, id: string): Promise<{ ok: true } | Fail> {
-  const { ws } = await requireWorkspace(slug);
+  const { user, ws } = await requireWorkspace(slug);
   if (!canEdit(ws.role)) return { ok: false, error: NO_EDIT };
   const r = await getReport(ws.id, id);
   if (!r) return { ok: false, error: "That report no longer exists." };
   await db.delete(reports).where(eq(reports.id, id));
+  await auditIn(ws, user.id, "report.deleted", { type: "report", id }, { name: r.name });
   revalidatePath(`/w/${slug}/reports`);
   return { ok: true };
 }
@@ -160,6 +170,19 @@ export async function saveSchedule(
     .insert(reportSchedules)
     .values({ reportId: id, workspaceId: ws.id, createdBy: user.id, ...values })
     .onConflictDoUpdate({ target: reportSchedules.reportId, set: values });
+  // Counts only: outside email addresses are personal data and don't belong in the log.
+  await auditIn(
+    ws,
+    user.id,
+    "report.scheduled",
+    { type: "report", id },
+    {
+      name: r.name,
+      frequency: v.frequency,
+      members: recipientIds.length,
+      external: values.externalEmails.length,
+    },
+  );
   revalidatePath(`/w/${slug}/reports`);
   revalidatePath(`/w/${slug}/reports/${id}`);
   return {
@@ -171,13 +194,14 @@ export async function saveSchedule(
 }
 
 export async function stopSchedule(slug: string, id: string): Promise<{ ok: true } | Fail> {
-  const { ws } = await requireWorkspace(slug);
+  const { user, ws } = await requireWorkspace(slug);
   if (!canEdit(ws.role)) return { ok: false, error: NO_EDIT };
   const r = await getReport(ws.id, id);
   if (!r) return { ok: false, error: "That report no longer exists." };
   await db
     .delete(reportSchedules)
     .where(and(eq(reportSchedules.reportId, id), eq(reportSchedules.workspaceId, ws.id)));
+  await auditIn(ws, user.id, "report.schedule_stopped", { type: "report", id }, { name: r.name });
   revalidatePath(`/w/${slug}/reports`);
   revalidatePath(`/w/${slug}/reports/${id}`);
   return { ok: true };

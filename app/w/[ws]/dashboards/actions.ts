@@ -5,7 +5,7 @@ import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { dashboards, db, widgets } from "@/db/client";
-import { audit } from "@/lib/audit";
+import { audit, auditIn } from "@/lib/audit";
 import { itemCompleted } from "@/lib/checklist";
 import { trackServer } from "@/lib/analytics/server";
 import { requireWorkspace } from "@/lib/auth/session";
@@ -74,6 +74,13 @@ export async function createDashboard(
     "Dashboard Created",
     { userId: user.id, workspaceId: ws.id },
     { template_id: tpl?.id ?? "blank" },
+  );
+  await auditIn(
+    ws,
+    user.id,
+    "dashboard.created",
+    { type: "dashboard", id },
+    { name, template: tpl?.id ?? "blank" },
   );
   await itemCompleted({ userId: user.id, workspaceId: ws.id }, "build_dashboard");
   revalidatePath(`/w/${slug}/dashboards`);
@@ -160,6 +167,13 @@ export async function saveDashboard(
     { userId: user.id, workspaceId: ws.id },
     { widgets_count: saved.length },
   );
+  await auditIn(
+    ws,
+    user.id,
+    "dashboard.updated",
+    { type: "dashboard", id },
+    { name: dash.name, widgets: saved.length },
+  );
   revalidatePath(`/w/${slug}/dashboards`);
   return { ok: true, widgets: saved };
 }
@@ -168,9 +182,20 @@ export async function deleteDashboard(
   slug: string,
   id: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  const { ws } = await requireWorkspace(slug);
+  const { user, ws } = await requireWorkspace(slug);
   if (!canEdit(ws.role)) return { ok: false, error: "Your role can't delete dashboards." };
-  await db.delete(dashboards).where(and(eq(dashboards.id, id), eq(dashboards.workspaceId, ws.id)));
+  const gone = await db
+    .delete(dashboards)
+    .where(and(eq(dashboards.id, id), eq(dashboards.workspaceId, ws.id)))
+    .returning({ name: dashboards.name });
+  if (gone[0])
+    await auditIn(
+      ws,
+      user.id,
+      "dashboard.deleted",
+      { type: "dashboard", id },
+      { name: gone[0].name },
+    );
   revalidatePath(`/w/${slug}/dashboards`);
   return { ok: true };
 }
@@ -215,6 +240,13 @@ export async function duplicateDashboard(
       );
     return d!.id;
   });
+  await auditIn(
+    ws,
+    user.id,
+    "dashboard.duplicated",
+    { type: "dashboard", id: newId },
+    { name: src.name },
+  );
   revalidatePath(`/w/${slug}/dashboards`);
   return { ok: true, id: newId };
 }

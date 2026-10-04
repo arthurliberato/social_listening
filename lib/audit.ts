@@ -31,6 +31,30 @@ export async function audit(e: AuditEntry): Promise<void> {
   }
 }
 
+/** Record an action by someone working in a workspace. Names are trimmed so a long title can't bloat the log. */
+export function auditIn(
+  ws: { id: string; accountId: string },
+  actorUserId: string | null,
+  action: string,
+  target?: { type: string; id: string },
+  meta?: Record<string, string | number | boolean | null>,
+): Promise<void> {
+  const clean = meta
+    ? Object.fromEntries(
+        Object.entries(meta).map(([k, v]) => [k, typeof v === "string" ? v.slice(0, 120) : v]),
+      )
+    : undefined;
+  return audit({
+    accountId: ws.accountId,
+    workspaceId: ws.id,
+    actorUserId,
+    action,
+    targetType: target?.type,
+    targetId: target?.id,
+    meta: clean,
+  });
+}
+
 /** How an entry reads in the log. */
 export const AUDIT_LABEL: Record<string, string> = {
   "member.invited": "Invited a teammate",
@@ -53,6 +77,29 @@ export const AUDIT_LABEL: Record<string, string> = {
   "card.updated": "Updated the payment card",
   "dashboard.shared_publicly": "Turned on a public dashboard link",
   "dashboard.unshared": "Turned off a public dashboard link",
+  "contract.signed": "Signed an Enterprise contract",
+  "query.created": "Created a query",
+  "query.updated": "Edited a query",
+  "query.paused": "Paused a query",
+  "query.resumed": "Resumed a query",
+  "query.deleted": "Deleted a query",
+  "dashboard.created": "Created a dashboard",
+  "dashboard.updated": "Saved changes to a dashboard",
+  "dashboard.duplicated": "Duplicated a dashboard",
+  "dashboard.deleted": "Deleted a dashboard",
+  "report.created": "Created a report",
+  "report.updated": "Saved changes to a report",
+  "report.deleted": "Deleted a report",
+  "report.scheduled": "Scheduled a report",
+  "report.schedule_stopped": "Stopped a report schedule",
+  "alert.created": "Created an alert",
+  "alert.muted": "Muted an alert",
+  "alert.unmuted": "Unmuted an alert",
+  "alert.deleted": "Deleted an alert",
+  "crisis.opened": "Opened a crisis room",
+  "crisis.update_sent": "Sent a stakeholder update",
+  "crisis.resolved": "Resolved a crisis room",
+  "crisis.reopened": "Reopened a crisis room",
 };
 
 /** One line of detail for an entry, built only from what was recorded. */
@@ -92,7 +139,36 @@ export function auditDetail(
       return m("reason").replace("_", " ");
     case "dashboard.shared_publicly":
     case "dashboard.unshared":
-      return m("name");
+    case "query.paused":
+    case "query.resumed":
+    case "query.deleted":
+    case "query.created":
+    case "dashboard.created":
+    case "dashboard.duplicated":
+    case "dashboard.deleted":
+    case "report.created":
+    case "report.updated":
+    case "report.deleted":
+    case "report.schedule_stopped":
+    case "alert.muted":
+    case "alert.unmuted":
+    case "alert.deleted":
+    case "crisis.opened":
+    case "crisis.resolved":
+    case "crisis.reopened":
+      return m("name") || m("title");
+    case "query.updated":
+      return `${m("name")}${meta.search_changed ? " (search terms changed)" : ""}`;
+    case "dashboard.updated":
+      return `${m("name")}, ${m("widgets")} widgets`;
+    case "alert.created":
+      return `${m("name")} (${m("type").replace("_", " ")})`;
+    case "report.scheduled":
+      return `${m("name")}: ${m("frequency")}, ${m("members")} teammates${Number(meta.external) ? ` and ${m("external")} outside addresses` : ""}`;
+    case "crisis.update_sent":
+      return `${m("title")}: sent to ${m("recipients")} people`;
+    case "contract.signed":
+      return `${m("seats")} seats, ${m("term_months")} months`;
     default:
       return "";
   }
@@ -102,6 +178,21 @@ export const AUDIT_CATEGORIES: Record<string, { label: string; prefixes: string[
   all: { label: "Everything", prefixes: [] },
   people: { label: "People and invitations", prefixes: ["member."] },
   workspaces: { label: "Workspaces", prefixes: ["workspace."] },
-  billing: { label: "Plan and billing", prefixes: ["plan.", "card."] },
-  sharing: { label: "Sharing and branding", prefixes: ["dashboard.", "branding."] },
+  billing: { label: "Plan and billing", prefixes: ["plan.", "card.", "contract."] },
+  content: {
+    label: "Queries, dashboards and reports",
+    prefixes: [
+      "query.",
+      "dashboard.created",
+      "dashboard.updated",
+      "dashboard.duplicated",
+      "dashboard.deleted",
+      "report.",
+    ],
+  },
+  alerts: { label: "Alerts and crisis rooms", prefixes: ["alert.", "crisis."] },
+  sharing: {
+    label: "Sharing and branding",
+    prefixes: ["dashboard.shared", "dashboard.unshared", "branding."],
+  },
 };

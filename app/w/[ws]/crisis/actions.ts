@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { crises, crisisTasks, crisisUpdates, db, memberships, queries, users } from "@/db/client";
 import { requireWorkspace } from "@/lib/auth/session";
+import { auditIn } from "@/lib/audit";
 import { PLANS, planUnlocking, type PlanTier } from "@/lib/entitlements/plans";
 import { sendEmail } from "@/lib/email/service";
 import { accountPlan, canEdit } from "@/lib/queries";
@@ -66,6 +67,13 @@ export async function openCrisis(
       openedBy: user.id,
     })
     .returning({ id: crises.id });
+  await auditIn(
+    ws,
+    user.id,
+    "crisis.opened",
+    { type: "crisis", id: row!.id },
+    { title: `${q.name}: situation room` },
+  );
   revalidatePath(`/w/${slug}/crisis`);
   return { ok: true, id: row!.id };
 }
@@ -150,6 +158,13 @@ export async function sendUpdate(
     recipientsCount: rows.length,
     sentBy: r.user.id,
   });
+  await auditIn(
+    r.ws,
+    r.user.id,
+    "crisis.update_sent",
+    { type: "crisis", id: crisisId },
+    { title: r.c.title, recipients: rows.length },
+  );
   revalidatePath(`/w/${slug}/crisis/${crisisId}`);
   return { ok: true, sent: rows.length };
 }
@@ -170,6 +185,13 @@ export async function setResolved(
         : { status: "open", resolvedAt: null, resolvedBy: null },
     )
     .where(eq(crises.id, crisisId));
+  await auditIn(
+    r.ws,
+    r.user.id,
+    resolved ? "crisis.resolved" : "crisis.reopened",
+    { type: "crisis", id: crisisId },
+    { title: r.c.title },
+  );
   revalidatePath(`/w/${slug}/crisis/${crisisId}`);
   revalidatePath(`/w/${slug}/crisis`);
   return { ok: true, durationMs: now.getTime() - r.c.openedAt.getTime() };

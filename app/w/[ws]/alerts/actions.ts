@@ -15,6 +15,7 @@ import {
   type Params,
 } from "@/lib/alerts/rules";
 import { alertCount, backtestRule } from "@/lib/alerts/service";
+import { auditIn } from "@/lib/audit";
 import { itemCompleted } from "@/lib/checklist";
 import { can, PLANS, planUnlocking, type PlanTier } from "@/lib/entitlements/plans";
 import { accountPlan, canEdit } from "@/lib/queries";
@@ -123,6 +124,13 @@ export async function createAlert(
       createdBy: user.id,
     })
     .returning({ id: alertRules.id });
+  await auditIn(
+    ws,
+    user.id,
+    "alert.created",
+    { type: "alert", id: row!.id },
+    { name: v.name, type: v.type },
+  );
   await itemCompleted({ userId: user.id, workspaceId: ws.id }, "set_alert");
   revalidatePath(`/w/${slug}/alerts`);
   return { ok: true, id: row!.id };
@@ -142,22 +150,30 @@ export async function setAlertMuted(
   id: string,
   muted: boolean,
 ): Promise<{ ok: true } | Fail> {
-  const { ws, rule } = await ownRule(slug, id);
+  const { user, ws, rule } = await ownRule(slug, id);
   if (!canEdit(ws.role)) return { ok: false, error: "Your role can't change alerts." };
   if (!rule) return { ok: false, error: "That alert no longer exists." };
   await db
     .update(alertRules)
     .set({ status: muted ? "muted" : "active", updatedAt: new Date() })
     .where(eq(alertRules.id, id));
+  await auditIn(
+    ws,
+    user.id,
+    muted ? "alert.muted" : "alert.unmuted",
+    { type: "alert", id },
+    { name: rule.name },
+  );
   revalidatePath(`/w/${slug}/alerts`);
   return { ok: true };
 }
 
 export async function deleteAlert(slug: string, id: string): Promise<{ ok: true } | Fail> {
-  const { ws, rule } = await ownRule(slug, id);
+  const { user, ws, rule } = await ownRule(slug, id);
   if (!canEdit(ws.role)) return { ok: false, error: "Your role can't delete alerts." };
   if (!rule) return { ok: false, error: "That alert no longer exists." };
   await db.delete(alertRules).where(eq(alertRules.id, id));
+  await auditIn(ws, user.id, "alert.deleted", { type: "alert", id }, { name: rule.name });
   revalidatePath(`/w/${slug}/alerts`);
   return { ok: true };
 }
@@ -241,6 +257,13 @@ export async function startCrisis(
       .update(alertEvents)
       .set({ status: "acknowledged", acknowledgedAt: new Date(), acknowledgedBy: user.id })
       .where(eq(alertEvents.id, eventId));
+  await auditIn(
+    ws,
+    user.id,
+    "crisis.opened",
+    { type: "crisis", id: row!.id },
+    { title: `${q!.name}: ${TYPE_INFO[rule!.type as AlertType].label.toLowerCase()}` },
+  );
   revalidatePath(`/w/${slug}/crisis`);
   return { ok: true, id: row!.id };
 }

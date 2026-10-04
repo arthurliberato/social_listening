@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, queries } from "@/db/client";
 import { trackServer } from "@/lib/analytics/server";
+import { auditIn } from "@/lib/audit";
 import { requireWorkspace } from "@/lib/auth/session";
 import { can, PLANS, type PlanTier } from "@/lib/entitlements/plans";
 import { enqueueBackfill } from "@/lib/jobs/boss";
@@ -167,6 +168,16 @@ export async function saveQuery(slug: string, input: unknown): Promise<SaveResul
       is_from_template: v.isFromTemplate,
     },
   );
+  await auditIn(
+    ws,
+    user.id,
+    existing ? "query.updated" : "query.created",
+    { type: "query", id },
+    {
+      name: v.name,
+      ...(existing ? { search_changed: changed } : {}),
+    },
+  );
   if (changed) await enqueueBackfill(id);
   revalidatePath(`/w/${slug}/queries`);
   return { ok: true, id };
@@ -219,6 +230,13 @@ export async function setQueryStatus(
   if (status === "paused")
     await trackServer("Query Paused", { userId: user.id, workspaceId: ws.id }, { query_id: id });
   else await enqueueBackfill(id);
+  await auditIn(
+    ws,
+    user.id,
+    status === "paused" ? "query.paused" : "query.resumed",
+    { type: "query", id },
+    { name: q.name },
+  );
   revalidatePath(`/w/${slug}/queries`);
   return { ok: true, id };
 }
@@ -229,8 +247,9 @@ export async function deleteQuery(slug: string, id: string): Promise<SaveResult>
   const gone = await db
     .delete(queries)
     .where(and(eq(queries.id, id), eq(queries.workspaceId, ws.id)))
-    .returning({ id: queries.id });
+    .returning({ id: queries.id, name: queries.name });
   if (!gone.length) return { ok: false, error: "That query no longer exists." };
+  await auditIn(ws, user.id, "query.deleted", { type: "query", id }, { name: gone[0]!.name });
   await trackServer("Query Deleted", { userId: user.id, workspaceId: ws.id }, { query_id: id });
   revalidatePath(`/w/${slug}/queries`);
   return { ok: true, id };

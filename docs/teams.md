@@ -53,8 +53,17 @@ kept if the plan drops below Agency, and simply stop applying.
 ## Audit log (Enterprise)
 
 `audit_log` records who did what for invitations, role changes, removals, workspace changes, plan and card
-changes, public-link toggles and branding. It is written on every plan (so history exists the day you
-upgrade) and readable on plans that include it. Entries hold names, roles and plan names, never secrets.
+changes, public-link toggles, branding and signed Enterprise contracts. Since the content change it also
+records what people do to the things the account is built on: queries (created, edited, paused, resumed,
+deleted), dashboards (created, saved, duplicated, deleted), reports (created, saved, deleted, scheduled,
+schedule stopped), alerts (created, muted, unmuted, deleted) and crisis rooms (opened, stakeholder update sent,
+resolved, reopened). It is written on every plan (so history exists the day you upgrade) and readable on plans
+that include it. Entries hold names, roles, counts and plan names, never secrets or personal data (a report
+schedule records how many outside addresses it sends to, not the addresses).
+
+Not logged on purpose: reads and exports, AI questions (counted in Usage instead), watchlist changes, individual
+crisis tasks, and the frequent small edits inside the dashboard and report editors (only an explicit save is
+recorded). `lib/audit.test.ts` fails if code records an action that has no readable label or filter category.
 
 ## Events
 
