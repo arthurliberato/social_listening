@@ -508,6 +508,7 @@ export function DashboardEditor({
         </section>
       ) : (
         <DashboardGrid
+          canReport={canEdit}
           ws={ws}
           widgets={widgets}
           editing={editing}

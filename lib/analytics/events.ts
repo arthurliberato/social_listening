@@ -718,6 +718,19 @@ export const EVENTS = {
     ],
     "ga4Name": null
   },
+  "Report Section Added": {
+    "side": "client",
+    "properties": [
+      "widget_type",
+      "source",
+      "is_new_report"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
   "Report Exported": {
     "side": "client",
     "properties": [

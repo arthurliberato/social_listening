@@ -90,6 +90,7 @@ export const AUDIT_LABEL: Record<string, string> = {
   "report.created": "Created a report",
   "report.updated": "Saved changes to a report",
   "report.deleted": "Deleted a report",
+  "report.section_added": "Added a section to a report",
   "report.scheduled": "Scheduled a report",
   "report.schedule_stopped": "Stopped a report schedule",
   "alert.created": "Created an alert",
@@ -157,6 +158,8 @@ export function auditDetail(
     case "crisis.resolved":
     case "crisis.reopened":
       return m("name") || m("title");
+    case "report.section_added":
+      return `${m("name")}: ${m("section")}`;
     case "query.updated":
       return `${m("name")}${meta.search_changed ? " (search terms changed)" : ""}`;
     case "dashboard.updated":

@@ -1,20 +1,20 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { db, memberships, reports, reportSchedules, users } from "@/db/client";
+import { db, memberships, queries, reports, reportSchedules, users } from "@/db/client";
 import { auditIn } from "@/lib/audit";
 import { requireWorkspace } from "@/lib/auth/session";
-import { widgetAllowed } from "@/lib/dashboards/catalog";
+import { WIDGETS, widgetAllowed } from "@/lib/dashboards/catalog";
 import { workspaceAccount } from "@/lib/dashboards/service";
 import { PLANS, planUnlocking, type PlanTier } from "@/lib/entitlements/plans";
 import { deliverReport } from "@/lib/reports/deliver";
 import { FREQUENCIES, nextRun, type Frequency } from "@/lib/reports/schedule";
-import { getReport } from "@/lib/reports/service";
+import { appendSection, getReport } from "@/lib/reports/service";
 import { getReportTemplate } from "@/lib/reports/templates";
-import { RANGES, SectionsSchema } from "@/lib/reports/types";
+import { MAX_SECTIONS, RANGES, SectionSchema, SectionsSchema } from "@/lib/reports/types";
 import { canEdit } from "@/lib/queries";
 import { simNow } from "@/lib/simclock";
 
@@ -216,4 +216,133 @@ export async function sendCopyNow(slug: string, id: string): Promise<{ ok: true 
   return sent
     ? { ok: true }
     : { ok: false, error: "We couldn't send that. Try again in a moment." };
+}
+
+export interface ReportTarget {
+  id: string;
+  name: string;
+  sections: number;
+  full: boolean;
+}
+
+/** The reports a section can be added to (newest edited first), for the "Add to report" dialog. */
+export async function listReportTargets(
+  slug: string,
+): Promise<{ ok: true; reports: ReportTarget[] } | Fail> {
+  const { ws } = await requireWorkspace(slug);
+  if (!canEdit(ws.role)) return { ok: false, error: NO_EDIT };
+  const rows = await db
+    .select({ id: reports.id, name: reports.name, sections: reports.sections })
+    .from(reports)
+    .where(eq(reports.workspaceId, ws.id))
+    .orderBy(desc(reports.updatedAt))
+    .limit(50);
+  return {
+    ok: true,
+    reports: rows.map((r) => {
+      const n = Array.isArray(r.sections) ? r.sections.length : 0;
+      return { id: r.id, name: r.name, sections: n, full: n >= MAX_SECTIONS };
+    }),
+  };
+}
+
+const AddInput = z.object({
+  /** Null starts a new report. */
+  reportId: z.string().uuid().nullable(),
+  type: z.string(),
+  title: z.string(),
+  config: z.record(z.string(), z.unknown()).default({}),
+  source: z.enum(["dashboard", "topics", "authors"]),
+});
+
+/** Append a widget, as a report section, to an existing report or a new one. Same plan gate and limit as the editor. */
+export async function addSectionToReport(
+  slug: string,
+  input: unknown,
+): Promise<
+  | { ok: true; id: string; name: string; created: boolean; sections: number }
+  | (Fail & { paywall?: true })
+> {
+  const { user, ws } = await requireWorkspace(slug);
+  if (!canEdit(ws.role)) return { ok: false, error: NO_EDIT };
+  const p = AddInput.safeParse(input);
+  if (!p.success) return { ok: false, error: "That widget can't be added to a report." };
+  const section = SectionSchema.safeParse({
+    id: randomBytes(6).toString("hex"),
+    type: p.data.type,
+    title: p.data.title,
+    config: p.data.config,
+  });
+  if (!section.success)
+    return { ok: false, error: section.error.issues[0]?.message ?? "That widget can't be added." };
+  const { plan } = await workspaceAccount(ws.id);
+  // Plan check on the way in, as in saveReport: a locked widget type can't be added by posting to this action.
+  if (!widgetAllowed(section.data.type, plan.features))
+    return {
+      ok: false,
+      paywall: true,
+      error: `The "${section.data.title}" section isn't included in your ${plan.label} plan.`,
+      upgradeTo: planUnlocking(WIDGETS[section.data.type].requires!),
+    };
+  // A query the widget points at must belong to this workspace.
+  const qid = section.data.config.queryId;
+  if (qid) {
+    const [q] = await db
+      .select({ id: queries.id })
+      .from(queries)
+      .where(and(eq(queries.id, qid), eq(queries.workspaceId, ws.id)));
+    if (!q) return { ok: false, error: "That widget uses a query that no longer exists." };
+  }
+
+  if (p.data.reportId === null) {
+    const [row] = await db
+      .insert(reports)
+      .values({
+        workspaceId: ws.id,
+        name: `${section.data.title} report`.slice(0, 100),
+        description: "",
+        templateId: null,
+        range: "30d",
+        sections: [section.data],
+        createdBy: user.id,
+      })
+      .returning({ id: reports.id, name: reports.name });
+    await auditIn(
+      ws,
+      user.id,
+      "report.created",
+      { type: "report", id: row!.id },
+      { name: row!.name },
+    );
+    await auditIn(
+      ws,
+      user.id,
+      "report.section_added",
+      { type: "report", id: row!.id },
+      { name: row!.name, section: section.data.title },
+    );
+    revalidatePath(`/w/${slug}/reports`);
+    return { ok: true, id: row!.id, name: row!.name, created: true, sections: 1 };
+  }
+
+  const row = await appendSection(ws.id, p.data.reportId, section.data);
+  if (!row) {
+    const r = await getReport(ws.id, p.data.reportId);
+    return {
+      ok: false,
+      error: r
+        ? `"${r.name}" already has ${MAX_SECTIONS} sections, the most a report can hold.`
+        : "That report no longer exists.",
+    };
+  }
+  await auditIn(
+    ws,
+    user.id,
+    "report.section_added",
+    { type: "report", id: p.data.reportId },
+    { name: row.name, section: section.data.title },
+  );
+  revalidatePath(`/w/${slug}/reports`);
+  revalidatePath(`/w/${slug}/reports/${p.data.reportId}`);
+  return { ok: true, id: p.data.reportId, name: row.name, created: false, sections: row.sections };
 }

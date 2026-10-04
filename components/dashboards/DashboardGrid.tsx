@@ -25,6 +25,7 @@ import { drillHref, type Pick } from "@/lib/dashboards/drill";
 import { canMove, moveBy, moveTo, resize, type Box } from "@/lib/dashboards/layout";
 import type { WidgetResult } from "@/lib/dashboards/types";
 import { toCsv } from "@/lib/csv";
+import { AddToReportDialog } from "@/components/reports/AddToReportDialog";
 import { LockedWidget, WidgetFrame, exportItem } from "./WidgetFrame";
 import { WidgetBody, isEmpty } from "./WidgetBody";
 import { useElementHeight } from "./parts";
@@ -81,6 +82,7 @@ async function exportPng(root: HTMLElement, name: string) {
 
 function WidgetCell({
   readOnly,
+  canReport,
   ws,
   w,
   boxes,
@@ -91,6 +93,7 @@ function WidgetCell({
   h,
 }: {
   readOnly?: boolean;
+  canReport?: boolean;
   ws: string;
   w: DraftWidget;
   boxes: Box[];
@@ -114,6 +117,7 @@ function WidgetCell({
         : undefined;
   const dash = useMemo(() => new URLSearchParams(rangeQs), [rangeQs]);
   const move = canMove(boxes, w.id);
+  const [addOpen, setAddOpen] = useState(false);
 
   const drill = useCallback(
     (pick: Pick, breakdown?: string) => {
@@ -148,6 +152,13 @@ function WidgetCell({
       );
   }
   if (!readOnly) menu.push({ key: "open", label: "Open in Mentions", onSelect: () => drill({}) });
+  if (!readOnly && canReport)
+    menu.push({
+      key: "report",
+      label: "Add to report…",
+      testId: "menu-add-to-report",
+      onSelect: () => setAddOpen(true),
+    });
   if (editing) {
     const m = (label: string, dx: number, dy: number, ok: boolean): MenuItem => ({
       key: label,
@@ -263,6 +274,14 @@ function WidgetCell({
       <div ref={bodyRef} className="h-full min-h-0" aria-busy={state.status === "loading"}>
         {body}
       </div>
+      {addOpen && (
+        <AddToReportDialog
+          ws={ws}
+          source="dashboard"
+          draft={{ type: w.type, title: w.title, config: w.config as Record<string, unknown> }}
+          onClose={() => setAddOpen(false)}
+        />
+      )}
     </WidgetFrame>
   );
 }
@@ -273,6 +292,7 @@ function WidgetCell({
  */
 export function DashboardGrid({
   readOnly,
+  canReport,
   ws,
   widgets,
   editing,
@@ -282,6 +302,8 @@ export function DashboardGrid({
   handlers,
 }: {
   readOnly?: boolean;
+  /** Offer "Add to report…" in each widget's menu (people who can edit reports). */
+  canReport?: boolean;
   ws: string;
   widgets: DraftWidget[];
   editing: boolean;
@@ -388,6 +410,7 @@ export function DashboardGrid({
           >
             <WidgetCell
               readOnly={readOnly}
+              canReport={canReport}
               ws={ws}
               w={w}
               boxes={boxes}

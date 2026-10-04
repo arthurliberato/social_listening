@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AddToReportButton } from "@/components/reports/AddToReportDialog";
 import { RangeForm } from "@/components/insights/RangeForm";
 import { WatchButton } from "@/components/insights/WatchButton";
 import { requireWorkspace } from "@/lib/auth/session";
@@ -79,6 +80,19 @@ export default async function AuthorsPage({
         />
       </div>
 
+      {editable && data.rows.length > 0 && (
+        <div className="mt-4">
+          <AddToReportButton
+            ws={slug}
+            source="authors"
+            draft={{
+              type: "top_authors",
+              title: "Top authors",
+              config: filters.q ? { queryId: filters.q } : {},
+            }}
+          />
+        </div>
+      )}
       {!data.hasQueries ? (
         <p
           className="mt-8 rounded-lg border border-dashed border-[var(--border)] p-8 text-center"

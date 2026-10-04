@@ -1,5 +1,5 @@
 // Running a report: every section is a widget, loaded independently so one failure never sinks the rest.
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, reports } from "@/db/client";
 import { summarize, toTable, type TableModel } from "@/lib/charts/tables";
 import { runWidget } from "@/lib/dashboards/service";
@@ -7,7 +7,14 @@ import type { WidgetData, WidgetResult } from "@/lib/dashboards/types";
 import { csvCell } from "@/lib/csv";
 import { reportCsv } from "./csv";
 import type { PdfSection } from "./pdf";
-import { RANGE_LABEL, rangeParam, SectionsSchema, type ReportRange, type Section } from "./types";
+import {
+  MAX_SECTIONS,
+  RANGE_LABEL,
+  rangeParam,
+  SectionsSchema,
+  type ReportRange,
+  type Section,
+} from "./types";
 
 export type ReportRow = typeof reports.$inferSelect;
 export interface LoadedSection {
@@ -93,3 +100,22 @@ export async function getReport(workspaceId: string, id: string): Promise<Report
 }
 
 export { csvCell };
+
+/**
+ * Append a section to a report's end in one statement, so two people adding at once keep both and the
+ * section limit can't be overshot. Returns null when the report isn't in this workspace or is full.
+ */
+export async function appendSection(
+  workspaceId: string,
+  reportId: string,
+  section: Section,
+): Promise<{ name: string; sections: number } | null> {
+  const res = await db.execute(sql`
+    UPDATE reports
+    SET sections = sections || ${JSON.stringify([section])}::jsonb, updated_at = now()
+    WHERE id = ${reportId}::uuid AND workspace_id = ${workspaceId}::uuid
+      AND jsonb_array_length(sections) < ${MAX_SECTIONS}
+    RETURNING name, jsonb_array_length(sections) AS n`);
+  const row = res.rows[0] as { name: string; n: number } | undefined;
+  return row ? { name: row.name, sections: Number(row.n) } : null;
+}

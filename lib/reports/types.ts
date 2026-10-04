@@ -17,7 +17,10 @@ export const SectionSchema = z.object({
   title: z.string().trim().min(1, "Sections need a title").max(80),
   config: ConfigSchema.default({}),
 });
-export const SectionsSchema = z.array(SectionSchema).max(20, "A report can have up to 20 sections");
+export const MAX_SECTIONS = 20;
+export const SectionsSchema = z
+  .array(SectionSchema)
+  .max(MAX_SECTIONS, "A report can have up to 20 sections");
 export type Section = z.infer<typeof SectionSchema>;
 export type { WidgetType };
 

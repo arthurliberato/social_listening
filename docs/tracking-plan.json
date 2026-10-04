@@ -862,6 +862,21 @@
   },
   {
    "area": "Reports",
+   "name": "Report Section Added",
+   "side": "client",
+   "properties": [
+    "widget_type",
+    "source",
+    "is_new_report"
+   ],
+   "description": "A widget from a dashboard, Topics or Authors was added to a report.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Reports",
    "name": "Report Exported",
    "side": "client",
    "properties": [

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AddToReportButton } from "@/components/reports/AddToReportDialog";
 import { RangeForm } from "@/components/insights/RangeForm";
 import { TopicLink } from "@/components/insights/Track";
 import { requireWorkspace } from "@/lib/auth/session";
@@ -7,7 +8,7 @@ import { mentionsHref } from "@/lib/insights/links";
 import { topicStats } from "@/lib/insights/service";
 import { workspaceQueries } from "@/lib/mentions/feed";
 import { parseFilters } from "@/lib/mentions/filters";
-import { accountPlan } from "@/lib/queries";
+import { accountPlan, canEdit } from "@/lib/queries";
 
 export const metadata = { title: "Topics & Trends · Ripplewise" };
 export const dynamic = "force-dynamic";
@@ -40,6 +41,19 @@ export default async function TopicsPage({
       <div className="mt-5">
         <RangeForm range={filters.range} q={filters.q} queries={qs} />
       </div>
+      {canEdit(ws.role) && data.rows.length > 0 && (
+        <div className="mt-4">
+          <AddToReportButton
+            ws={slug}
+            source="topics"
+            draft={{
+              type: "topic_cloud",
+              title: "Topics",
+              config: filters.q ? { queryId: filters.q } : {},
+            }}
+          />
+        </div>
+      )}
       {!data.hasQueries ? (
         <p
           className="mt-8 rounded-lg border border-dashed border-[var(--border)] p-8 text-center"
