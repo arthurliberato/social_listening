@@ -308,7 +308,8 @@ test("viewers read and export but can't create, edit or schedule; client viewers
   const res = await page.request.get(`/api/w/${slug}/reports/${id}/export?format=pdf`);
   expect(res.status()).toBe(403);
   await page.goto(`/w/${slug}/exports`);
-  await expect(page.getByTestId("export-permission")).toBeVisible();
+  // Client viewers are confined to dashboards and reports, so Exports redirects them back to Dashboards.
+  await page.waitForURL(`**/w/${slug}/dashboards`);
 });
 
 test("reports are scoped to their workspace", async ({ page, browser }) => {

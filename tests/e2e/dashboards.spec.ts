@@ -383,6 +383,7 @@ test("public link: Growth+ only, works without login, read-only, and can be turn
   page,
   browser,
 }) => {
+  test.setTimeout(120_000); // sign-up, backfill, plan change and an anonymous visit in one flow
   const { email, slug } = await createUser(page, { brand: BRAND });
   await ready(page, slug);
   await newFromTemplate(page, slug, "campaign_tracker");

@@ -217,7 +217,10 @@ test("the role matrix: what each role sees and can do, through real invitations"
       await p.goto(`/w/${slug}/reports`);
       await expect(p.getByTestId("report-card").first()).toBeVisible(); // everyone can read reports
       await expect(p.getByTestId("new-report")).toHaveCount(want.newReport ? 1 : 0);
-      await p.getByTestId("report-card").first().getByRole("link").click();
+      // Follow the link by its address: a click can land before the page has hydrated.
+      await p.goto(
+        (await p.getByTestId("report-card").first().getByRole("link").getAttribute("href"))!,
+      );
       await expect(p.getByTestId("report")).toBeVisible();
       await expect(p.getByTestId("export-menu")).toHaveCount(want.exportReport ? 1 : 0);
       await expect(p.getByTestId("edit-report")).toHaveCount(want.newReport ? 1 : 0);
