@@ -15,6 +15,7 @@ export const PAYWALLS = {
   audit_log: "The audit log isn't on your plan",
   white_label: "White-label isn't on your plan",
   mention_quota: "You've used this month's mentions",
+  ai_quota: "You've used this month's AI questions",
 } as const;
 
 export type PaywallTrigger = keyof typeof PAYWALLS;

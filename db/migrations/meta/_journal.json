@@ -78,6 +78,13 @@
       "when": 1791079449180,
       "tag": "0010_daily_lady_mastermind",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791114979530,
+      "tag": "0011_lame_nico_minoru",
+      "breakpoints": true
     }
   ]
 }

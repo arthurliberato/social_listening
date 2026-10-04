@@ -41,7 +41,7 @@ export default async function UsagePage() {
             m={m}
             upgradeHref={
               scope.canManage
-                ? `/upgrade?from=${m.key === "mentions" ? "mention_quota" : m.key === "queries" ? "query_limit" : m.key === "alerts" ? "alert_limit" : m.key === "seats" ? "seat_limit" : "usage"}`
+                ? `/upgrade?from=${m.key === "mentions" ? "mention_quota" : m.key === "queries" ? "query_limit" : m.key === "alerts" ? "alert_limit" : m.key === "seats" ? "seat_limit" : m.key === "ai" ? "ai_quota" : "usage"}`
                 : undefined
             }
           />

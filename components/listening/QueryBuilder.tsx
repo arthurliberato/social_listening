@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { previewAction, saveQuery } from "@/app/w/[ws]/queries/actions";
 import { Button } from "@/components/ui/button";
 import { ChipInput } from "@/components/listening/ChipInput";
+import { QueryWriter } from "@/components/ai/QueryWriter";
 import { PaywallModal, type PaywallProps } from "@/components/listening/PaywallModal";
 import { PreviewPanel, type PreviewState } from "@/components/listening/PreviewPanel";
 import { track } from "@/lib/analytics/client";
@@ -313,6 +314,17 @@ export function QueryBuilder({
 
       <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
         <div className="flex flex-col gap-4">
+          {!readOnly && (
+            <QueryWriter
+              ws={ws}
+              queryId={initial.id}
+              onWritten={(text) => {
+                setAdvanced(text);
+                setMode("advanced");
+                setSwitchWarning(false);
+              }}
+            />
+          )}
           <div role="tablist" aria-label="Builder mode" className="flex gap-2">
             {tab("guided", "Guided")}
             {tab("advanced", "Advanced")}

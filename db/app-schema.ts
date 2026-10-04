@@ -672,3 +672,24 @@ export const workspaceBranding = pgTable("workspace_branding", {
   hidePoweredBy: boolean("hide_powered_by").notNull().default(false),
   updatedAt: ts("updated_at").notNull().defaultNow(),
 });
+
+/** Everything the AI features produced for a workspace: answers to questions, summaries, peak explanations. */
+export const aiAnswers = pgTable(
+  "ai_answers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").references(() => users.id),
+    kind: text("kind").notNull(), // ask|summary|peak
+    prompt: text("prompt").notNull(),
+    answer: text("answer").notNull(),
+    /** [{ n, mentionId, excerpt, author, source, publishedAt }] — the evidence the answer rests on. */
+    citations: jsonb("citations").notNull().default([]),
+    provider: text("provider").notNull(),
+    latencyMs: integer("latency_ms").notNull().default(0),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("ai_answers_ws_idx").on(t.workspaceId, t.kind, t.createdAt)],
+);

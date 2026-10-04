@@ -12,6 +12,7 @@ import {
   users,
 } from "@/db/client";
 import { HourlyChart } from "@/components/alerts/HourlyChart";
+import { CrisisAi } from "@/components/ai/CrisisAi";
 import {
   RoomOpened,
   ResolveButton,
@@ -186,6 +187,13 @@ export default async function CrisisRoomPage({
           height={240}
         />
       </section>
+
+      <CrisisAi
+        ws={slug}
+        crisisId={c.id}
+        peakHour={stats.peakHour}
+        disabledReason={ws.locked ? "AI is paused while the account is read-only." : undefined}
+      />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section aria-labelledby="drivers-h" data-testid="drivers">
