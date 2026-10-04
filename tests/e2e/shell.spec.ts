@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { pool } from "./helpers";
 
@@ -416,6 +417,153 @@ for (const theme of ["light", "dark"] as const) {
       };
       if (c.state) await withAccount(email, c.state, body);
       else await body();
+    });
+  }
+}
+
+// M9 screens: members, workspaces, audit log, branding, and the invitation landing pages.
+async function withPlan(email: string, plan: string | null, fn: () => Promise<void>) {
+  const acct = (
+    await pool.query(
+      `SELECT a.id, a.plan_tier, a.billing_status FROM accounts a JOIN memberships m ON m.account_id = a.id JOIN users u ON u.id = m.user_id WHERE lower(u.email) = $1`,
+      [email],
+    )
+  ).rows[0];
+  const ws = (
+    await pool.query(
+      `SELECT m.workspace_id FROM memberships m JOIN users u ON u.id = m.user_id WHERE lower(u.email) = $1 LIMIT 1`,
+      [email],
+    )
+  ).rows[0].workspace_id;
+  const user = (await pool.query(`SELECT id FROM users WHERE lower(email) = $1`, [email])).rows[0]
+    .id;
+  const raw = `a11y${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}xxxx`;
+  const hashToken = (t: string) => createHash("sha256").update(t).digest("hex");
+  try {
+    if (plan)
+      await pool.query(
+        `UPDATE accounts SET plan_tier = $2, billing_status = 'active' WHERE id = $1`,
+        [acct.id, plan],
+      );
+    await pool.query(
+      `INSERT INTO invitations (workspace_id, account_id, email, role, token_hash, invited_by, expires_at) VALUES ($1,$2,'pending-a11y@example.test','viewer',$3,$4, now() + interval '5 days')`,
+      [ws, acct.id, hashToken(raw + "p"), user],
+    );
+    await pool.query(
+      `INSERT INTO invitations (workspace_id, account_id, email, role, token_hash, invited_by, expires_at) VALUES ($1,$2,'new-a11y@example.test','client_viewer',$3,$4, now() + interval '5 days')`,
+      [ws, acct.id, hashToken(raw), user],
+    );
+    await pool.query(
+      `INSERT INTO audit_log (account_id, workspace_id, actor_user_id, action, target_type, target_id, meta) VALUES ($1,$2,$3,'member.invited','invitation','new-a11y@example.test','{"role":"client_viewer"}'), ($1,$2,$3,'member.role_changed','user',$3,'{"name":"Sam","from":"editor","to":"viewer"}'), ($1,$2,$3,'workspace.renamed','workspace',$2,'{"from":"Old","to":"New"}')`,
+      [acct.id, ws, user],
+    );
+    await fn.call({ token: raw });
+  } finally {
+    await pool.query(`DELETE FROM audit_log WHERE account_id = $1`, [acct.id]);
+    await pool.query(
+      `DELETE FROM invitations WHERE email IN ('pending-a11y@example.test','new-a11y@example.test') AND account_id = $1`,
+      [acct.id],
+    );
+    await pool.query(`UPDATE accounts SET plan_tier = $2, billing_status = $3 WHERE id = $1`, [
+      acct.id,
+      acct.plan_tier,
+      acct.billing_status,
+    ]);
+  }
+}
+const teamCases: {
+  name: string;
+  plan: string | null;
+  run: (p: Page, slug: string, token: string) => Promise<void>;
+}[] = [
+  {
+    name: "members",
+    plan: null,
+    run: async (p, slug) => {
+      await p.goto(`/settings/members?ws=${slug}`);
+      await expect(p.getByTestId("invite-row").first()).toBeVisible();
+    },
+  },
+  {
+    name: "members after inviting",
+    plan: null,
+    run: async (p, slug) => {
+      await p.goto(`/settings/members?ws=${slug}`);
+      await p.getByTestId("invite-emails").fill("someone@example.test, nope");
+      await p.getByTestId("invite-send").click();
+      await expect(p.getByTestId("invite-results")).toBeVisible();
+    },
+  },
+  {
+    name: "workspaces",
+    plan: null,
+    run: async (p) => {
+      await p.goto("/settings/workspaces");
+      await expect(p.getByTestId("workspace-row").first()).toBeVisible();
+    },
+  },
+  {
+    name: "audit locked",
+    plan: null,
+    run: async (p) => {
+      await p.goto("/settings/audit");
+      await expect(p.getByTestId("audit-locked")).toBeVisible();
+    },
+  },
+  {
+    name: "audit log",
+    plan: "enterprise",
+    run: async (p) => {
+      await p.goto("/settings/audit");
+      await expect(p.getByTestId("audit-table")).toBeVisible();
+    },
+  },
+  {
+    name: "branding locked",
+    plan: null,
+    run: async (p) => {
+      await p.goto("/settings/branding");
+      await expect(p.getByTestId("branding-locked")).toBeVisible();
+    },
+  },
+  {
+    name: "branding form",
+    plan: "agency",
+    run: async (p) => {
+      await p.goto("/settings/branding");
+      await p.getByTestId("brand-display-name").fill("Studio North");
+      await p.getByTestId("brand-accent").fill("#ffee00");
+      await expect(p.getByTestId("accent-hint")).toContainText("contrast");
+    },
+  },
+  {
+    name: "invitation (new person)",
+    plan: null,
+    run: async (p, _s, token) => {
+      await p.context().clearCookies();
+      await p.goto(`/invite/${token}`);
+      await expect(p.getByTestId("invite-signed-out")).toBeVisible();
+    },
+  },
+  {
+    name: "invitation unavailable",
+    plan: null,
+    run: async (p) => {
+      await p.goto("/invite/not-a-real-token-at-all-0123456789");
+      await expect(p.getByTestId("invite-unavailable")).toBeVisible();
+    },
+  },
+];
+for (const theme of ["light", "dark"] as const) {
+  for (const c of teamCases) {
+    test(`team ${c.name} has no serious a11y violations (${theme})`, async ({ page }) => {
+      test.setTimeout(90_000);
+      await page.addInitScript((t) => localStorage.setItem("rw-theme", t), theme);
+      const { slug, email } = meta();
+      await withPlan(email, c.plan, async function (this: { token: string }) {
+        await c.run(page, slug, this.token);
+        await scan(page);
+      });
     });
   }
 }

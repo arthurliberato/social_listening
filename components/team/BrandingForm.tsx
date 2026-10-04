@@ -6,7 +6,7 @@ import { saveBrandingAction } from "@/app/settings/team/actions";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
-import { contrastOnWhite, isHex, MIN_CONTRAST, type Branding } from "@/lib/team/branding";
+import { contrastOnWhite, isHex, MIN_CONTRAST, type Branding } from "@/lib/team/contrast";
 
 export function BrandingForm({
   ws,

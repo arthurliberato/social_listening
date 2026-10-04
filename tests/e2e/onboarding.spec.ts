@@ -186,10 +186,11 @@ test("invites respect the trial seat limit and can be accepted", async ({ page, 
     `SELECT body_text FROM emails WHERE to_address = $1 AND type = 'invite'`,
     [invitee],
   );
-  const link = /(http:\/\/\S+\/signup\?invite=\S+)/.exec(rows[0].body_text)![1]!;
+  const link = /(http:\/\/\S+\/invite\/\S+)/.exec(rows[0].body_text)![1]!;
   const ctx = await browser.newContext();
   const p2 = await ctx.newPage();
   await p2.goto(link);
+  await p2.getByTestId("invite-signup").click(); // the invitation page: new address, so create an account
   await expect(p2.getByTestId("signup-email")).toHaveValue(invitee);
   await p2.getByTestId("signup-name").fill("Invited Teammate");
   await p2.getByTestId("signup-password").fill(PASSWORD);

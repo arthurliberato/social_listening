@@ -7,7 +7,7 @@ const ITEMS = [
   { href: "/settings/billing", label: "Billing", manage: true },
   { href: "/settings/usage", label: "Usage", manage: false },
   { href: "/settings/members", label: "Members", manage: true },
-  { href: "/settings/workspaces", label: "Workspaces", manage: true },
+  { href: "/settings/workspaces", label: "Workspaces", manage: false },
   { href: "/settings/branding", label: "Branding", manage: true },
   { href: "/settings/audit", label: "Audit log", manage: true },
 ];

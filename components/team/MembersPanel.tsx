@@ -282,7 +282,7 @@ export function MembersPanel({
                       </span>
                     </th>
                     <td className="px-3 py-2">
-                      {options.length > 1 ? (
+                      {options.length > 1 && !isMe ? (
                         <select
                           aria-label={`Role for ${m.name}`}
                           value={cur}

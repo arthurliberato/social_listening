@@ -158,15 +158,15 @@ describe("scheduled delivery", () => {
       .returning();
 
     // Not due yet: nothing.
-    expect(await runDueReports(new Date("2026-10-05T07:59:00Z"))).toEqual([]);
+    expect(await runDueReports(new Date("2026-10-05T07:59:00Z"), [s!.id])).toEqual([]);
 
-    const sent = await runDueReports(now);
+    const sent = await runDueReports(now, [s!.id]);
     expect(sent).toEqual([{ scheduleId: s!.id, sent: 3 }]); // owner + viewer + the outside address
     // The next run moved a week on; running again at the same time sends nothing.
     const [after] = await db.select().from(reportSchedules).where(eq(reportSchedules.id, s!.id));
     expect(after!.nextRunAt.toISOString()).toBe("2026-10-12T08:00:00.000Z");
     expect(after!.lastRunAt!.toISOString()).toBe(now.toISOString());
-    expect(await runDueReports(now)).toEqual([]);
+    expect(await runDueReports(now, [s!.id])).toEqual([]);
 
     const mail = await db.select().from(emails).where(eq(emails.toUserId, f.owner.id));
     expect(mail).toHaveLength(1);
@@ -228,14 +228,17 @@ describe("scheduled delivery", () => {
     await recordOpen(v!.id);
     expect(await eventCount(f.owner.id, "Email Opened")).toBe(0);
 
-    await db.insert(reportSchedules).values({
-      reportId: f.r.id,
-      workspaceId: f.w.id,
-      frequency: "daily",
-      recipientIds: [f.owner.id],
-      active: false,
-      nextRunAt: new Date("2026-10-01T08:00:00Z"),
-    });
-    expect(await runDueReports(new Date("2026-10-05T08:00:00Z"))).toEqual([]);
+    const [paused] = await db
+      .insert(reportSchedules)
+      .values({
+        reportId: f.r.id,
+        workspaceId: f.w.id,
+        frequency: "daily",
+        recipientIds: [f.owner.id],
+        active: false,
+        nextRunAt: new Date("2026-10-01T08:00:00Z"),
+      })
+      .returning();
+    expect(await runDueReports(new Date("2026-10-05T08:00:00Z"), [paused!.id])).toEqual([]);
   }, 120_000);
 });

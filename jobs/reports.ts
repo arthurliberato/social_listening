@@ -1,4 +1,4 @@
-import { and, eq, lte } from "drizzle-orm";
+import { and, eq, inArray, lte } from "drizzle-orm";
 import { accounts, db, reports, reportSchedules, workspaces } from "@/db/client";
 import { isReadOnly } from "@/lib/billing/lifecycle";
 import { limits, type PlanTier } from "@/lib/entitlements/plans";
@@ -13,11 +13,18 @@ import { simNow } from "@/lib/simclock";
  */
 export async function runDueReports(
   now: Date = simNow(),
+  only?: string[],
 ): Promise<{ scheduleId: string; sent: number }[]> {
   const due = await db
     .select()
     .from(reportSchedules)
-    .where(and(eq(reportSchedules.active, true), lte(reportSchedules.nextRunAt, now)));
+    .where(
+      and(
+        eq(reportSchedules.active, true),
+        lte(reportSchedules.nextRunAt, now),
+        only ? inArray(reportSchedules.id, only) : undefined,
+      ),
+    );
   const out: { scheduleId: string; sent: number }[] = [];
   for (const s of due) {
     // Read-only accounts, and plans without scheduled reports, don't send (nothing is claimed, so it resumes if they return).

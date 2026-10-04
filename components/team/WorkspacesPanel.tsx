@@ -5,6 +5,7 @@ import { useState } from "react";
 import {
   archiveWorkspaceAction,
   createWorkspaceAction,
+  leaveWorkspaceAction,
   renameWorkspaceAction,
   restoreWorkspaceAction,
 } from "@/app/settings/team/actions";
@@ -51,6 +52,7 @@ export function WorkspacesPanel({
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [confirm, setConfirm] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [paywall, setPaywall] = useState<PaywallProps | null>(null);
@@ -99,6 +101,7 @@ export function WorkspacesPanel({
     const r = await fn();
     setBusy(null);
     setConfirm(null);
+    setLeaving(null);
     setEditing(null);
     if (!r.ok) {
       if (r.upgradeTo) return openPaywall(r.upgradeTo);
@@ -174,8 +177,47 @@ export function WorkspacesPanel({
                     {w.type === "client" ? "Client" : "Own brand"} · you&apos;re{" "}
                     {ROLE_LABEL[w.role].toLowerCase()}
                   </span>
+                  <span className="ml-auto flex flex-wrap items-center gap-2">
+                    {leaving === w.slug ? (
+                      <span
+                        role="group"
+                        aria-label={`Confirm leaving ${w.name}`}
+                        className="flex items-center gap-2"
+                      >
+                        <span className="text-sm">You&apos;ll lose access to {w.name}.</span>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() =>
+                            run(
+                              `lv-${w.slug}`,
+                              () => leaveWorkspaceAction(w.slug),
+                              "You left the workspace.",
+                            )
+                          }
+                          loading={busy === `lv-${w.slug}`}
+                          data-testid="leave-confirm"
+                        >
+                          Leave
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setLeaving(null)}>
+                          Stay
+                        </Button>
+                      </span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setLeaving(w.slug)}
+                        aria-label={`Leave ${w.name}`}
+                        data-testid="leave-open"
+                      >
+                        Leave
+                      </Button>
+                    )}
+                  </span>
                   {w.canManage && (
-                    <span className="ml-auto flex flex-wrap gap-2">
+                    <span className="flex flex-wrap gap-2">
                       <Button
                         size="sm"
                         variant="secondary"
