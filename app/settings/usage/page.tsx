@@ -3,6 +3,8 @@ import { MeterBar } from "@/components/billing/MeterBar";
 import { requireUser } from "@/lib/auth/session";
 import { accountOf, billingScope } from "@/lib/billing/context";
 import { accountUsage } from "@/lib/billing/usage";
+import { HealthPanel } from "@/components/billing/HealthPanel";
+import { latestScore } from "@/lib/scoring/latest";
 import { PLANS, type PlanTier } from "@/lib/entitlements/plans";
 
 export const metadata = { title: "Usage · Ripplewise" };
@@ -16,6 +18,7 @@ export default async function UsagePage() {
   const tier = a.planTier as PlanTier;
   const meters = await accountUsage(a.id, tier);
   const plan = PLANS[tier];
+  const score = scope.canManage ? await latestScore(a.id) : null;
   const near = meters.some((m) => m.pct >= 80);
   return (
     <div className="max-w-3xl">
@@ -34,6 +37,7 @@ export default async function UsagePage() {
             : "twice a day"}
         .
       </p>
+      {scope.canManage && <HealthPanel score={score} />}
       <ul className="mt-6 flex flex-col gap-3" data-testid="meters">
         {meters.map((m) => (
           <MeterBar

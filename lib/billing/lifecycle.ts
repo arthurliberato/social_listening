@@ -295,7 +295,10 @@ async function step(a: Account, now: Date): Promise<LifecycleAction[]> {
         })
         .where(eq(accounts.id, a.id));
       out.push("canceled");
-    } else out.push(await charge(a, now, "renewal"));
+    } else if (a.motion !== "sales_assisted") {
+      // Invoiced contracts aren't card-charged; the sales team handles the renewal conversation.
+      out.push(await charge(a, now, "renewal"));
+    }
   } else if (a.billingStatus === "past_due" && a.nextRetryAt && t >= a.nextRetryAt.getTime()) {
     if (a.cancelAtPeriodEnd) {
       await db

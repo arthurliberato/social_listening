@@ -693,3 +693,84 @@ export const aiAnswers = pgTable(
   },
   (t) => [index("ai_answers_ws_idx").on(t.workspaceId, t.kind, t.createdAt)],
 );
+
+/** A request to talk to sales: a contact message or a demo booking. Anonymous visitors can send one. */
+export const salesRequests = pgTable(
+  "sales_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id").references(() => accounts.id, { onDelete: "set null" }),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    company: text("company").notNull(),
+    kind: text("kind").notNull(), // contact|demo
+    seats: integer("seats").notNull(),
+    message: text("message").notNull().default(""),
+    entryPoint: text("entry_point").notNull(),
+    demoAt: ts("demo_at"),
+    status: text("status").notNull().default("new"), // new|demo_booked|quoted
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("sales_requests_status_idx").on(t.status, t.createdAt)],
+);
+
+/** A priced proposal. The token in the emailed link is the only way in (it is stored hashed). */
+export const quotes = pgTable(
+  "quotes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    requestId: uuid("request_id")
+      .notNull()
+      .references(() => salesRequests.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    seats: integer("seats").notNull(),
+    termMonths: integer("term_months").notNull(),
+    /** Total value over the whole term, in cents. */
+    valueCents: bigint("value_cents", { mode: "number" }).notNull(),
+    status: text("status").notNull().default("sent"), // sent|viewed|accepted|signed|expired
+    expiresAt: ts("expires_at").notNull(),
+    viewedAt: ts("viewed_at"),
+    acceptedAt: ts("accepted_at"),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("quotes_request_idx").on(t.requestId)],
+);
+
+export const contracts = pgTable("contracts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  quoteId: uuid("quote_id")
+    .notNull()
+    .unique()
+    .references(() => quotes.id),
+  accountId: uuid("account_id")
+    .notNull()
+    .references(() => accounts.id),
+  signedBy: uuid("signed_by")
+    .notNull()
+    .references(() => users.id),
+  signatureName: text("signature_name").notNull(),
+  seats: integer("seats").notNull(),
+  termMonths: integer("term_months").notNull(),
+  valueCents: bigint("value_cents", { mode: "number" }).notNull(),
+  startsAt: ts("starts_at").notNull(),
+  endsAt: ts("ends_at").notNull(),
+  signedAt: ts("signed_at").notNull().defaultNow(),
+});
+
+/** One row per account per day from the nightly scoring job: the warehouse's account-health time series. */
+export const accountScores = pgTable(
+  "account_scores",
+  {
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    day: text("day").notNull(), // YYYY-MM-DD (sim clock, UTC)
+    pqa: integer("pqa").notNull(),
+    health: integer("health").notNull(),
+    healthBand: text("health_band").notNull(), // healthy|watch|at_risk
+    signals: jsonb("signals").notNull().default({}),
+    computedAt: ts("computed_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.accountId, t.day] })],
+);

@@ -3,6 +3,7 @@ import { and, count, eq, isNull } from "drizzle-orm";
 import { alertRules, db, queries, usageCounters, workspaces } from "@/db/client";
 import { limits, type PlanTier } from "@/lib/entitlements/plans";
 import { seatUsage } from "@/lib/team/seats";
+import { simNow } from "@/lib/simclock";
 import { periodOf } from "@/lib/usage";
 
 export interface Meter {
@@ -15,7 +16,11 @@ export interface Meter {
   note: string;
 }
 
-export async function accountUsage(accountId: string, tier: PlanTier): Promise<Meter[]> {
+export async function accountUsage(
+  accountId: string,
+  tier: PlanTier,
+  now: Date = simNow(),
+): Promise<Meter[]> {
   const p = limits(tier);
   const [mentions] = await db
     .select({ v: usageCounters.value })
@@ -23,7 +28,7 @@ export async function accountUsage(accountId: string, tier: PlanTier): Promise<M
     .where(
       and(
         eq(usageCounters.accountId, accountId),
-        eq(usageCounters.period, periodOf()),
+        eq(usageCounters.period, periodOf(now)),
         eq(usageCounters.metric, "mentions"),
       ),
     );
@@ -33,7 +38,7 @@ export async function accountUsage(accountId: string, tier: PlanTier): Promise<M
     .where(
       and(
         eq(usageCounters.accountId, accountId),
-        eq(usageCounters.period, periodOf()),
+        eq(usageCounters.period, periodOf(now)),
         eq(usageCounters.metric, "ai_questions"),
       ),
     );

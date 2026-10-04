@@ -178,7 +178,7 @@ export function PlanChooser({
               </ul>
               {t === "enterprise" ? (
                 <a
-                  href="mailto:sales@ripplewise.test?subject=Ripplewise%20Enterprise"
+                  href={`/contact-sales?entry=${authed ? "upgrade_page" : "pricing_enterprise"}`}
                   className={`${btn} border border-[var(--border)] hover:bg-[var(--surface-2)]`}
                   data-testid="cta-enterprise"
                 >

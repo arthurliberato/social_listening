@@ -91,3 +91,25 @@ async function sendGa4(ga4Name: string, userId: string | null, props: Record<str
     },
   );
 }
+
+/**
+ * Push account-level properties to Amplitude (a "group identify" on the account group) so product
+ * analytics can segment by health band, PQA and plan. Properties are scores and counts only: never
+ * names or emails. A no-op without an Amplitude key.
+ */
+export async function groupIdentifyAccount(
+  accountId: string,
+  props: Record<string, string | number | boolean>,
+) {
+  const key = process.env.AMPLITUDE_API_KEY;
+  if (!key) return;
+  try {
+    const amp = await import("@amplitude/analytics-node");
+    amp.init(key);
+    const id = new amp.Identify();
+    for (const [k, v] of Object.entries(props)) id.set(k, v);
+    await amp.groupIdentify("account", accountId, id).promise;
+  } catch (err) {
+    console.error("[analytics] group identify failed", err);
+  }
+}

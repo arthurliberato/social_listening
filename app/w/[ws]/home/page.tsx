@@ -7,12 +7,19 @@ import { requireWorkspace } from "@/lib/auth/session";
 import { estimateMentions } from "@/lib/query/estimate";
 import { simNow } from "@/lib/simclock";
 
+import { SalesCard } from "@/components/billing/SalesCard";
+import { showSalesCard } from "@/lib/scoring/latest";
+
 export const metadata = { title: "Home · Ripplewise" };
 export const dynamic = "force-dynamic";
 
 export default async function Home({ params }: { params: Promise<{ ws: string }> }) {
   const { ws: slug } = await params;
-  const { ws } = await requireWorkspace(slug);
+  const { user, ws } = await requireWorkspace(slug);
+  const salesCard =
+    (ws.realRole === "owner" || ws.realRole === "admin") && !ws.locked
+      ? await showSalesCard(ws.accountId, simNow())
+      : false;
   const [acct] = await db.select().from(accounts).where(eq(accounts.id, ws.accountId));
   const [{ nq } = { nq: 0 }] = await db
     .select({ nq: count() })
@@ -54,6 +61,11 @@ export default async function Home({ params }: { params: Promise<{ ws: string }>
       <TrackHomeView />
       <div>
         <h1 className="text-[30px] font-semibold leading-[38px]">Home</h1>
+        {salesCard && (
+          <div className="mt-4">
+            <SalesCard ws={slug} userId={user.id} />
+          </div>
+        )}
         {acct?.planTier === "trial" && daysLeft !== null && (
           <p
             className="mt-2 rounded-md border border-[var(--info)] p-3 text-sm"

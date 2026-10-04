@@ -2,6 +2,8 @@ import { getBoss, QUEUES } from "@/lib/jobs/boss";
 import { runBackfill } from "./backfill";
 import { runBillingLifecycle } from "@/lib/billing/lifecycle";
 import { runDueReports } from "./reports";
+import { runNightlyScoring } from "./pqa";
+import { runSalesDesk } from "@/lib/sales/desk";
 import { runReleaseAll } from "./release";
 
 let started = false;
@@ -28,6 +30,16 @@ export async function startWorkers() {
   await boss.schedule(QUEUES.billing, "*/5 * * * *");
   await boss.work(QUEUES.billing, async () => {
     await runBillingLifecycle();
+  });
+  // Nightly PQA and health scores → account group properties, and an SDR heads-up for new leads.
+  await boss.schedule(QUEUES.scoring, "0 2 * * *");
+  await boss.work(QUEUES.scoring, async () => {
+    await runNightlyScoring();
+  });
+  // A simulated sales desk answers contact requests and follows up on demos.
+  await boss.schedule(QUEUES.sales, "*/5 * * * *");
+  await boss.work(QUEUES.sales, async () => {
+    await runSalesDesk();
   });
 }
 
