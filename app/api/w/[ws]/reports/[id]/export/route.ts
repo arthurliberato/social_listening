@@ -12,6 +12,7 @@ import {
   pdfSections,
   periodLabel,
 } from "@/lib/reports/service";
+import { effectiveBranding } from "@/lib/team/branding";
 import { toTable } from "@/lib/charts/tables";
 
 export const dynamic = "force-dynamic";
@@ -43,14 +44,25 @@ export async function GET(
   );
   let body: Buffer | string;
   if (format === "csv") body = csvOf(report, loaded);
-  else
+  else {
+    const b = await effectiveBranding(ws.id);
+    const branded = !!(b.displayName || b.accent || b.footerText || b.hidePoweredBy);
     body = await renderReportPdf({
       title: report.name,
       workspace: ws.name,
       period: periodLabel(report, loaded),
       generatedAt: new Date(),
       sections: pdfSections(loaded),
+      brand: branded
+        ? {
+            name: b.displayName,
+            accent: b.accent,
+            footer: b.footerText,
+            hidePoweredBy: b.hidePoweredBy,
+          }
+        : undefined,
     });
+  }
 
   await db.insert(exportsLog).values({
     workspaceId: ws.id,

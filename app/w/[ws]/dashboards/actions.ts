@@ -5,6 +5,7 @@ import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { dashboards, db, widgets } from "@/db/client";
+import { audit } from "@/lib/audit";
 import { trackServer } from "@/lib/analytics/server";
 import { requireWorkspace } from "@/lib/auth/session";
 import { WIDGETS, widgetAllowed, type WidgetType } from "@/lib/dashboards/catalog";
@@ -247,6 +248,15 @@ export async function setPublicLink(
   if (!dash) return { ok: false, error: "That dashboard no longer exists." };
   const token = enabled ? (dash.publicToken ?? randomBytes(24).toString("base64url")) : null;
   await db.update(dashboards).set({ publicToken: token }).where(eq(dashboards.id, id));
+  await audit({
+    accountId: ws.accountId,
+    workspaceId: ws.id,
+    actorUserId: user.id,
+    action: enabled ? "dashboard.shared_publicly" : "dashboard.unshared",
+    targetType: "dashboard",
+    targetId: id,
+    meta: { name: dash.name },
+  });
   if (enabled)
     await trackServer(
       "Dashboard Shared",

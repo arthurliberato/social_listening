@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { audit } from "@/lib/audit";
 import { requireUser } from "@/lib/auth/session";
 import { billingScope } from "@/lib/billing/context";
 import { updateCard } from "@/lib/billing/lifecycle";
@@ -29,8 +30,14 @@ async function manager() {
     return {
       fail: { ok: false, error: "Only a workspace owner or admin can change billing." } as Fail,
     };
-  return { scope };
+  return { scope, userId: user.id };
 }
+
+const say = (
+  m: { scope: { accountId: string }; userId: string },
+  action: string,
+  meta: Record<string, string | number | boolean | null> = {},
+) => audit({ accountId: m.scope.accountId, actorUserId: m.userId, action, meta });
 
 const CardSchema = z.object({
   number: z.string().max(30),
@@ -53,7 +60,10 @@ export async function checkoutAction(
   if (!p.success)
     return { ok: false, error: "Something in that form wasn't right. Check it and try again." };
   const r = await subscribe({ accountId: m.scope.accountId, ...p.data });
-  if (r.ok) revalidatePath("/settings/billing");
+  if (r.ok) {
+    revalidatePath("/settings/billing");
+    await say(m, "plan.subscribed", { plan: p.data.tier, interval: p.data.interval });
+  }
   return r;
 }
 
@@ -63,7 +73,13 @@ export async function changePlanAction(input: unknown): Promise<ChangeResult> {
   const p = Plan.safeParse(input);
   if (!p.success) return { ok: false, error: "Choose a plan." };
   const r = await changePlan({ accountId: m.scope.accountId, ...p.data });
-  if (r.ok) revalidatePath("/settings/billing");
+  if (r.ok) {
+    revalidatePath("/settings/billing");
+    await say(m, r.applied === "now" ? "plan.upgraded" : "plan.downgrade_scheduled", {
+      plan: p.data.tier,
+      interval: p.data.interval,
+    });
+  }
   return r;
 }
 
@@ -77,6 +93,7 @@ export async function updateCardAction(
   const r = await updateCard({ accountId: m.scope.accountId, card: p.data }, simNow());
   if (!r.ok) return r;
   revalidatePath("/settings/billing");
+  await say(m, "card.updated");
   return { ok: true, recovered: r.retried === "retry_succeeded" };
 }
 
@@ -111,6 +128,7 @@ export async function cancelAction(reason: string): Promise<{ ok: true; endsOn: 
   const r = await confirmCancel({ accountId: m.scope.accountId, reason: p.data });
   if (!r.ok) return r;
   revalidatePath("/settings/billing");
+  await say(m, "plan.canceled", { reason: p.data });
   return { ok: true, endsOn: r.endsOn.toISOString() };
 }
 
@@ -118,6 +136,9 @@ export async function resumeAction(): Promise<{ ok: true } | Fail> {
   const m = await manager();
   if (m.fail) return m.fail;
   const r = await resumeSubscription(m.scope.accountId);
-  if (r.ok) revalidatePath("/settings/billing");
+  if (r.ok) {
+    revalidatePath("/settings/billing");
+    await say(m, "plan.resumed");
+  }
   return r;
 }

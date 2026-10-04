@@ -1,7 +1,9 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { accounts, db, memberships, users, workspaces } from "@/db/client";
+import { clientMaySee } from "@/lib/permissions";
 
 export async function requireUser() {
   const session = await auth();
@@ -23,7 +25,7 @@ export async function userWorkspaces(userId: string) {
     })
     .from(memberships)
     .innerJoin(workspaces, eq(memberships.workspaceId, workspaces.id))
-    .where(eq(memberships.userId, userId))
+    .where(and(eq(memberships.userId, userId), isNull(workspaces.archivedAt)))
     .orderBy(workspaces.createdAt);
 }
 
@@ -40,6 +42,12 @@ export async function requireWorkspace(slug: string) {
     .select({ status: accounts.billingStatus })
     .from(accounts)
     .where(eq(accounts.id, ws.accountId));
+  // Client viewers get dashboards and reports and nothing else, checked here for every page and action.
+  if (ws.role === "client_viewer") {
+    const path = (await headers()).get("x-pathname") ?? "";
+    const section = new RegExp(`^/w/${slug}/([^/]+)`).exec(path)?.[1];
+    if (path.startsWith(`/w/${slug}`) && !clientMaySee(section)) redirect(`/w/${slug}/dashboards`);
+  }
   const locked = acct?.status === "locked" || acct?.status === "canceled";
   return { user, ws: { ...ws, role: locked ? "viewer" : ws.role, realRole: ws.role, locked } };
 }

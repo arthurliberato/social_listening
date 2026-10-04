@@ -4,7 +4,8 @@ import { GlobalShortcuts } from "@/components/shell/GlobalShortcuts";
 import { ToastProvider } from "@/components/ui/toast";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { Topbar } from "@/components/shell/Topbar";
-import { requireWorkspace } from "@/lib/auth/session";
+import { requireWorkspace, userWorkspaces } from "@/lib/auth/session";
+import { effectiveBranding } from "@/lib/team/branding";
 import { getMentionUsage } from "@/lib/usage";
 import { desc, eq, and, count } from "drizzle-orm";
 import { accounts, alertEvents, alertRules, db } from "@/db/client";
@@ -22,7 +23,12 @@ export default async function WorkspaceLayout({
   const { user, ws } = await requireWorkspace(slug);
   if (!user.emailVerifiedAt) redirect("/verify");
   if (!user.onboardingCompletedAt) redirect("/onboarding");
-  const usage = await getMentionUsage(ws.accountId);
+  const isClient = ws.realRole === "client_viewer";
+  const [usage, myWorkspaces, brand] = await Promise.all([
+    getMentionUsage(ws.accountId),
+    userWorkspaces(user.id),
+    isClient ? effectiveBranding(ws.id) : Promise.resolve({ displayName: "" }),
+  ]);
   const [acct] = await db.select().from(accounts).where(eq(accounts.id, ws.accountId));
   const [[unread], recent] = await Promise.all([
     db
@@ -63,6 +69,10 @@ export default async function WorkspaceLayout({
           recentAlerts={recent.map((r) => ({ ...r, firedAt: r.firedAt.toISOString() }))}
           now={simNow().getTime()}
           canManageBilling={ws.realRole === "owner" || ws.realRole === "admin"}
+          isClient={isClient}
+          brandName={brand.displayName}
+          workspaces={myWorkspaces.map((w) => ({ id: w.id, slug: w.slug, name: w.name }))}
+          currentId={ws.id}
         />
         <BillingBanner
           acct={acct!}
@@ -84,7 +94,7 @@ export default async function WorkspaceLayout({
           </p>
         )}
         <div className="flex min-h-0 flex-1">
-          <Sidebar ws={slug} />
+          <Sidebar ws={slug} clientOnly={isClient} />
           <main id="main" tabIndex={-1} className="flex-1 overflow-y-auto p-6">
             {children}
           </main>

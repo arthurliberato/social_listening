@@ -49,7 +49,13 @@ export function toggleSidebar(force?: boolean) {
   window.dispatchEvent(new Event("rw-sidebar"));
 }
 
-export function Sidebar({ ws }: { ws: string }) {
+export function Sidebar({ ws, clientOnly = false }: { ws: string; clientOnly?: boolean }) {
+  const groups = clientOnly
+    ? NAV_GROUPS.map((g) => ({
+        ...g,
+        items: g.items.filter((i) => i.key === "dashboards" || i.key === "reports"),
+      })).filter((g) => g.items.length)
+    : NAV_GROUPS;
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
@@ -65,7 +71,7 @@ export function Sidebar({ ws }: { ws: string }) {
       data-testid="sidebar"
       className="hidden w-60 shrink-0 flex-col gap-4 overflow-y-auto border-r border-[var(--border)] bg-[var(--surface)] p-3 md:flex [[data-sidebar=collapsed]_&]:w-16"
     >
-      {NAV_GROUPS.map((group) => (
+      {groups.map((group) => (
         <div key={group.label}>
           <h2 className="px-2 pb-1 text-xs font-medium uppercase tracking-wide text-[var(--text-muted)] [[data-sidebar=collapsed]_&]:sr-only">
             {group.label}

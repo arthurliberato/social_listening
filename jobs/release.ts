@@ -28,7 +28,7 @@ export async function runRelease(
   if (!q || q.status !== "live" || !q.releasedThrough) return null; // not backfilled yet
   const [ws] = await db.select().from(workspaces).where(eq(workspaces.id, q.workspaceId));
   const [acct] = await db.select().from(accounts).where(eq(accounts.id, ws!.accountId));
-  if (isReadOnly(acct!.billingStatus)) return null; // locked or cancelled: collection is paused
+  if (isReadOnly(acct!.billingStatus) || ws!.archivedAt) return null; // locked, cancelled or archived: collection is paused
   const tier = acct!.planTier as PlanTier;
   const until = visibleUntil(tier, now);
   if (until <= q.releasedThrough) return { queryId, matched: 0, exhausted: false };

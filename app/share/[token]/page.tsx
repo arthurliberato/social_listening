@@ -7,6 +7,7 @@ import type { DraftWidget } from "@/components/dashboards/DashboardGrid";
 import { trackServer } from "@/lib/analytics/server";
 import { isWidgetType, type WidgetConfig } from "@/lib/dashboards/catalog";
 import { workspaceAccount } from "@/lib/dashboards/service";
+import { effectiveBranding } from "@/lib/team/branding";
 import { parseFilters } from "@/lib/mentions/filters";
 
 export const metadata: Metadata = {
@@ -48,6 +49,7 @@ export default async function SharePage({
     .select({ name: workspaces.name })
     .from(workspaces)
     .where(eq(workspaces.id, dash.workspaceId));
+  const brand = await effectiveBranding(dash.workspaceId);
   const rows = await db
     .select()
     .from(widgets)
@@ -76,9 +78,14 @@ export default async function SharePage({
 
   return (
     <main id="main" className="mx-auto max-w-[1600px] p-6">
-      <header className="mb-4">
+      <header
+        className="mb-4"
+        style={
+          brand.accent ? { borderTop: `4px solid ${brand.accent}`, paddingTop: 12 } : undefined
+        }
+      >
         <p className="text-sm text-[var(--text-muted)]" data-testid="share-banner">
-          Shared by {w?.name} · read-only
+          Shared by {brand.displayName || w?.name} · read-only
         </p>
         <h1 className="text-[30px] font-semibold leading-[38px]" data-testid="dash-title">
           {dash.name}
@@ -93,11 +100,19 @@ export default async function SharePage({
         range={{ range: f.range, from: f.from, to: f.to }}
         historyDays={plan.historyDays}
       />
-      <footer className="mt-8 border-t border-[var(--border)] pt-4 text-sm text-[var(--text-muted)]">
-        Built with Ripplewise.{" "}
-        <Link href="/signup" className="underline">
-          Start a free trial
-        </Link>
+      <footer
+        className="mt-8 border-t border-[var(--border)] pt-4 text-sm text-[var(--text-muted)]"
+        data-testid="share-footer"
+      >
+        {brand.footerText && <p data-testid="brand-footer">{brand.footerText}</p>}
+        {!brand.hidePoweredBy && (
+          <p>
+            Built with Ripplewise.{" "}
+            <Link href="/signup" className="underline">
+              Start a free trial
+            </Link>
+          </p>
+        )}
       </footer>
     </main>
   );

@@ -11,6 +11,9 @@ export const PAYWALLS = {
   crisis_room: "Crisis Rooms aren't on your plan",
   scheduled_reports: "Scheduled reports aren't on your plan",
   report_section_locked: "That report section isn't on your plan",
+  workspace_limit: "You've used all the workspaces on your plan",
+  audit_log: "The audit log isn't on your plan",
+  white_label: "White-label isn't on your plan",
   mention_quota: "You've used this month's mentions",
 } as const;
 

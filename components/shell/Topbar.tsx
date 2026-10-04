@@ -1,6 +1,7 @@
 "use client";
 
 import { HelpCircle } from "lucide-react";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { NotificationsMenu, type NotificationItem } from "./NotificationsMenu";
 import { ThemeToggle } from "./ThemeToggle";
 import { QuotaMeter } from "./QuotaMeter";
@@ -18,6 +19,10 @@ export function Topbar({
   recentAlerts,
   now,
   canManageBilling,
+  isClient,
+  brandName,
+  workspaces,
+  currentId,
 }: {
   ws: string;
   slug: string;
@@ -25,6 +30,10 @@ export function Topbar({
   recentAlerts: NotificationItem[];
   now: number;
   canManageBilling: boolean;
+  isClient: boolean;
+  brandName: string;
+  workspaces: { id: string; slug: string; name: string }[];
+  currentId: string;
   userName: string;
   usage: { used: number; limit: number; pct: number };
 }) {
@@ -33,12 +42,17 @@ export function Topbar({
       role="banner"
       className="flex h-14 shrink-0 items-center gap-3 border-b border-[var(--border)] bg-[var(--surface)] px-4"
     >
-      <span className="font-semibold">Ripplewise</span>
-      <span className="text-[var(--text-muted)]" data-testid="workspace-name">
-        {ws}
+      <span className="font-semibold" data-testid="brand-name">
+        {brandName || "Ripplewise"}
       </span>
+      <WorkspaceSwitcher
+        current={{ id: currentId, name: ws }}
+        workspaces={workspaces}
+        canManage={canManageBilling}
+        landing={isClient ? "dashboards" : "home"}
+      />
       <div className="ml-auto flex items-center gap-3">
-        <QuotaMeter {...usage} />
+        {!isClient && <QuotaMeter {...usage} />}
         {/* Help stays in the same spot on every screen (WCAG 3.2.6). */}
         <button
           type="button"
@@ -49,9 +63,11 @@ export function Topbar({
         >
           <HelpCircle size={16} aria-hidden />
         </button>
-        <NotificationsMenu ws={slug} unread={unreadAlerts} items={recentAlerts} now={now} />
+        {!isClient && (
+          <NotificationsMenu ws={slug} unread={unreadAlerts} items={recentAlerts} now={now} />
+        )}
         <ThemeToggle />
-        <UserMenu name={userName} canManageBilling={canManageBilling} />
+        <UserMenu name={userName} canManageBilling={canManageBilling} isClient={isClient} />
       </div>
     </header>
   );

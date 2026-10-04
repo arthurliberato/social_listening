@@ -6,20 +6,30 @@ import { Button } from "@/components/ui/button";
 import { resetIdentity } from "@/lib/analytics/client";
 import { logOut } from "./actions";
 
-export function UserMenu({ name, canManageBilling }: { name: string; canManageBilling: boolean }) {
+export function UserMenu({
+  name,
+  canManageBilling,
+  isClient,
+}: {
+  name: string;
+  canManageBilling: boolean;
+  isClient: boolean;
+}) {
   const [pending, start] = useTransition();
   return (
     <div className="flex items-center gap-2">
       <span className="hidden text-sm text-[var(--text-muted)] sm:inline" data-testid="user-name">
         {name}
       </span>
-      <Link
-        href="/settings/usage"
-        className="hidden min-h-8 items-center rounded-md px-2 text-sm hover:bg-[var(--surface-2)] sm:inline-flex"
-        data-testid="nav-usage"
-      >
-        Usage
-      </Link>
+      {!isClient && (
+        <Link
+          href="/settings/usage"
+          className="hidden min-h-8 items-center rounded-md px-2 text-sm hover:bg-[var(--surface-2)] sm:inline-flex"
+          data-testid="nav-usage"
+        >
+          Usage
+        </Link>
+      )}
       {canManageBilling && (
         <Link
           href="/settings/billing"

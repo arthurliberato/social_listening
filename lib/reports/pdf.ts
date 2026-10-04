@@ -47,13 +47,19 @@ export function renderReportPdf(r: {
   period: string;
   generatedAt: Date;
   sections: PdfSection[];
+  /** White-label: shown instead of "Ripplewise" in the footer, with an accent bar and optional footer text. */
+  brand?: { name: string; accent: string; footer: string; hidePoweredBy: boolean };
 }): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
       size: "A4",
       margin: 48,
       bufferPages: true,
-      info: { Title: pdfSafe(r.title), Author: "Ripplewise", Creator: "Ripplewise" },
+      info: {
+        Title: pdfSafe(r.title),
+        Author: r.brand?.name || "Ripplewise",
+        Creator: r.brand?.name || "Ripplewise",
+      },
     });
     const chunks: Buffer[] = [];
     doc.on("data", (c: Buffer) => chunks.push(c));
@@ -191,11 +197,27 @@ export function renderReportPdf(r: {
     for (let i = 0; i < range.count; i++) {
       doc.switchToPage(i);
       doc.font("Helvetica").fontSize(8).fillColor(MUTED);
-      doc.text(`Ripplewise  ·  Page ${i + 1} of ${range.count}`, left, doc.page.height - 36, {
-        width,
-        align: "center",
-        lineBreak: false,
-      });
+      doc.text(
+        pdfSafe(
+          [
+            r.brand?.footer,
+            r.brand?.hidePoweredBy
+              ? r.brand?.name
+              : r.brand?.name
+                ? `${r.brand.name}  ·  Powered by Ripplewise`
+                : "Ripplewise",
+          ]
+            .filter(Boolean)
+            .join("  ·  ") + `  ·  Page ${i + 1} of ${range.count}`,
+        ),
+        left,
+        doc.page.height - 36,
+        {
+          width,
+          align: "center",
+          lineBreak: false,
+        },
+      );
     }
     doc.end();
   });

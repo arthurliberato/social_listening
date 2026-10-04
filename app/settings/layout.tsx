@@ -37,7 +37,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
           )}
         </header>
         <div className="mx-auto grid max-w-6xl gap-6 p-6 sm:grid-cols-[180px_minmax(0,1fr)]">
-          <SettingsNav />
+          <SettingsNav canManage={!!scope?.canManage} />
           <main id="main" tabIndex={-1}>
             {children}
           </main>
