@@ -64,17 +64,15 @@ describe("home checklist", () => {
       "create_query",
       "refine_query",
     ]);
-    await db
-      .insert(alertRules)
-      .values({
-        workspaceId: w.id,
-        queryId: q!.id,
-        name: "a",
-        type: "volume_spike",
-        params: {},
-        channels: ["in_app"],
-        createdBy: u.id,
-      });
+    await db.insert(alertRules).values({
+      workspaceId: w.id,
+      queryId: q!.id,
+      name: "a",
+      type: "volume_spike",
+      params: {},
+      channels: ["in_app"],
+      createdBy: u.id,
+    });
     await db.insert(dashboards).values({ workspaceId: w.id, name: "d", createdBy: u.id });
     c = await checklist(w.id);
     expect(c.items.find((i) => i.id === "set_alert")!.done).toBe(true);
