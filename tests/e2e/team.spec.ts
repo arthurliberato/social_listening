@@ -564,6 +564,7 @@ test("the audit log records what happened, filters, and is a paywall below Enter
   await setPlan(owner.email, "enterprise");
   const editor = await joinNew(browser, page, owner.slug, "editor", "Eddie Editor");
   await page.goto(`/settings/members?ws=${owner.slug}`);
+  await page.waitForLoadState("networkidle"); // a production build paints the select before React attaches
   await page
     .getByTestId("member-row")
     .filter({ hasText: "Eddie Editor" })
