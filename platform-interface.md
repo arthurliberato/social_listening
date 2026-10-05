@@ -147,7 +147,8 @@ Not present as screens: Help, Sources/upload, API/keys, notifications settings p
 ## 8. Simulated time
 
 - `lib/simclock.ts#simNow()` returns `Date.now() + SIM_CLOCK_OFFSET_MS`, clamped to the corpus window (`HISTORY_START` to `WORLD_END` in `datagen/config.ts`). The offset is a **process-wide environment variable**, not per request or per agent. It drives the release job, trial days (`trial_day`), billing lifecycle, alerts, and "now" in feeds.
-- **Actions and events cannot carry a simulated timestamp.** `analytics_events.created_at` and every `created_at`/`updated_at` default to the database wall clock. Lifecycle jobs accept an explicit `now` (e.g. `runBillingLifecycle(now, accountIds)`, `runRelease(queryId, now)`) so tests can drive them, but user actions cannot. See G11 for the proposed change.
+- **Analytics events can carry a per-agent simulated timestamp (added after the first draft of this document).** The harness puts `clock` (ISO 8601) in the `rw_sim` cookie; `trackServer` then writes it to `analytics_events.ts` and passes it to Amplitude as `time`. Covered by `tests/e2e/sim-clock.spec.ts`. Product logic (trial days, release, billing, alerts) still reads the process-wide `simNow()`.
+- **Other timestamps are not simulated.** Every `created_at`/`updated_at` default to the database wall clock. Lifecycle jobs accept an explicit `now` (e.g. `runBillingLifecycle(now, accountIds)`, `runRelease(queryId, now)`) so tests can drive them, but user actions cannot. See G11 for the proposed change.
 
 ## 9. Reset and snapshots
 
@@ -170,7 +171,7 @@ Not present as screens: Help, Sources/upload, API/keys, notifications settings p
 | G8 | Query reuse across projects → absent | Add "Copy to workspace" for queries and a template library | S |
 | G9 | Event names differ from spec snake_case | Keep the platform's Title Case plan as source of truth and write a mapping table in the agent repo; add missing events only if agents need them (`screen_view`, `help_opened` exists as `Help Opened` but there is no Help screen, `Support Contacted`) | S |
 | G10 | Concurrency and rate limits unknown | Load-test with N parallel browser contexts, set `max` pool size, and document limits; add a global request budget if needed | M |
-| G11 | No simulated timestamps on actions/events | Accept an optional `x-sim-time` header or `rw_sim.clock` field (harness-only, honored when `is_synthetic`), thread it through `trackServer` and the `created_at` defaults via a `now()` helper, and make `simNow()` per-request instead of env-global | M-L |
+| G11 | No simulated timestamps on actions/events. **Partly done:** events now take the agent's clock from `rw_sim.clock`. Remaining: row timestamps and per-request `simNow()` | Accept an optional `x-sim-time` header or `rw_sim.clock` field (harness-only, honored when `is_synthetic`), thread it through `trackServer` and the `created_at` defaults via a `now()` helper, and make `simNow()` per-request instead of env-global | M-L |
 | G12 | Help screen and support contact → absent | Add `/help` (topics) and a `contact_support` form that writes `emails`/`sales_requests` and fires `Help Opened` / a new event | S |
 | G13 | Seniority levels and offline social layer → not in the product | Keep seniority only in the agent profile; messages stay in the agent ledger (spec 11 already says they are not platform events) | none |
 | G14 | Screenshot/text perception → pages are text-rich, but some charts are canvas (ECharts) | Every chart has a table alternative (WCAG); agents should read that table view instead of the canvas | none |

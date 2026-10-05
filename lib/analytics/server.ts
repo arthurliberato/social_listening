@@ -1,4 +1,5 @@
 import { analyticsEvents, db } from "@/db/client";
+import { readSimContext } from "@/lib/sim-context";
 import { globalProps, type AnalyticsContext } from "./context";
 import { EVENTS, type EventName, type EventProps, type Prop } from "./events";
 
@@ -30,7 +31,11 @@ export async function trackServer<N extends EventName>(
       ui_theme: extras.ui_theme ?? null,
       ...(props as Record<string, Prop>),
     };
+    // A synthetic agent may carry its own simulated clock (cookie `rw_sim`); otherwise the database stamps wall time.
+    const clock = (await readSimContext()).clock;
+    const at = clock ? new Date(clock) : undefined;
     await db.insert(analyticsEvents).values({
+      ...(at ? { ts: at } : {}),
       name,
       side: extras.side ?? def.side,
       userId: ctx.userId ?? null,
@@ -41,7 +46,7 @@ export async function trackServer<N extends EventName>(
     });
     const dest = def.destinations as readonly string[];
     if (dest.includes("amplitude") && !extras.forwarded)
-      await sendAmplitude(name, ctx.userId ?? null, extras.device_id, all, g);
+      await sendAmplitude(name, ctx.userId ?? null, extras.device_id, all, g, at);
     if (dest.includes("ga4") && def.ga4Name) await sendGa4(def.ga4Name, ctx.userId ?? null, all);
   } catch (err) {
     console.error("[analytics] failed to record", name, err);
@@ -54,6 +59,7 @@ async function sendAmplitude(
   deviceId: string | undefined,
   props: Record<string, Prop>,
   g: Awaited<ReturnType<typeof globalProps>>,
+  at?: Date,
 ) {
   const key = process.env.AMPLITUDE_API_KEY;
   if (!key) return;
@@ -65,7 +71,12 @@ async function sendAmplitude(
   amp.track(
     name,
     props as Record<string, never>,
-    { user_id: userId ?? undefined, device_id: deviceId, groups } as never,
+    {
+      user_id: userId ?? undefined,
+      device_id: deviceId,
+      groups,
+      ...(at ? { time: at.getTime() } : {}),
+    } as never,
   );
 }
 
