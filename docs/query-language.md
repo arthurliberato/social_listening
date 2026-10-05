@@ -15,6 +15,8 @@ same text, so both modes produce identical queries.
 | `a NEAR/5f b` | within 5 words, `a` before `b` |
 | `#brand`, `@brand` | hashtag / mention (the `#` / `@` must be present in the text) |
 | `author:handle` `site:domain` `source:reddit` `lang:en` `country:US` `hashtag:brand` `logo:brandslug` | field filters |
+| `replyto:"https://…/@jane/12"` | the replies (comments) to one post, named by its URL; quote it, since URLs contain `:` |
+| `replyto:@jane` | replies to anything `@jane` posted |
 | `<<<note>>>` | comment, ignored |
 
 **Precedence (tight → loose):** `NEAR`, `NOT`, `AND`, `OR`. So `a OR b c` means `a OR (b AND c)`; the linter warns

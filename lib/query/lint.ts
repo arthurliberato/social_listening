@@ -289,6 +289,14 @@ export function analyze(text: string): Analysis {
             start: n.start,
             end: n.end,
           });
+        } else if (n.name === "replyto" && !/^(https?:\/\/\S+|@?[\w.-]+)$/i.test(n.value.trim())) {
+          issues.push({
+            severity: "warning",
+            code: "bad_replyto",
+            message: `'replyto:' takes a post URL in quotes (replyto:"https://…") or a handle like @jane.`,
+            start: n.start,
+            end: n.end,
+          });
         } else if (n.name === "country" && !/^[A-Za-z]{2}$/.test(n.value)) {
           issues.push({
             severity: "warning",

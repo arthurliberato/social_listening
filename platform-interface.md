@@ -109,7 +109,7 @@ Not present as screens: Help, Sources/upload, API/keys, notifications settings p
 | Keyword and Boolean queries | Present | AND / OR / NOT, quotes, parentheses, wildcard `run*` (trailing only) |
 | Exclusions | Present | `NOT term`; guided builder has an exclusions field |
 | Proximity operators | Present | `a NEAR/5 b`, `NEAR/5f` (ordered) |
-| URL operator for replies | **Absent** | only `site:domain`; no reply-to-URL operator (G4) |
+| URL operator for replies | Present (added after the first draft) | `replyto:"<post url>"` (replies to that post) and `replyto:@handle` (replies to that author's posts); comments only, not reposts; uses the corpus's `parent_id` thread links |
 | Author operators | Present | `author:handle`, `@mention`, `#hashtag`, `hashtag:` |
 | Field filters | Present | `source:`, `lang:`, `country:`, `logo:`; plus UI filters (source, sentiment, language, country, tag, type, followers, media, spam, flagged, range, sort) |
 | Tags | Present | `addTags`/`removeTag` on mentions, tag filter |
@@ -166,7 +166,7 @@ Not present as screens: Help, Sources/upload, API/keys, notifications settings p
 | G1 | `create_api_key` / `api_call` and the technical contributor → no API | Add per-account API keys and a small read API (queries, mentions, counts) gated by the `api` plan flag; or drop the technical contributor from v1 | M-L |
 | G2 | **Done:** `npm run seed:agents -- --accounts N --run <id> [--seed S] [--plan agency|growth|starter] [--model name] [--onboard-owner] [--out file.json]` (`scripts/seed-agents.ts`, `lib/sim/seed-agents.ts`). Creates each account through the real sign-up, invite-acceptance and subscription code: an owner (division leader) plus 7-8 editors (account exec, strategist, four or five analysts across lead/senior/mid/junior), a paid plan with a test card, labels `persona_archetype` (`<role>_<seniority>`), `agent_run_id`, `agent_model`, and writes a manifest of logins. No technical contributor (no API, G1). Original suggestion: add a harness-only seeding script (`scripts/seed-agents.ts`) that calls the same domain functions as sign-up and invites (`createAccountAndUser`, invite service) so the *data* is real; agents still do everything else through the UI. Needs seniority/persona fields on `users` (persona and run already exist) | M |
 | G3 | Cases, briefs, truth packs and a ledger → none in the app | Keep them outside the app (agent orchestrator + ledger store); the platform only needs to expose `agent_run_id` (done). Truth for the corpus is in `datagen` output | S |
-| G4 | URL operator for replies → absent | Add `url:`/`reply_to:` field in `lib/query/grammar.peggy` plus a `mentions.parent_url` column from datagen (corpus is threaded already) | M |
+| G4 | **Done:** `replyto:` operator (see section 6). Original: URL operator for replies → absent | Add `url:`/`reply_to:` field in `lib/query/grammar.peggy` plus a `mentions.parent_url` column from datagen (corpus is threaded already) | M |
 | G5 | **Categories done; auto-tagging rules still absent.** Original: Categories and auto-tagging rules → absent (tags only) | Add `categories` (name, keywords) and `tag_rules` (query → tag) tables with a rule-application job and UI under Mentions or Queries | M |
 | G6 | Manual backfill request, add-ons, overage → automatic backfill only | Add a "Backfill more history" action (plan-gated) and an add-on/overage model in `plans.ts` | M |
 | G7 | Custom source upload → absent | Add a CSV upload per workspace into a workspace-scoped mentions table merged in query compile | L |
