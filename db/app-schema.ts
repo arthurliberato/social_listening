@@ -931,3 +931,23 @@ export const loginThrottle = pgTable("login_throttle", {
   windowStart: ts("window_start").notNull(),
   lockedUntil: ts("locked_until"),
 });
+
+/** A question sent from the Help center. A simulated desk acknowledges it by email; there is no staff console. */
+export const supportRequests = pgTable(
+  "support_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id").references(() => accounts.id, { onDelete: "set null" }),
+    workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "set null" }),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    category: text("category").notNull(), // how_to|query|billing|bug|other
+    subject: text("subject").notNull(),
+    message: text("message").notNull(),
+    status: text("status").notNull().default("open"),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
+  },
+  (t) => [index("support_requests_user_idx").on(t.userId, t.createdAt)],
+);

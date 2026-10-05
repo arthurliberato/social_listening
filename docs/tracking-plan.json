@@ -1412,8 +1412,23 @@
    "area": "Engagement",
    "name": "Help Opened",
    "side": "client",
-   "properties": [],
-   "description": "",
+   "properties": [
+    "topic"
+   ],
+   "description": "Opened the shortcut dialog (no topic) or a Help center topic.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Engagement",
+   "name": "Support Contacted",
+   "side": "server",
+   "properties": [
+    "category"
+   ],
+   "description": "A question sent from the Help center.",
    "destinations": [
     "amplitude",
     "warehouse"

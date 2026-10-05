@@ -1184,7 +1184,20 @@ export const EVENTS = {
   },
   "Help Opened": {
     "side": "client",
-    "properties": [],
+    "properties": [
+      "topic"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Support Contacted": {
+    "side": "server",
+    "properties": [
+      "category"
+    ],
     "destinations": [
       "amplitude",
       "warehouse"

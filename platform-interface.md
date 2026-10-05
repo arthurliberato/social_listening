@@ -63,7 +63,9 @@ Routes under `app/`. "Role" is the minimum role (matrix in section 3). Every `/w
 
 `/w/[ws]/tags` (Tags & Categories): create, check, open and delete categories; list of workspace tags with counts.
 
-Not present as screens: Help, Sources/upload, API/keys, notifications settings page beyond the bell, auto-tag rules (see Gaps).
+`/w/[ws]/help` (Help): Help center: ten topics (searchable, native disclosure widgets; opening one fires `Help Opened` with its `topic`), and an "ask us" form (`sendSupport`, category, title, question; max 5 a day) that returns a reference `RW-XXXXXXXX`, emails it to the person's `/inbox` (`type = support`), stores a `support_requests` row and fires `Support Contacted`. A simulated desk only acknowledges; there is no staff console or reply. Open to every role, client viewers included. The top-bar Help button (same place on every screen) opens the shortcuts dialog, which links to the Help center.
+
+Not present as screens: Sources/upload, API/keys, notifications settings page beyond the bell, auto-tag rules (see Gaps).
 
 ## 3. Authentication, roles, tenancy
 
@@ -93,7 +95,7 @@ Not present as screens: Help, Sources/upload, API/keys, notifications settings p
 
 ## 5. Tracking
 
-- **Plan:** `docs/tracking-plan.json` (source of truth, 106 events, each with `area`, `side` client/server, `properties`, `destinations`, optional `ga4_name`). `lib/analytics/events.ts` is generated from it (`npm run gen:events`), so unknown events or properties fail typecheck.
+- **Plan:** `docs/tracking-plan.json` (source of truth, 107 events, each with `area`, `side` client/server, `properties`, `destinations`, optional `ga4_name`). `lib/analytics/events.ts` is generated from it (`npm run gen:events`), so unknown events or properties fail typecheck.
 - **Path:** client `track()` (`lib/analytics/client.ts`) → Amplitude Browser SDK (if `NEXT_PUBLIC_AMPLITUDE_KEY`) and `POST /api/track` (beacon); server `trackServer()` (`lib/analytics/server.ts`) **always** inserts into Postgres `analytics_events` (the warehouse mirror), then sends to Amplitude Node SDK (`AMPLITUDE_API_KEY`) and GA4 Measurement Protocol (`GA4_MEASUREMENT_ID`, `GA4_API_SECRET`, funnel events only, no PII). Without keys, only the Postgres mirror is written; this is the dataset agents will populate.
 - **Global properties on every event:** `account_id, workspace_id, plan_tier, trial_day, user_role, persona_archetype, is_synthetic, agent_run_id, app_version, route, ui_theme`. Plus groups `account` and `workspace`; `groupIdentifyAccount()` pushes nightly scores (PQA, health band).
 - **Agent labelling:** the harness sets a cookie `rw_sim` = base64 JSON `{persona, run, model}` before sign-up (`lib/sim-context.ts`). Sign-up stores it on the user (`personaArchetype`, `agentRunId`, `agentModel`; `isSynthetic` is always true). It labels analytics only and changes no behavior.
@@ -177,7 +179,7 @@ Not present as screens: Help, Sources/upload, API/keys, notifications settings p
 | G9 | Event names differ from spec snake_case | Keep the platform's Title Case plan as source of truth and write a mapping table in the agent repo; add missing events only if agents need them (`screen_view`, `help_opened` exists as `Help Opened` but there is no Help screen, `Support Contacted`) | S |
 | G10 | **Measured (page loads only):** see `docs/loadtest.md`. One instance saturates near 19 page loads/s (single Node thread); three instances reach about 27/s on a 4-core box; no errors up to 100 concurrent users. Run several instances per host. Still open: mutations, AI endpoints, the full corpus, soak runs. Original: Concurrency and rate limits unknown | M |
 | G11 | **Done:** per-agent clock for events, rows and product logic (section 8). Original: No simulated timestamps on actions/events | Accept an optional `x-sim-time` header or `rw_sim.clock` field (harness-only, honored when `is_synthetic`), thread it through `trackServer` and the `created_at` defaults via a `now()` helper, and make `simNow()` per-request instead of env-global | M-L |
-| G12 | Help screen and support contact → absent | Add `/help` (topics) and a `contact_support` form that writes `emails`/`sales_requests` and fires `Help Opened` / a new event | S |
+| G12 | **Done:** `/w/[ws]/help` with topics and a support form (section 2). Original: Help screen and support contact → absent | Add `/help` (topics) and a `contact_support` form that writes `emails`/`sales_requests` and fires `Help Opened` / a new event | S |
 | G13 | Seniority levels and offline social layer → not in the product | Keep seniority only in the agent profile; messages stay in the agent ledger (spec 11 already says they are not platform events) | none |
 | G14 | Screenshot/text perception → pages are text-rich, but some charts are canvas (ECharts) | Every chart has a table alternative (WCAG); agents should read that table view instead of the canvas | none |
 | G15 | Server actions are not a stable API | For Tier 0/1 agents, drive the UI with Playwright; do not call server actions directly (their IDs change per build) | none |

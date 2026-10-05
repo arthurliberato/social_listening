@@ -592,3 +592,13 @@ for (const theme of ["light", "dark"] as const) {
     });
   }
 }
+
+for (const theme of ["light", "dark"] as const) {
+  test(`help center has no serious a11y violations (${theme})`, async ({ page }) => {
+    await page.addInitScript((t) => localStorage.setItem("rw-theme", t), theme);
+    await page.goto(`/w/${meta().slug}/help`);
+    await expect(page.getByTestId("support-form")).toBeVisible();
+    await page.getByTestId("help-topic").first().locator("summary").click();
+    await scan(page);
+  });
+}
