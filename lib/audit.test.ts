@@ -54,7 +54,7 @@ describe("audit log vocabulary", () => {
       "Room: sent to 4 people",
     );
     for (const action of Object.keys(AUDIT_LABEL).filter((a) =>
-      /^(query|dashboard|report|alert|crisis)\./.test(a),
+      /^(query|category|dashboard|report|alert|crisis)\./.test(a),
     )) {
       expect(
         auditDetail(action, { name: "X", title: "X", widgets: 1, type: "volume_spike" }, null),

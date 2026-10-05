@@ -141,12 +141,16 @@ export function auditDetail(
       return `${m("plan")} (${m("interval")})`;
     case "plan.canceled":
       return m("reason").replace("_", " ");
+    case "query.copied":
+      return m("from") ? `${m("name")} (from ${m("from")})` : m("name");
     case "dashboard.shared_publicly":
     case "dashboard.unshared":
     case "query.paused":
     case "query.resumed":
     case "query.deleted":
     case "query.created":
+    case "category.created":
+    case "category.deleted":
     case "dashboard.created":
     case "dashboard.duplicated":
     case "dashboard.deleted":
