@@ -33,3 +33,5 @@ OR-groups of them. A query must contain at least one positive term.
 - Preview "noise" is a *product-side* heuristic (author bot score + promotional wording), deliberately independent of
   the corpus's ground-truth `is_spam`.
 - Backfill covers the plan's history window, newest first, up to the account's remaining monthly mention allowance.
+
+**Reusing a query:** on the Queries page, *Copy to…* makes an independent copy in another workspace of your account (or duplicates it in place). The copy collects its own history and counts toward the plan's active-query limit.

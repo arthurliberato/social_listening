@@ -41,7 +41,7 @@ Routes under `app/`. "Role" is the minimum role (matrix in section 3). Every `/w
 | Route | Purpose | Actions (file: `app/w/[ws]/<area>/actions.ts`) | Role |
 |---|---|---|---|
 | `home` | Checklist, headline numbers, alert strip | none | view |
-| `queries`, `queries/new`, `queries/[id]` | Query list and builder (guided and advanced Boolean, live preview, lint) | `previewAction(...)`, `saveQuery(slug, {id?, name, booleanText, builderMode, filters, ...})` (create **and** edit), `setQueryStatus(slug, id, "paused"|"live")`, `deleteQuery(slug, id)` | view / edit |
+| `queries`, `queries/new`, `queries/[id]` | Query list and builder (guided and advanced Boolean, live preview, lint) | `previewAction(...)`, `saveQuery(slug, {id?, name, booleanText, builderMode, filters, ...})` (create **and** edit), `setQueryStatus(slug, id, "paused"|"live")`, `deleteQuery(slug, id)`, `copyQuery(slug, id, targetSlug)` | view / edit |
 | `mentions` | Feed: URL-synced filters, cards/list/table views, drawer, saved views | `setSentiment`, `addTags`, `removeTag`, `setFlag`, `restoreOverrides` (undo), `getMentionDetail`, `countNewMentions`, `listSavedViews`, `saveView`, `deleteView`, `workspaceTags`; export at `GET /api/w/[ws]/mentions/export` (CSV) | view / edit (overrides) |
 | `dashboards`, `dashboards/[id]` | Dashboards, 12 widget types, templates, edit mode, drill-down, share | `createDashboard`, `saveDashboard`, `deleteDashboard`, `duplicateDashboard`, `setPublicLink`, `recordInternalShare`, `recordDashboardView`, `getWidgetData` | view / edit |
 | `alerts`, `alerts/new`, `alerts/events/[id]` | Rules with backtest, fired alerts, acknowledge, mute, delete | `backtestAction`, `createAlert`, `setAlertMuted`, `deleteAlert`, `markOpened`, `acknowledgeAlert`, `startCrisis` | view / edit |
@@ -95,7 +95,7 @@ Not present as screens: Sources/upload, API/keys, notifications settings page be
 
 ## 5. Tracking
 
-- **Plan:** `docs/tracking-plan.json` (source of truth, 107 events, each with `area`, `side` client/server, `properties`, `destinations`, optional `ga4_name`). `lib/analytics/events.ts` is generated from it (`npm run gen:events`), so unknown events or properties fail typecheck.
+- **Plan:** `docs/tracking-plan.json` (source of truth, 108 events, each with `area`, `side` client/server, `properties`, `destinations`, optional `ga4_name`). `lib/analytics/events.ts` is generated from it (`npm run gen:events`), so unknown events or properties fail typecheck.
 - **Path:** client `track()` (`lib/analytics/client.ts`) → Amplitude Browser SDK (if `NEXT_PUBLIC_AMPLITUDE_KEY`) and `POST /api/track` (beacon); server `trackServer()` (`lib/analytics/server.ts`) **always** inserts into Postgres `analytics_events` (the warehouse mirror), then sends to Amplitude Node SDK (`AMPLITUDE_API_KEY`) and GA4 Measurement Protocol (`GA4_MEASUREMENT_ID`, `GA4_API_SECRET`, funnel events only, no PII). Without keys, only the Postgres mirror is written; this is the dataset agents will populate.
 - **Global properties on every event:** `account_id, workspace_id, plan_tier, trial_day, user_role, persona_archetype, is_synthetic, agent_run_id, app_version, route, ui_theme`. Plus groups `account` and `workspace`; `groupIdentifyAccount()` pushes nightly scores (PQA, health band).
 - **Agent labelling:** the harness sets a cookie `rw_sim` = base64 JSON `{persona, run, model}` before sign-up (`lib/sim-context.ts`). Sign-up stores it on the user (`personaArchetype`, `agentRunId`, `agentModel`; `isSynthetic` is always true). It labels analytics only and changes no behavior.
@@ -126,7 +126,7 @@ Not present as screens: Sources/upload, API/keys, notifications settings page be
 | Scheduled reports | Present | growth+; deliveries land in `/inbox`; open/click tracked |
 | Conditional alerts | Present | three rule types in `lib/alerts/rules.ts` (`volume_spike`, `sentiment_drop`, `influencer`), email/in-app channels, backtest preview |
 | Branded exports | Present | white-label branding (agency+) applies to client viewer pages and PDF |
-| Query reuse across projects | **Absent** | queries belong to one workspace; no copy/share (G8) |
+| Query reuse across projects | Present (added after the first draft) | Queries page → **Copy to…** on each row (editors and above): copy to another workspace of the same account, or duplicate in this one (`copyQuery` in `app/w/[ws]/queries/actions.ts`). The copy is a new live query that collects its own history and counts against the plan's active-query limit (paywall when full); audited as `query.copied`; event `Query Copied` with `across_workspaces`. Copies are independent: later edits do not sync. Across accounts is not allowed |
 | API access | **Absent** | plan flag only (G1) |
 | Crisis room, authors watchlist, topics | Present | extras beyond the catalog |
 
@@ -175,7 +175,7 @@ Not present as screens: Sources/upload, API/keys, notifications settings page be
 | G5 | **Categories done; auto-tagging rules still absent.** Original: Categories and auto-tagging rules → absent (tags only) | Add `categories` (name, keywords) and `tag_rules` (query → tag) tables with a rule-application job and UI under Mentions or Queries | M |
 | G6 | Manual backfill request, add-ons, overage → automatic backfill only | Add a "Backfill more history" action (plan-gated) and an add-on/overage model in `plans.ts` | M |
 | G7 | Custom source upload → absent | Add a CSV upload per workspace into a workspace-scoped mentions table merged in query compile | L |
-| G8 | Query reuse across projects → absent | Add "Copy to workspace" for queries and a template library | S |
+| G8 | **Done:** copy to workspace (section 6). Original: Query reuse across projects → absent | Add "Copy to workspace" for queries and a template library | S |
 | G9 | Event names differ from spec snake_case | Keep the platform's Title Case plan as source of truth and write a mapping table in the agent repo; add missing events only if agents need them (`screen_view`, `help_opened` exists as `Help Opened` but there is no Help screen, `Support Contacted`) | S |
 | G10 | **Measured (page loads only):** see `docs/loadtest.md`. One instance saturates near 19 page loads/s (single Node thread); three instances reach about 27/s on a 4-core box; no errors up to 100 concurrent users. Run several instances per host. Still open: mutations, AI endpoints, the full corpus, soak runs. Original: Concurrency and rate limits unknown | M |
 | G11 | **Done:** per-agent clock for events, rows and product logic (section 8). Original: No simulated timestamps on actions/events | Accept an optional `x-sim-time` header or `rw_sim.clock` field (harness-only, honored when `is_synthetic`), thread it through `trackServer` and the `created_at` defaults via a `now()` helper, and make `simNow()` per-request instead of env-global | M-L |

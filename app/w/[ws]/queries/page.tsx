@@ -4,7 +4,7 @@ import { db, queries } from "@/db/client";
 import { BackfillPoller } from "@/components/listening/BackfillPoller";
 import { NewQueryButton } from "@/components/listening/NewQueryButton";
 import { QueryRowActions } from "@/components/listening/QueryRowActions";
-import { requireWorkspace } from "@/lib/auth/session";
+import { requireWorkspace, userWorkspaces } from "@/lib/auth/session";
 import { accountPlan, activeQueryCount, canEdit } from "@/lib/queries";
 import { PLANS } from "@/lib/entitlements/plans";
 
@@ -28,7 +28,7 @@ export default async function QueriesPage({
 }) {
   const { ws: slug } = await params;
   const { saved } = await searchParams;
-  const { ws } = await requireWorkspace(slug);
+  const { user, ws } = await requireWorkspace(slug);
   const rows = await db
     .select()
     .from(queries)
@@ -46,6 +46,10 @@ export default async function QueriesPage({
       r.status === "live" && (r.backfillStatus === "pending" || r.backfillStatus === "running"),
   );
   const editable = canEdit(ws.role);
+  // Where this person can copy a query: any workspace of the account they can edit (this one duplicates).
+  const targets = (await userWorkspaces(user.id))
+    .filter((w) => w.accountId === ws.accountId && canEdit(w.role))
+    .map((w) => ({ slug: w.slug, name: w.id === ws.id ? `${w.name} (duplicate here)` : w.name }));
 
   return (
     <div className="mx-auto max-w-[1600px]">
@@ -156,6 +160,7 @@ export default async function QueriesPage({
                       name={q.name}
                       status={q.status}
                       canEdit={editable}
+                      copyTargets={targets}
                     />
                   </td>
                 </tr>

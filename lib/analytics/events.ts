@@ -264,6 +264,17 @@ export const EVENTS = {
     ],
     "ga4Name": null
   },
+  "Query Copied": {
+    "side": "server",
+    "properties": [
+      "across_workspaces"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
   "Query Backfill Completed": {
     "side": "server",
     "properties": [

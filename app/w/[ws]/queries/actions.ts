@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db, queries } from "@/db/client";
 import { trackServer } from "@/lib/analytics/server";
 import { auditIn } from "@/lib/audit";
-import { requireWorkspace } from "@/lib/auth/session";
+import { requireWorkspace, userWorkspaces } from "@/lib/auth/session";
 import { can, PLANS, type PlanTier } from "@/lib/entitlements/plans";
 import { enqueueBackfill } from "@/lib/jobs/boss";
 import {
@@ -254,4 +254,87 @@ export async function deleteQuery(slug: string, id: string): Promise<SaveResult>
   await trackServer("Query Deleted", { userId: user.id, workspaceId: ws.id }, { query_id: id });
   revalidatePath(`/w/${slug}/queries`);
   return { ok: true, id };
+}
+
+/**
+ * Copy a query to another workspace of the same account (or duplicate it in this one). The copy is a new, live
+ * query that collects its own history, so it counts against the plan like any other.
+ */
+export async function copyQuery(
+  slug: string,
+  id: string,
+  targetSlug: string,
+): Promise<SaveResult & { targetSlug?: string }> {
+  const { user, ws } = await requireWorkspace(slug);
+  if (!canEdit(ws.role)) return { ok: false, error: "Your role can't copy queries." };
+  const [src] = await db
+    .select()
+    .from(queries)
+    .where(and(eq(queries.id, id), eq(queries.workspaceId, ws.id)));
+  if (!src) return { ok: false, error: "That query no longer exists." };
+
+  const target = (await userWorkspaces(user.id)).find(
+    (w) => w.slug === targetSlug && w.accountId === ws.accountId,
+  );
+  if (!target) return { ok: false, error: "Choose one of your workspaces in this account." };
+  if (!canEdit(target.role))
+    return {
+      ok: false,
+      error: "You can't add queries to that workspace. Ask an admin for editor access.",
+    };
+
+  const { accountId, tier } = await accountPlan(ws.id);
+  const gate = can(tier, "create_query", {
+    activeQueries: await activeQueryCount(accountId),
+    seats: 0,
+    workspaces: 0,
+    alerts: 0,
+  });
+  if (!gate.ok) {
+    await trackServer(
+      "Paywall Viewed",
+      { userId: user.id, workspaceId: ws.id },
+      { paywall_trigger: "query_limit", required_plan: gate.upgradeTo },
+    );
+    return {
+      ok: false,
+      error: gate.reason,
+      upgradeTo: gate.upgradeTo,
+      upgradeLabel: PLANS[gate.upgradeTo].label,
+    };
+  }
+
+  const same = target.id === ws.id;
+  const [row] = await db
+    .insert(queries)
+    .values({
+      workspaceId: target.id,
+      name: same ? `${src.name} (copy)`.slice(0, 100) : src.name,
+      booleanText: src.booleanText,
+      astJson: src.astJson,
+      builderMode: src.builderMode,
+      sources: src.sources,
+      languages: src.languages,
+      countries: src.countries,
+      status: "live",
+      isFromTemplate: false,
+      createdBy: user.id,
+    })
+    .returning({ id: queries.id });
+  await auditIn(
+    { id: target.id, accountId },
+    user.id,
+    "query.copied",
+    { type: "query", id: row!.id },
+    { name: src.name, from: ws.name },
+  );
+  await trackServer(
+    "Query Copied",
+    { userId: user.id, workspaceId: target.id },
+    { across_workspaces: !same },
+  );
+  await enqueueBackfill(row!.id);
+  revalidatePath(`/w/${slug}/queries`);
+  revalidatePath(`/w/${target.slug}/queries`);
+  return { ok: true, id: row!.id, targetSlug: target.slug };
 }

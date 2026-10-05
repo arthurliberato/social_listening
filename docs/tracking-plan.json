@@ -332,6 +332,19 @@
   },
   {
    "area": "Query",
+   "name": "Query Copied",
+   "side": "server",
+   "properties": [
+    "across_workspaces"
+   ],
+   "description": "A query copied to another workspace of the account, or duplicated in place.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Query",
    "name": "Query Backfill Completed",
    "side": "server",
    "properties": [

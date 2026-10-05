@@ -83,6 +83,7 @@ export const AUDIT_LABEL: Record<string, string> = {
   "query.paused": "Paused a query",
   "query.resumed": "Resumed a query",
   "query.deleted": "Deleted a query",
+  "query.copied": "Copied a query",
   "category.created": "Created a category",
   "category.deleted": "Deleted a category",
   "dashboard.created": "Created a dashboard",
