@@ -386,6 +386,26 @@ export const EVENTS = {
     ],
     "ga4Name": null
   },
+  "Category Created": {
+    "side": "server",
+    "properties": [
+      "term_count"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Category Deleted": {
+    "side": "server",
+    "properties": [],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
   "Peak Explanation Viewed": {
     "side": "client",
     "properties": [

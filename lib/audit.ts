@@ -83,6 +83,8 @@ export const AUDIT_LABEL: Record<string, string> = {
   "query.paused": "Paused a query",
   "query.resumed": "Resumed a query",
   "query.deleted": "Deleted a query",
+  "category.created": "Created a category",
+  "category.deleted": "Deleted a category",
   "dashboard.created": "Created a dashboard",
   "dashboard.updated": "Saved changes to a dashboard",
   "dashboard.duplicated": "Duplicated a dashboard",
@@ -186,6 +188,7 @@ export const AUDIT_CATEGORIES: Record<string, { label: string; prefixes: string[
     label: "Queries, dashboards and reports",
     prefixes: [
       "query.",
+      "category.",
       "dashboard.created",
       "dashboard.updated",
       "dashboard.duplicated",

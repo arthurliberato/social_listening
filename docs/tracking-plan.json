@@ -473,6 +473,30 @@
    ]
   },
   {
+   "area": "Mentions",
+   "name": "Category Created",
+   "side": "server",
+   "properties": [
+    "term_count"
+   ],
+   "description": "A named Boolean search saved as a category.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Mentions",
+   "name": "Category Deleted",
+   "side": "server",
+   "properties": [],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
    "area": "Insight",
    "name": "Peak Explanation Viewed",
    "side": "client",

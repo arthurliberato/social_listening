@@ -567,3 +567,28 @@ for (const theme of ["light", "dark"] as const) {
     });
   }
 }
+
+for (const theme of ["light", "dark"] as const) {
+  for (const screen of ["empty", "with-category"] as const) {
+    test(`tags & categories ${screen} has no serious a11y violations (${theme})`, async ({
+      page,
+    }) => {
+      await page.addInitScript((t) => localStorage.setItem("rw-theme", t), theme);
+      const { slug } = meta();
+      await pool.query(
+        `DELETE FROM categories WHERE workspace_id = (SELECT id FROM workspaces WHERE slug = $1)`,
+        [slug],
+      );
+      if (screen === "with-category")
+        await pool.query(
+          `INSERT INTO categories (workspace_id, name, boolean_text) SELECT id, 'Core theme', 'coffee OR tea' FROM workspaces WHERE slug = $1`,
+          [slug],
+        );
+      await page.goto(`/w/${slug}/tags`);
+      await expect(
+        page.getByTestId(screen === "empty" ? "categories-empty" : "category-row"),
+      ).toBeVisible();
+      await scan(page);
+    });
+  }
+}

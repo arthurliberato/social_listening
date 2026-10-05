@@ -372,6 +372,22 @@ export const savedViews = pgTable(
   (t) => [index("saved_views_workspace_idx").on(t.workspaceId)],
 );
 
+/** A named Boolean search over a workspace's mentions: a way to slice what the queries collect into themes. */
+export const categories = pgTable(
+  "categories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    booleanText: text("boolean_text").notNull(),
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("categories_workspace_name_idx").on(t.workspaceId, sql`lower(${t.name})`)],
+);
+
 /** A workspace dashboard: a 12-column grid of widgets. */
 export const dashboards = pgTable(
   "dashboards",

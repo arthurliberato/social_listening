@@ -61,7 +61,9 @@ Routes under `app/`. "Role" is the minimum role (matrix in section 3). Every `/w
 | `branding` | White-label for client viewers | `saveBrandingAction` |
 | `audit` | Audit log | page only (owner/admin) |
 
-Not present as screens: Help, Sources/upload, API/keys, notifications settings page beyond the bell, categories/auto-tag rules (see Gaps).
+`/w/[ws]/tags` (Tags & Categories): create, check, open and delete categories; list of workspace tags with counts.
+
+Not present as screens: Help, Sources/upload, API/keys, notifications settings page beyond the bell, auto-tag rules (see Gaps).
 
 ## 3. Authentication, roles, tenancy
 
@@ -91,7 +93,7 @@ Not present as screens: Help, Sources/upload, API/keys, notifications settings p
 
 ## 5. Tracking
 
-- **Plan:** `docs/tracking-plan.json` (source of truth, 104 events, each with `area`, `side` client/server, `properties`, `destinations`, optional `ga4_name`). `lib/analytics/events.ts` is generated from it (`npm run gen:events`), so unknown events or properties fail typecheck.
+- **Plan:** `docs/tracking-plan.json` (source of truth, 106 events, each with `area`, `side` client/server, `properties`, `destinations`, optional `ga4_name`). `lib/analytics/events.ts` is generated from it (`npm run gen:events`), so unknown events or properties fail typecheck.
 - **Path:** client `track()` (`lib/analytics/client.ts`) → Amplitude Browser SDK (if `NEXT_PUBLIC_AMPLITUDE_KEY`) and `POST /api/track` (beacon); server `trackServer()` (`lib/analytics/server.ts`) **always** inserts into Postgres `analytics_events` (the warehouse mirror), then sends to Amplitude Node SDK (`AMPLITUDE_API_KEY`) and GA4 Measurement Protocol (`GA4_MEASUREMENT_ID`, `GA4_API_SECRET`, funnel events only, no PII). Without keys, only the Postgres mirror is written; this is the dataset agents will populate.
 - **Global properties on every event:** `account_id, workspace_id, plan_tier, trial_day, user_role, persona_archetype, is_synthetic, agent_run_id, app_version, route, ui_theme`. Plus groups `account` and `workspace`; `groupIdentifyAccount()` pushes nightly scores (PQA, health band).
 - **Agent labelling:** the harness sets a cookie `rw_sim` = base64 JSON `{persona, run, model}` before sign-up (`lib/sim-context.ts`). Sign-up stores it on the user (`personaArchetype`, `agentRunId`, `agentModel`; `isSynthetic` is always true). It labels analytics only and changes no behavior.
@@ -111,8 +113,8 @@ Not present as screens: Help, Sources/upload, API/keys, notifications settings p
 | Author operators | Present | `author:handle`, `@mention`, `#hashtag`, `hashtag:` |
 | Field filters | Present | `source:`, `lang:`, `country:`, `logo:`; plus UI filters (source, sentiment, language, country, tag, type, followers, media, spam, flagged, range, sort) |
 | Tags | Present | `addTags`/`removeTag` on mentions, tag filter |
-| Categories | **Absent** | no category/subtopic entity (G5) |
-| Auto-tagging rules | **Absent** | (G5) |
+| Categories | Present (added after the first draft) | `/w/[ws]/tags`: named Boolean searches with live counts (30 days, negative share) and a link to the feed filtered by the same search; max 20 per workspace; actions `previewCategory`, `createCategory`, `deleteCategory` in `app/w/[ws]/tags/actions.ts`; events `Category Created`, `Category Deleted`; audited as `category.*` |
+| Auto-tagging rules | **Absent** | categories do not tag mentions automatically; tags stay manual (G5) |
 | Sentiment override | Present | `setSentiment`, bulk, undo; stored in `mention_overrides` |
 | Custom dashboards and templates | Present | 12 widget types, templates, edit mode with keyboard move |
 | AI summaries | Present | crisis-room summary, Ask AI with ≥3 citations, peak explanation, AI query writer; simulated provider behind a swappable interface; monthly quota per plan |
@@ -165,7 +167,7 @@ Not present as screens: Help, Sources/upload, API/keys, notifications settings p
 | G2 | **Done:** `npm run seed:agents -- --accounts N --run <id> [--seed S] [--plan agency|growth|starter] [--model name] [--onboard-owner] [--out file.json]` (`scripts/seed-agents.ts`, `lib/sim/seed-agents.ts`). Creates each account through the real sign-up, invite-acceptance and subscription code: an owner (division leader) plus 7-8 editors (account exec, strategist, four or five analysts across lead/senior/mid/junior), a paid plan with a test card, labels `persona_archetype` (`<role>_<seniority>`), `agent_run_id`, `agent_model`, and writes a manifest of logins. No technical contributor (no API, G1). Original suggestion: add a harness-only seeding script (`scripts/seed-agents.ts`) that calls the same domain functions as sign-up and invites (`createAccountAndUser`, invite service) so the *data* is real; agents still do everything else through the UI. Needs seniority/persona fields on `users` (persona and run already exist) | M |
 | G3 | Cases, briefs, truth packs and a ledger → none in the app | Keep them outside the app (agent orchestrator + ledger store); the platform only needs to expose `agent_run_id` (done). Truth for the corpus is in `datagen` output | S |
 | G4 | URL operator for replies → absent | Add `url:`/`reply_to:` field in `lib/query/grammar.peggy` plus a `mentions.parent_url` column from datagen (corpus is threaded already) | M |
-| G5 | Categories and auto-tagging rules → absent (tags only) | Add `categories` (name, keywords) and `tag_rules` (query → tag) tables with a rule-application job and UI under Mentions or Queries | M |
+| G5 | **Categories done; auto-tagging rules still absent.** Original: Categories and auto-tagging rules → absent (tags only) | Add `categories` (name, keywords) and `tag_rules` (query → tag) tables with a rule-application job and UI under Mentions or Queries | M |
 | G6 | Manual backfill request, add-ons, overage → automatic backfill only | Add a "Backfill more history" action (plan-gated) and an add-on/overage model in `plans.ts` | M |
 | G7 | Custom source upload → absent | Add a CSV upload per workspace into a workspace-scoped mentions table merged in query compile | L |
 | G8 | Query reuse across projects → absent | Add "Copy to workspace" for queries and a template library | S |
