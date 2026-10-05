@@ -1,0 +1,11 @@
+node_modules
+.next
+data
+db/migrations
+lib/analytics/events.ts
+package-lock.json
+docs/tracking-plan.json
+test-results
+*.md
+lib/query/parser.generated.mjs
+scripts/vendor

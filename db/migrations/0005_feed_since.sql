@@ -1,0 +1,1 @@
+ALTER TABLE "memberships" ADD COLUMN "feed_since_at" timestamp with time zone;

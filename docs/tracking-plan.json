@@ -1,0 +1,1492 @@
+{
+ "version": 1,
+ "naming": "Object Action, Title Case, past tense; properties snake_case",
+ "not_commerce": "B2B SaaS: no cart/checkout/purchase events; subscription changes are Plan/Subscription events",
+ "global_properties": [
+  "account_id",
+  "workspace_id",
+  "plan_tier",
+  "trial_day",
+  "user_role",
+  "persona_archetype",
+  "is_synthetic",
+  "agent_run_id",
+  "app_version",
+  "route",
+  "ui_theme"
+ ],
+ "groups": [
+  "account",
+  "workspace"
+ ],
+ "events": [
+  {
+   "area": "Acquisition",
+   "name": "Marketing Page Viewed",
+   "side": "client",
+   "properties": [
+    "page",
+    "referrer",
+    "utm_source",
+    "utm_medium",
+    "utm_campaign"
+   ],
+   "description": "",
+   "ga4_name": "page_view",
+   "destinations": [
+    "amplitude",
+    "warehouse",
+    "ga4"
+   ]
+  },
+  {
+   "area": "Acquisition",
+   "name": "Pricing Page Viewed",
+   "side": "client",
+   "properties": [
+    "billing_interval",
+    "entry_point"
+   ],
+   "description": "",
+   "ga4_name": "view_pricing",
+   "destinations": [
+    "amplitude",
+    "warehouse",
+    "ga4"
+   ]
+  },
+  {
+   "area": "Acquisition",
+   "name": "Plan Compare Toggled",
+   "side": "client",
+   "properties": [
+    "billing_interval"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Auth",
+   "name": "Sign Up Started",
+   "side": "client",
+   "properties": [],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Auth",
+   "name": "Sign Up Completed",
+   "side": "server",
+   "properties": [
+    "method",
+    "signup_source"
+   ],
+   "description": "",
+   "ga4_name": "sign_up",
+   "destinations": [
+    "amplitude",
+    "warehouse",
+    "ga4"
+   ]
+  },
+  {
+   "area": "Auth",
+   "name": "Email Verified",
+   "side": "server",
+   "properties": [
+    "time_to_verify_ms"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Auth",
+   "name": "Login Completed",
+   "side": "client",
+   "properties": [
+    "method"
+   ],
+   "description": "",
+   "ga4_name": "login",
+   "destinations": [
+    "amplitude",
+    "warehouse",
+    "ga4"
+   ]
+  },
+  {
+   "area": "Auth",
+   "name": "Login Failed",
+   "side": "client",
+   "properties": [
+    "error_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Auth",
+   "name": "Password Reset Requested",
+   "side": "client",
+   "properties": [],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Onboarding",
+   "name": "Onboarding Step Viewed",
+   "side": "client",
+   "properties": [
+    "step_name",
+    "step_index"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Onboarding",
+   "name": "Onboarding Step Completed",
+   "side": "client",
+   "properties": [
+    "step_name",
+    "step_index",
+    "duration_ms",
+    "competitors_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Onboarding",
+   "name": "Onboarding Skipped",
+   "side": "client",
+   "properties": [
+    "step_name"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Onboarding",
+   "name": "Onboarding Completed",
+   "side": "client",
+   "properties": [
+    "duration_ms"
+   ],
+   "description": "",
+   "ga4_name": "onboarding_completed",
+   "destinations": [
+    "amplitude",
+    "warehouse",
+    "ga4"
+   ]
+  },
+  {
+   "area": "Onboarding",
+   "name": "Checklist Item Completed",
+   "side": "client",
+   "properties": [
+    "item_id",
+    "completed_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Query",
+   "name": "Query Builder Opened",
+   "side": "client",
+   "properties": [
+    "builder_mode",
+    "is_from_template",
+    "entry_point"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Query",
+   "name": "Query Previewed",
+   "side": "client",
+   "properties": [
+    "query_id",
+    "builder_mode",
+    "preview_result_count",
+    "noise_score",
+    "operator_count",
+    "has_near",
+    "exclusion_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Query",
+   "name": "Query Validation Failed",
+   "side": "client",
+   "properties": [
+    "builder_mode",
+    "error_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Query",
+   "name": "Query Saved",
+   "side": "client",
+   "properties": [
+    "query_id",
+    "builder_mode",
+    "operator_count",
+    "has_near",
+    "exclusion_count",
+    "noise_score",
+    "languages",
+    "sources",
+    "is_from_template"
+   ],
+   "description": "",
+   "ga4_name": "first_query_saved",
+   "destinations": [
+    "amplitude",
+    "warehouse",
+    "ga4"
+   ]
+  },
+  {
+   "area": "Query",
+   "name": "Query Edited",
+   "side": "client",
+   "properties": [
+    "query_id",
+    "builder_mode"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Query",
+   "name": "Query Paused",
+   "side": "client",
+   "properties": [
+    "query_id"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Query",
+   "name": "Query Deleted",
+   "side": "client",
+   "properties": [
+    "query_id"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Query",
+   "name": "Query Backfill Completed",
+   "side": "server",
+   "properties": [
+    "query_id",
+    "backfill_days",
+    "matched_count",
+    "duration_ms"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Query",
+   "name": "AI Query Generated",
+   "side": "client",
+   "properties": [
+    "query_id",
+    "latency_ms",
+    "ai_quota_remaining"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Mentions",
+   "name": "Mentions Feed Viewed",
+   "side": "client",
+   "properties": [
+    "entry_point",
+    "result_count",
+    "view_mode"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Mentions",
+   "name": "Mention Filter Applied",
+   "side": "client",
+   "properties": [
+    "filter_type",
+    "filter_value_count",
+    "result_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Mentions",
+   "name": "Mention Opened",
+   "side": "client",
+   "properties": [
+    "source_type",
+    "entry_point"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Mentions",
+   "name": "Mention Tagged",
+   "side": "client",
+   "properties": [
+    "source_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Mentions",
+   "name": "Mention Sentiment Overridden",
+   "side": "client",
+   "properties": [
+    "from_sentiment",
+    "to_sentiment",
+    "source_type",
+    "lang"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Mentions",
+   "name": "Mention Flagged",
+   "side": "client",
+   "properties": [],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Mentions",
+   "name": "Mentions Bulk Action Applied",
+   "side": "client",
+   "properties": [
+    "action",
+    "bulk_size"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Mentions",
+   "name": "Saved View Created",
+   "side": "client",
+   "properties": [
+    "filter_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Insight",
+   "name": "Peak Explanation Viewed",
+   "side": "client",
+   "properties": [
+    "query_id",
+    "magnitude_x_baseline",
+    "driver_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Insight",
+   "name": "AI Summary Generated",
+   "side": "client",
+   "properties": [
+    "surface",
+    "latency_ms",
+    "ai_quota_remaining"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Insight",
+   "name": "Ask AI Question Submitted",
+   "side": "client",
+   "properties": [
+    "question_length",
+    "ai_quota_remaining",
+    "latency_ms"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Insight",
+   "name": "Ask AI Citation Opened",
+   "side": "client",
+   "properties": [
+    "citation_index"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Insight",
+   "name": "Insight Shared",
+   "side": "client",
+   "properties": [
+    "share_channel",
+    "insight_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Insight",
+   "name": "Author Profile Viewed",
+   "side": "client",
+   "properties": [
+    "author_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Insight",
+   "name": "Author Watchlisted",
+   "side": "client",
+   "properties": [],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Insight",
+   "name": "Topic Opened",
+   "side": "client",
+   "properties": [
+    "topic_growth_pct"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Dashboards",
+   "name": "Dashboard Created",
+   "side": "client",
+   "properties": [
+    "template_id"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Dashboards",
+   "name": "Widget Added",
+   "side": "client",
+   "properties": [
+    "widget_type",
+    "is_gated"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Dashboards",
+   "name": "Widget Configured",
+   "side": "client",
+   "properties": [
+    "widget_type",
+    "chart_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Dashboards",
+   "name": "Widget Moved",
+   "side": "client",
+   "properties": [
+    "widget_type",
+    "move_method"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Dashboards",
+   "name": "Dashboard Saved",
+   "side": "client",
+   "properties": [
+    "widgets_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Dashboards",
+   "name": "Dashboard Viewed",
+   "side": "client",
+   "properties": [
+    "dashboard_type",
+    "viewer_is_creator",
+    "widgets_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Dashboards",
+   "name": "Dashboard Shared",
+   "side": "client",
+   "properties": [
+    "share_type",
+    "recipients_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Dashboards",
+   "name": "Widget Drilled Down",
+   "side": "client",
+   "properties": [
+    "widget_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Created",
+   "side": "client",
+   "properties": [
+    "alert_type",
+    "threshold",
+    "channel",
+    "backtest_fire_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Triggered",
+   "side": "server",
+   "properties": [
+    "alert_id",
+    "alert_type",
+    "severity"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Notification Sent",
+   "side": "server",
+   "properties": [
+    "alert_id",
+    "channel"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Opened",
+   "side": "client",
+   "properties": [
+    "alert_id",
+    "time_to_open_ms"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Acknowledged",
+   "side": "client",
+   "properties": [
+    "alert_id",
+    "time_to_ack_ms"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Muted",
+   "side": "client",
+   "properties": [
+    "alert_id"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Alerts",
+   "name": "Alert Deleted",
+   "side": "client",
+   "properties": [
+    "alert_id"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Crisis",
+   "name": "Crisis Room Opened",
+   "side": "client",
+   "properties": [
+    "crisis_id",
+    "peak_volume",
+    "negative_share"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Crisis",
+   "name": "Crisis Task Created",
+   "side": "client",
+   "properties": [
+    "crisis_id"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Crisis",
+   "name": "Stakeholder Update Sent",
+   "side": "client",
+   "properties": [
+    "crisis_id",
+    "recipients_count",
+    "is_ai_drafted"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Crisis",
+   "name": "Crisis Room Resolved",
+   "side": "client",
+   "properties": [
+    "crisis_id",
+    "duration_ms"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Reports",
+   "name": "Report Created",
+   "side": "client",
+   "properties": [
+    "template_id"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Reports",
+   "name": "Report Section Added",
+   "side": "client",
+   "properties": [
+    "widget_type",
+    "source",
+    "is_new_report"
+   ],
+   "description": "A widget from a dashboard, Topics or Authors was added to a report.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Reports",
+   "name": "Report Exported",
+   "side": "client",
+   "properties": [
+    "format",
+    "template_id"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Reports",
+   "name": "Report Scheduled",
+   "side": "client",
+   "properties": [
+    "schedule_frequency",
+    "recipients_count",
+    "has_external_recipient"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Reports",
+   "name": "Report Delivered",
+   "side": "server",
+   "properties": [
+    "report_id",
+    "recipients_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Reports",
+   "name": "Report Opened",
+   "side": "server",
+   "properties": [
+    "report_id",
+    "channel"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Reports",
+   "name": "Export Downloaded",
+   "side": "client",
+   "properties": [
+    "format",
+    "row_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Collaboration",
+   "name": "Teammate Invited",
+   "side": "client",
+   "properties": [
+    "invited_role",
+    "invite_source"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Collaboration",
+   "name": "Invite Accepted",
+   "side": "server",
+   "properties": [
+    "days_to_accept"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Collaboration",
+   "name": "Comment Added",
+   "side": "client",
+   "properties": [
+    "target_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Collaboration",
+   "name": "User Mentioned",
+   "side": "client",
+   "properties": [],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Workspaces",
+   "name": "Workspace Created",
+   "side": "client",
+   "properties": [
+    "workspaces_count",
+    "copied_from_template"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Workspaces",
+   "name": "Workspace Switched",
+   "side": "client",
+   "properties": [
+    "from_workspace_id"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Workspaces",
+   "name": "Workspace Archived",
+   "side": "client",
+   "properties": [],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Workspaces",
+   "name": "Client Viewer Added",
+   "side": "client",
+   "properties": [],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Plan",
+   "name": "Paywall Viewed",
+   "side": "client",
+   "properties": [
+    "paywall_trigger",
+    "required_plan"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Plan",
+   "name": "Paywall Dismissed",
+   "side": "client",
+   "properties": [
+    "paywall_trigger"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Plan",
+   "name": "Upgrade Started",
+   "side": "client",
+   "properties": [
+    "paywall_trigger",
+    "from_plan",
+    "to_plan",
+    "billing_interval"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Plan",
+   "name": "Subscription Started",
+   "side": "server",
+   "properties": [
+    "plan_tier",
+    "billing_interval",
+    "motion",
+    "mrr"
+   ],
+   "description": "Fires revenue() with plan MRR",
+   "ga4_name": "subscription_started",
+   "destinations": [
+    "amplitude",
+    "warehouse",
+    "ga4"
+   ]
+  },
+  {
+   "area": "Plan",
+   "name": "Plan Upgraded",
+   "side": "server",
+   "properties": [
+    "from_plan",
+    "to_plan",
+    "billing_interval",
+    "mrr_delta"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Plan",
+   "name": "Plan Downgraded",
+   "side": "server",
+   "properties": [
+    "from_plan",
+    "to_plan",
+    "mrr_delta"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Plan",
+   "name": "Seat Added",
+   "side": "server",
+   "properties": [
+    "seats_total",
+    "mrr_delta"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Plan",
+   "name": "Payment Failed",
+   "side": "server",
+   "properties": [
+    "attempt_count"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Plan",
+   "name": "Trial Ended",
+   "side": "server",
+   "properties": [
+    "converted",
+    "queries_count",
+    "trial_day_reached"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Plan",
+   "name": "Quota Threshold Reached",
+   "side": "server",
+   "properties": [
+    "quota_type",
+    "threshold_pct"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Sales",
+   "name": "Sales Contact Requested",
+   "side": "client",
+   "properties": [
+    "entry_point",
+    "seats_requested"
+   ],
+   "description": "",
+   "ga4_name": "generate_lead",
+   "destinations": [
+    "amplitude",
+    "warehouse",
+    "ga4"
+   ]
+  },
+  {
+   "area": "Sales",
+   "name": "Demo Booked",
+   "side": "server",
+   "properties": [
+    "seats_requested"
+   ],
+   "description": "",
+   "ga4_name": "demo_booked",
+   "destinations": [
+    "amplitude",
+    "warehouse",
+    "ga4"
+   ]
+  },
+  {
+   "area": "Sales",
+   "name": "Quote Viewed",
+   "side": "client",
+   "properties": [
+    "quote_value"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Sales",
+   "name": "Quote Accepted",
+   "side": "client",
+   "properties": [
+    "quote_value"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Sales",
+   "name": "Contract Signed",
+   "side": "server",
+   "properties": [
+    "quote_value",
+    "contract_months"
+   ],
+   "description": "",
+   "ga4_name": "contract_signed",
+   "destinations": [
+    "amplitude",
+    "warehouse",
+    "ga4"
+   ]
+  },
+  {
+   "area": "Churn",
+   "name": "Cancellation Started",
+   "side": "client",
+   "properties": [
+    "tenure_days"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Churn",
+   "name": "Cancellation Reason Submitted",
+   "side": "client",
+   "properties": [
+    "reason"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Churn",
+   "name": "Save Offer Viewed",
+   "side": "client",
+   "properties": [
+    "offer_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Churn",
+   "name": "Save Offer Accepted",
+   "side": "client",
+   "properties": [
+    "offer_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Churn",
+   "name": "Subscription Canceled",
+   "side": "server",
+   "properties": [
+    "reason",
+    "tenure_days"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Churn",
+   "name": "Account Reactivated",
+   "side": "server",
+   "properties": [
+    "days_since_cancel"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Engagement",
+   "name": "Command Palette Opened",
+   "side": "client",
+   "properties": [],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Engagement",
+   "name": "Keyboard Shortcut Used",
+   "side": "client",
+   "properties": [
+    "shortcut",
+    "context"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Engagement",
+   "name": "Theme Changed",
+   "side": "client",
+   "properties": [
+    "ui_theme"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Engagement",
+   "name": "Help Opened",
+   "side": "client",
+   "properties": [],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Engagement",
+   "name": "Error Displayed",
+   "side": "client",
+   "properties": [
+    "error_code"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Engagement",
+   "name": "Empty State CTA Clicked",
+   "side": "client",
+   "properties": [
+    "empty_state_id"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Engagement",
+   "name": "Notification Opened",
+   "side": "client",
+   "properties": [
+    "notification_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Engagement",
+   "name": "Email Opened",
+   "side": "server",
+   "properties": [
+    "email_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Engagement",
+   "name": "Email Link Clicked",
+   "side": "server",
+   "properties": [
+    "email_type"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Experiments",
+   "name": "Experiment Exposed",
+   "side": "client",
+   "properties": [
+    "flag_key",
+    "variant"
+   ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  }
+ ],
+ "destinations": {
+  "amplitude": "all events",
+  "ga4": "funnel/lead events only (ga4_name mapping); separate property for synthetic traffic",
+  "warehouse": "BigQuery: Postgres analytics_events batch load + Amplitude Export API + GA4 native export"
+ },
+ "signup_attribution_fields": [
+  "ga_client_id",
+  "ga_session_id",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "gclid",
+  "referrer"
+ ]
+}

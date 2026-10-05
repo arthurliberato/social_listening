@@ -1,0 +1,118 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791033377561,
+      "tag": "0000_corpus",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791033876839,
+      "tag": "0001_app",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791034043791,
+      "tag": "0002_invitations",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791034988578,
+      "tag": "0003_query_engine",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791036460207,
+      "tag": "0004_mentions_feed",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791036931880,
+      "tag": "0005_feed_since",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791039351248,
+      "tag": "0006_dashboards",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791047175758,
+      "tag": "0007_certain_robbie_robertson",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791055602510,
+      "tag": "0008_special_the_fallen",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791062139009,
+      "tag": "0009_early_butterfly",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791079449180,
+      "tag": "0010_daily_lady_mastermind",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791114979530,
+      "tag": "0011_lame_nico_minoru",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791116043316,
+      "tag": "0012_sparkling_piledriver",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791120423500,
+      "tag": "0013_dry_captain_britain",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791122175867,
+      "tag": "0014_slim_whizzer",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1791123591135,
+      "tag": "0015_rich_princess_powerful",
+      "breakpoints": true
+    }
+  ]
+}

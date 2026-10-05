@@ -1,0 +1,11 @@
+# Sales-assist, scoring and experiments (M11)
+
+**Contact → quote → contract.** `/contact-sales` (public; prefilled when signed in) takes a quote request or a demo booking (weekday slots at 14:00/16:00 UTC from tomorrow). There is no staff console, so a simulated sales desk (`lib/sales/desk.ts`, every 5 minutes) plays the rep: a contact request gets its quote email 10 minutes after arriving; a demo gets one after the demo time. The quote link `/quote/<token>` is readable by anyone holding it (the token is stored hashed). Accepting and signing need a login as an **owner or admin of the account being upgraded**; signing is claimed atomically (one contract per quote) and switches the account to Enterprise (`motion = sales_assisted`, invoiced, term end = period end), writes the audit log and emails billing contacts. Invoiced accounts are not card-charged at term end (`lib/billing/lifecycle.ts`).
+
+**Pricing.** Platform fee + per-seat fee, 10/15/20% off for 12/24/36 months (`lib/sales/pricing.ts`). Quotes expire after 30 days.
+
+**Events.** `Sales Contact Requested` (client, GA4 `generate_lead`), `Demo Booked` and `Contract Signed` (server, GA4), `Quote Viewed`, `Quote Accepted`, plus `Plan Upgraded`. No names or emails in event properties.
+
+**Nightly scoring** (`jobs/pqa.ts`, 02:00). `lib/scoring/score.ts` holds the rules as pure, tested functions. *PQA* (0–100) adds points for breadth of use, seats, quota pressure, paywall hits and activity; *health* (0–100, bands healthy ≥70, watch ≥40, at risk) combines recency, breadth, people active and risk deductions. One row per account per day goes to `account_scores` (the warehouse time series); scores and counts (never names/emails) are pushed to Amplitude as `account` group properties. An eligible account (not Enterprise, not already talking to sales, not locked) with PQA ≥ 60 gets an SDR email once per 30 days (claimed atomically), and its owners/admins see a dismissible sales card on Home. Owners/admins see their health band and reasons under Settings → Usage.
+
+**Flags.** `lib/flags` assigns variants by hashing (flag, person), so a person always sees the same one. `sales_cta_copy` (50/50) changes the sales card's button text. `Experiment Exposed` fires once per browser session when the variant is on screen.
