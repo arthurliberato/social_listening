@@ -24,7 +24,7 @@ Start with [docs/product.md](docs/product.md) for the product thinking: the prob
 
 All screens, in light and dark, are in [docs/screenshots](docs/screenshots). They are regenerated with `npm run screenshots`, which builds a demo account through the real interface (so it also checks that the flows still work).
 
-More detail: [AI](docs/ai.md) · [Auth](docs/auth.md) · [Billing](docs/billing.md) · [Teams and audit log](docs/teams.md) · [Reports](docs/reports.md) · [Authors and Topics](docs/insights.md) · [Sales and scoring](docs/sales.md) · [Query language](docs/query-language.md) · [Data generation](docs/datagen.md)
+More detail: [AI](docs/ai.md) · [Auth](docs/auth.md) · [Billing](docs/billing.md) · [Teams and audit log](docs/teams.md) · [Reports](docs/reports.md) · [Authors and Topics](docs/insights.md) · [Sales and scoring](docs/sales.md) · [Analytics](docs/analytics.md) · [Query language](docs/query-language.md) · [Data generation](docs/datagen.md)
 
 ## Development
 ```
