@@ -20,6 +20,7 @@
     "gen:grammar": "tsx scripts/gen-grammar.ts",
     "worker": "tsx jobs/worker.ts",
     "seed:agents": "tsx scripts/seed-agents.ts",
+    "loadtest": "tsx scripts/loadtest.ts",
     "test:palette": "tsx scripts/validate-charts.ts",
     "screenshots": "playwright test --config playwright.screenshots.config.ts"
   },

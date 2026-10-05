@@ -144,7 +144,7 @@ Not present as screens: Help, Sources/upload, API/keys, notifications settings p
 - When a limit is hit the UI opens a paywall modal (10 placements) and the server action returns `{ok:false, error, upgradeTo}`. Mention quota exhaustion sets `backfill_status = quota_exhausted` and the release job still advances the clock.
 - **No overage pricing and no add-ons** (the agent spec's "slots, overage, add-ons" in 4J are not modeled; G6).
 - Billing is a simulated internal provider in test mode only; trial lifecycle: reminder at 3 days, trial ended → grace (3 days) → read-only lock (`lib/billing`, `runBillingLifecycle`). Cancellation: Billing → Cancel → reason → (save offer once) → confirm.
-- Throughput limits: no HTTP rate limiting in the app. Concurrency is bounded by Postgres and the Next process. Previews and widget queries run against the shared corpus (target: preview <1.5 s on 1M rows). The e2e suite runs one worker; many concurrent agents were never load-tested (G10).
+- Throughput limits: no HTTP rate limiting in the app. Concurrency is bounded by Postgres and the Next process. Previews and widget queries run against the shared corpus (target: preview <1.5 s on 1M rows). `npm run loadtest` measures page-load throughput (`docs/loadtest.md`); the e2e suite itself runs one worker.
 
 ## 8. Simulated time
 
@@ -175,7 +175,7 @@ Not present as screens: Help, Sources/upload, API/keys, notifications settings p
 | G7 | Custom source upload → absent | Add a CSV upload per workspace into a workspace-scoped mentions table merged in query compile | L |
 | G8 | Query reuse across projects → absent | Add "Copy to workspace" for queries and a template library | S |
 | G9 | Event names differ from spec snake_case | Keep the platform's Title Case plan as source of truth and write a mapping table in the agent repo; add missing events only if agents need them (`screen_view`, `help_opened` exists as `Help Opened` but there is no Help screen, `Support Contacted`) | S |
-| G10 | Concurrency and rate limits unknown | Load-test with N parallel browser contexts, set `max` pool size, and document limits; add a global request budget if needed | M |
+| G10 | **Measured (page loads only):** see `docs/loadtest.md`. One instance saturates near 19 page loads/s (single Node thread); three instances reach about 27/s on a 4-core box; no errors up to 100 concurrent users. Run several instances per host. Still open: mutations, AI endpoints, the full corpus, soak runs. Original: Concurrency and rate limits unknown | M |
 | G11 | **Done:** per-agent clock for events, rows and product logic (section 8). Original: No simulated timestamps on actions/events | Accept an optional `x-sim-time` header or `rw_sim.clock` field (harness-only, honored when `is_synthetic`), thread it through `trackServer` and the `created_at` defaults via a `now()` helper, and make `simNow()` per-request instead of env-global | M-L |
 | G12 | Help screen and support contact → absent | Add `/help` (topics) and a `contact_support` form that writes `emails`/`sales_requests` and fires `Help Opened` / a new event | S |
 | G13 | Seniority levels and offline social layer → not in the product | Keep seniority only in the agent profile; messages stay in the agent ledger (spec 11 already says they are not platform events) | none |

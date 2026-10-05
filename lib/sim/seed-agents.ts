@@ -3,12 +3,14 @@
 // It adds nothing to the product's behaviour and no endpoint; run it from the command line (scripts/seed-agents.ts).
 import { randomBytes } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
-import { db, invitations, users, workspaces } from "@/db/client";
+import { db, invitations, queries, users, workspaces } from "@/db/client";
+import { runBackfill } from "@/jobs/backfill";
 import { rngFor, type Rng } from "@/datagen/rng";
 import { hashToken } from "@/lib/auth/tokens";
 import { createAccountAndUser } from "@/lib/auth/signup";
 import { subscribe } from "@/lib/billing/service";
 import type { PlanTier } from "@/lib/entitlements/plans";
+import { brandQuery, busiestBrands } from "@/lib/testing/corpus"; // harness-only, like this file
 import type { Role } from "@/lib/permissions";
 import { simNow } from "@/lib/simclock";
 
@@ -39,6 +41,8 @@ export interface SeedOptions {
   plan?: Exclude<PlanTier, "trial" | "enterprise">;
   /** Finish the owner's onboarding wizard in the database. Off by default: the owner agent does it in the UI. */
   onboardOwner?: boolean;
+  /** Give each workspace a live query on one of the corpus's busiest brands, and collect its history. */
+  firstQuery?: boolean;
   emailDomain?: string;
 }
 
@@ -77,6 +81,7 @@ const password = (r: Rng) =>
 /** Same seed, same teams (names, roles, regions). Emails and passwords include the run id so runs never collide. */
 export async function seedAgents(o: SeedOptions): Promise<AgentSeed[]> {
   const out: AgentSeed[] = [];
+  let brands: string[] | undefined;
   const domain = o.emailDomain ?? "agents.example.test";
   const sim = { persona: null as string | null, run: o.run, model: o.model ?? null, clock: null };
   for (let a = 0; a < o.accounts; a++) {
@@ -171,6 +176,22 @@ export async function seedAgents(o: SeedOptions): Promise<AgentSeed[]> {
       },
     });
     if (!sub.ok) throw new Error(`could not subscribe ${acc}: ${sub.error}`);
+    if (o.firstQuery) {
+      brands ??= await busiestBrands(12);
+      const brand = r.pick(brands);
+      const [ws] = await db.select().from(workspaces).where(eq(workspaces.accountId, accountId));
+      const [q] = await db
+        .insert(queries)
+        .values({
+          workspaceId: ws!.id,
+          name: `${brand} (brand)`,
+          booleanText: brandQuery(brand),
+          status: "live",
+          createdBy: ownerId,
+        })
+        .returning({ id: queries.id });
+      await runBackfill(q!.id, ownerId);
+    }
   }
   return out;
 }
