@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useBusy } from "@/lib/use-busy";
+import { useState } from "react";
 import { writeQueryAction } from "@/app/w/[ws]/ask/actions";
 import { PaywallModal, type PaywallProps } from "@/components/listening/PaywallModal";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ export function QueryWriter({
   const [note, setNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paywall, setPaywall] = useState<PaywallProps | null>(null);
-  const [pending, start] = useTransition();
+  const [pending, start] = useBusy();
 
   function go() {
     setError(null);

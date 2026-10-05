@@ -1,7 +1,8 @@
 "use client";
 
+import { useBusy } from "@/lib/use-busy";
 import Link from "next/link";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   addSectionToReport,
   listReportTargets,
@@ -36,7 +37,7 @@ export function AddToReportDialog({
   const [choice, setChoice] = useState(NEW);
   const [error, setError] = useState<{ text: string; upgrade?: boolean } | null>(null);
   const [done, setDone] = useState<{ id: string; name: string; created: boolean } | null>(null);
-  const [pending, start] = useTransition();
+  const [pending, start] = useBusy();
 
   useEffect(() => {
     ref.current?.showModal();

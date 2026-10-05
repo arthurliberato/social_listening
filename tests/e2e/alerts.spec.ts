@@ -53,6 +53,8 @@ async function fire(slug: string, severity = "warning") {
 }
 const gotoAlerts = async (page: Page, slug: string, path = "") => {
   await page.goto(`/w/${slug}/alerts${path}`);
+  // A production build paints server-rendered buttons before React attaches to them; a click in that gap is lost.
+  await page.waitForLoadState("networkidle");
 };
 
 test("empty state → build an alert with a live backtest → it appears in the list", async ({
@@ -263,6 +265,7 @@ test("crisis room: tasks, a stakeholder update that lands in the inbox, and reso
   ).toBeVisible();
 
   await page.goto(`/w/${slug}/crisis/${crisisId}`);
+  await page.waitForLoadState("networkidle"); // a production build paints buttons before React attaches
   await page.getByTestId("resolve").click();
   await page.getByTestId("resolve-confirm").click();
   await expect(page.getByTestId("room-status")).toContainText("Resolved");

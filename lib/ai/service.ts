@@ -97,6 +97,8 @@ interface Job {
   windowLabel?: string;
   from?: Date;
   to?: Date;
+  /** Wider windows to try, in order, when the first one has too few mentions to cite. */
+  widen?: { from: Date; to: Date; label: string }[];
 }
 
 async function produce(ctx: Ctx, job: Job): Promise<AiOutcome> {
@@ -104,17 +106,25 @@ async function produce(ctx: Ctx, job: Job): Promise<AiOutcome> {
   if (taken === null) return fail("quota_exhausted", 0);
   const started = Date.now();
   try {
-    const r = await retrieve({
-      workspaceId: ctx.workspaceId,
-      historyDays: ctx.historyDays,
-      queryId: job.queryId,
-      terms: job.terms,
-      sentiment: job.sentiment,
-      days: job.days,
-      windowLabel: job.windowLabel,
-      from: job.from,
-      to: job.to,
-    });
+    const attempts = [
+      { from: job.from, to: job.to, windowLabel: job.windowLabel },
+      ...(job.widen ?? []).map((w) => ({ from: w.from, to: w.to, windowLabel: w.label })),
+    ];
+    let r = null;
+    for (const a of attempts) {
+      r = await retrieve({
+        workspaceId: ctx.workspaceId,
+        historyDays: ctx.historyDays,
+        queryId: job.queryId,
+        terms: job.terms,
+        sentiment: job.sentiment,
+        days: job.days,
+        windowLabel: a.windowLabel,
+        from: a.from,
+        to: a.to,
+      });
+      if (!r || r.evidence.length >= MIN_CITATIONS) break;
+    }
     if (!r) {
       await refundAiUnit(ctx.accountId);
       return fail("no_queries", taken + 1);
@@ -216,16 +226,22 @@ export async function explainPeak(
   ctx: Ctx,
   o: { queryId: string; peakHour: Date },
 ): Promise<AiOutcome> {
-  const from = new Date(o.peakHour.getTime() - 3_600_000);
-  const to = new Date(o.peakHour.getTime() + 2 * 3_600_000);
+  const t = o.peakHour.getTime();
+  const H = 3_600_000;
+  // Start tight (the hours around the peak). A quiet brand's busiest hour may hold only a mention or two, so
+  // widen to the day, then the days around it, rather than refusing: the answer says which window it used.
   return produce(ctx, {
     kind: "peak",
     prompt: "Explain the peak",
     queryId: o.queryId,
-    from,
-    to,
+    from: new Date(t - H),
+    to: new Date(t + 2 * H),
     days: 30,
     windowLabel: "the hours around the peak",
+    widen: [
+      { from: new Date(t - 6 * H), to: new Date(t + 12 * H), label: "the day around the peak" },
+      { from: new Date(t - 24 * H), to: new Date(t + 48 * H), label: "the days around the peak" },
+    ],
   });
 }
 

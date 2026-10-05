@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useBusy } from "@/lib/use-busy";
+import { useState } from "react";
 import { setWatched } from "@/app/w/[ws]/authors/actions";
 import { track } from "@/lib/analytics/client";
 
@@ -19,7 +20,7 @@ export function WatchButton({
 }) {
   const [on, setOn] = useState(watched);
   const [error, setError] = useState("");
-  const [pending, start] = useTransition();
+  const [pending, start] = useBusy();
   return (
     <span>
       <button

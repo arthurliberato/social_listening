@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useBusy } from "@/lib/use-busy";
+import { useState } from "react";
 import { deleteAlert, setAlertMuted } from "@/app/w/[ws]/alerts/actions";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics/client";
@@ -12,33 +12,37 @@ export function AlertRowActions({
   name,
   muted,
   canEdit,
+  onMuted,
+  onDeleted,
 }: {
   ws: string;
   id: string;
   name: string;
   muted: boolean;
   canEdit: boolean;
+  onMuted: (muted: boolean) => void;
+  onDeleted: () => void;
 }) {
-  const router = useRouter();
-  const [pending, start] = useTransition();
+  const [pending, start] = useBusy();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState("");
   if (!canEdit) return <span className="text-xs text-[var(--text-muted)]">View only</span>;
 
+  // The row owns what it shows (see RuleRow), so a result never depends on the page refreshing in time.
   const toggle = () =>
     start(async () => {
       setError("");
       const r = await setAlertMuted(ws, id, !muted);
       if (!r.ok) return setError(r.error);
       if (!muted) track("Alert Muted", { alert_id: id });
-      router.refresh();
+      onMuted(!muted);
     });
   const remove = () =>
     start(async () => {
       const r = await deleteAlert(ws, id);
       if (!r.ok) return setError(r.error);
       track("Alert Deleted", { alert_id: id });
-      router.refresh();
+      onDeleted();
     });
 
   return (

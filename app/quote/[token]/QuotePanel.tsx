@@ -1,7 +1,8 @@
 "use client";
 
+import { useBusy } from "@/lib/use-busy";
 import Link from "next/link";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { track } from "@/lib/analytics/client";
@@ -24,7 +25,7 @@ export function QuotePanel({
   const [name, setName] = useState("");
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
-  const [pending, start] = useTransition();
+  const [pending, start] = useBusy();
 
   const viewed = useRef(false);
   useEffect(() => {

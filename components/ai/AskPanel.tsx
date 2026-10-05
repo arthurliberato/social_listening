@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useBusy } from "@/lib/use-busy";
+import { useRef, useState } from "react";
 import { askAction } from "@/app/w/[ws]/ask/actions";
 import { PaywallModal, type PaywallProps } from "@/components/listening/PaywallModal";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,7 @@ export function AskPanel({
   const [current, setCurrent] = useState<(ShownAnswer & { prompt: string }) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paywall, setPaywall] = useState<PaywallProps | null>(null);
-  const [pending, start] = useTransition();
+  const [pending, start] = useBusy();
   const box = useRef<HTMLTextAreaElement>(null);
   const left = Math.max(0, quota.limit - used);
   const pct = Math.min(100, Math.round((used / quota.limit) * 100));

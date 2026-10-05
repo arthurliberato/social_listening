@@ -1,7 +1,8 @@
 "use client";
 
+import { useBusy } from "@/lib/use-busy";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { deleteQuery, setQueryStatus } from "@/app/w/[ws]/queries/actions";
 import { Button } from "@/components/ui/button";
 import { PaywallModal, type PaywallProps } from "@/components/listening/PaywallModal";
@@ -21,7 +22,7 @@ export function QueryRowActions({
   canEdit: boolean;
 }) {
   const router = useRouter();
-  const [pending, start] = useTransition();
+  const [pending, start] = useBusy();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState("");
   const [paywall, setPaywall] = useState<PaywallProps | null>(null);

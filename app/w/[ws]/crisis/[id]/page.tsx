@@ -13,12 +13,7 @@ import {
 } from "@/db/client";
 import { HourlyChart } from "@/components/alerts/HourlyChart";
 import { CrisisAi } from "@/components/ai/CrisisAi";
-import {
-  RoomOpened,
-  ResolveButton,
-  TaskList,
-  UpdateComposer,
-} from "@/components/crisis/RoomPanels";
+import { RoomOpened, RoomStatus, TaskList, UpdateComposer } from "@/components/crisis/RoomPanels";
 import { requireWorkspace } from "@/lib/auth/session";
 import { roomStats } from "@/lib/alerts/service";
 import { compact, absoluteTime, relativeTime } from "@/lib/format";
@@ -141,22 +136,14 @@ export default async function CrisisRoomPage({
         <h1 className="text-[30px] font-semibold leading-[38px]" data-testid="room-title">
           {c.title}
         </h1>
-        <span
-          className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs font-medium"
-          data-testid="room-status"
-        >
-          {c.status === "open" ? "Open" : `Resolved ${relativeTime(c.resolvedAt!.toISOString())}`}
-        </span>
-        {editable && (
-          <div className="ml-auto">
-            <ResolveButton
-              ws={slug}
-              crisisId={c.id}
-              resolved={c.status === "resolved"}
-              openTasks={openTasks.length}
-            />
-          </div>
-        )}
+        <RoomStatus
+          ws={slug}
+          crisisId={c.id}
+          resolved={c.status === "resolved"}
+          resolvedLabel={c.resolvedAt ? `Resolved ${relativeTime(c.resolvedAt.toISOString())}` : ""}
+          openTasks={openTasks.length}
+          editable={editable}
+        />
       </div>
       <p className="mt-1 text-sm text-[var(--text-muted)]">
         Watching {q!.name}

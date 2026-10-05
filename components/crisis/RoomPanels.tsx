@@ -285,13 +285,14 @@ export function ResolveButton({
   crisisId,
   resolved,
   openTasks,
+  onChange,
 }: {
   ws: string;
   crisisId: string;
   resolved: boolean;
   openTasks: number;
+  onChange: (resolved: boolean) => void;
 }) {
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState("");
@@ -305,7 +306,7 @@ export function ResolveButton({
     if (!resolved)
       track("Crisis Room Resolved", { crisis_id: crisisId, duration_ms: r.durationMs });
     setConfirm(false);
-    router.refresh();
+    onChange(!resolved);
   };
 
   if (resolved)
@@ -346,5 +347,52 @@ export function ResolveButton({
         </span>
       )}
     </div>
+  );
+}
+
+/**
+ * The room's status badge and its resolve / reopen button. They share local state so the badge changes the
+ * moment the server confirms, rather than waiting on the page to re-render.
+ */
+export function RoomStatus({
+  ws,
+  crisisId,
+  resolved,
+  resolvedLabel,
+  openTasks,
+  editable,
+}: {
+  ws: string;
+  crisisId: string;
+  resolved: boolean;
+  resolvedLabel: string;
+  openTasks: number;
+  editable: boolean;
+}) {
+  const [isResolved, setResolved] = useState(resolved);
+  const [label, setLabel] = useState(resolvedLabel);
+  return (
+    <>
+      <span
+        className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs font-medium"
+        data-testid="room-status"
+      >
+        {isResolved ? label || "Resolved just now" : "Open"}
+      </span>
+      {editable && (
+        <div className="ml-auto">
+          <ResolveButton
+            ws={ws}
+            crisisId={crisisId}
+            resolved={isResolved}
+            openTasks={openTasks}
+            onChange={(r) => {
+              setResolved(r);
+              setLabel(r ? "Resolved just now" : "");
+            }}
+          />
+        </div>
+      )}
+    </>
   );
 }

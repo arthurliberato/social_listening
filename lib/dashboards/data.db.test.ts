@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { runBackfill } from "@/jobs/backfill";
 import { accounts, db, memberships, pool, queries, users, workspaces } from "@/db/client";
+import { brandQuery, busiestBrands } from "@/lib/testing/corpus";
 import { loadFeed } from "@/lib/mentions/feed";
 import { parseFilters } from "@/lib/mentions/filters";
 import { readOverrides, writeOverrides } from "@/lib/mentions/overrides";
@@ -15,6 +16,7 @@ describe("widget data", () => {
   let userId = "";
   let q1 = "";
   let q2 = "";
+  let names: string[] = [];
   let ctx: DataCtx;
 
   beforeAll(async () => {
@@ -47,8 +49,9 @@ describe("widget data", () => {
           .values({ workspaceId: wsId, name, booleanText: text, status: "live" })
           .returning()
       )[0]!.id;
-    q1 = await mk("Kickforge", "kickforge");
-    q2 = await mk("Tallyfy", "tallyfy");
+    names = await busiestBrands(2); // whatever the loaded corpus has most of, so this runs on a small CI corpus too
+    q1 = await mk(names[0]!, brandQuery(names[0]!));
+    q2 = await mk(names[1]!, brandQuery(names[1]!));
     await runBackfill(q1);
     await runBackfill(q2);
     ctx = { workspaceId: wsId, historyDays: 730, range: new URLSearchParams("range=90d") };
@@ -131,7 +134,7 @@ describe("widget data", () => {
       rows: { share: number; count: number; name: string }[];
       total: number;
     };
-    expect(sov.rows.map((r) => r.name).sort()).toEqual(["Kickforge", "Tallyfy"]);
+    expect(sov.rows.map((r) => r.name).sort()).toEqual([...names].sort());
     expect(sov.rows.reduce((a, r) => a + r.share, 0)).toBeGreaterThan(99);
     expect(sov.rows.reduce((a, r) => a + r.share, 0)).toBeLessThan(101);
   }, 60_000);

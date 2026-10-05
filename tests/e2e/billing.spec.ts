@@ -69,7 +69,10 @@ test("pricing page: public, four plans, the yearly toggle changes the price", as
   await expect(page.getByTestId("price-growth")).toContainText("$207.50");
   await expect(page.getByTestId("plan-growth")).toContainText("$2,490 billed yearly");
   await expect(page.getByTestId("price-enterprise")).toContainText("Custom");
-  await expect(page.getByTestId("cta-enterprise")).toHaveAttribute("href", /mailto:/);
+  await expect(page.getByTestId("cta-enterprise")).toHaveAttribute(
+    "href",
+    /\/contact-sales\?entry=pricing_enterprise/,
+  );
   await page.getByTestId("cta-growth").click();
   await page.waitForURL(/signup/);
 });
@@ -325,7 +328,8 @@ test("a failed renewal: warning, retries, and fixing the card brings everything 
 test("the clock runs a trial to its end: grace, then read-only, then a plan brings it back", async ({
   page,
 }) => {
-  const { email, slug } = await createUser(page, { brand: "Latte Lane" });
+  // A busy brand, so a small CI corpus still has mentions to read once the account is read-only.
+  const { email, slug } = await createUser(page, { brand: "Juniper Roast" });
   const a = await accountOf(email);
   const T = new Date(a.trial_end_at).getTime();
 

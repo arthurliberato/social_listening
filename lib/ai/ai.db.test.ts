@@ -222,6 +222,34 @@ describe("summaries and peak explanations", () => {
     if (r.ok) expect(r.citations.length).toBeGreaterThanOrEqual(3);
   }, 60_000);
 
+  it("a thin peak hour widens the window instead of refusing, and says so", async () => {
+    // An hour with only a mention or two, where the tight window around it has fewer than 3 mentions.
+    const hours = (
+      await db.execute(sql`
+        SELECT date_trunc('hour', qm.published_at) AS h FROM query_matches qm
+        WHERE qm.query_id = ${f.queryId}::uuid GROUP BY 1 HAVING count(*) <= 2 ORDER BY 1 DESC LIMIT 200`)
+    ).rows as { h: string }[];
+    let thin: Date | null = null;
+    for (const { h } of hours) {
+      const t = new Date(h).getTime();
+      const n = (
+        await db.execute(sql`
+          SELECT count(*)::int AS n FROM query_matches
+          WHERE query_id = ${f.queryId}::uuid AND published_at >= ${new Date(t - 3_600_000)} AND published_at < ${new Date(t + 2 * 3_600_000)}`)
+      ).rows[0] as { n: number };
+      if (n.n < 3) {
+        thin = new Date(t);
+        break;
+      }
+    }
+    expect(thin, "the fixture should have a quiet hour").not.toBeNull();
+    const r = await explainPeak(f.ctx, { queryId: f.queryId, peakHour: thin! });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.citations.length).toBeGreaterThanOrEqual(3);
+    expect(r.scope).toMatch(/day around the peak|days around the peak/);
+  }, 60_000);
+
   it("explains the busiest hour with citations from around it", async () => {
     const hour = (
       await db.execute(sql`

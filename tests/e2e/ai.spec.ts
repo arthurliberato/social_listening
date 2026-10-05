@@ -141,7 +141,8 @@ test("a workspace with no queries explains what to do first", async ({ page }) =
 test("the query writer drafts Boolean you can review, and the crisis room explains its peak", async ({
   page,
 }) => {
-  const { email, slug } = await createUser(page, { brand: "Latte Lane", prefix: "aiw" });
+  // A busy brand: the crisis room's "explain the peak" needs a few mentions around the busiest hour to cite.
+  const { email, slug } = await createUser(page, { brand: "Juniper Roast", prefix: "aiw" });
   await queryReady(slug);
   await setPlan(email, "growth");
 

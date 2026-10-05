@@ -156,6 +156,7 @@ test("duplicate email is rejected with a path to log in", async ({ page }) => {
 });
 
 test("invites respect the trial seat limit and can be accepted", async ({ page, browser }) => {
+  test.setTimeout(120_000); // two sign-ups and an acceptance, on a dev server that compiles each route on first visit
   const owner = `owner-${Date.now()}@example.test`;
   const invitee = `invitee-${Date.now()}@example.test`;
   await signUp(page, owner);

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useBusy } from "@/lib/use-busy";
+import { useState } from "react";
 import { peakAction, summaryAction } from "@/app/w/[ws]/ask/actions";
 import { PaywallModal, type PaywallProps } from "@/components/listening/PaywallModal";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ export function CrisisAi({
   const [error, setError] = useState<string | null>(null);
   const [left, setLeft] = useState<number | null>(null);
   const [paywall, setPaywall] = useState<PaywallProps | null>(null);
-  const [pending, start] = useTransition();
+  const [pending, start] = useBusy();
   const [busy, setBusy] = useState<Kind | null>(null);
 
   function go(kind: Kind) {

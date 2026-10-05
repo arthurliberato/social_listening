@@ -3,6 +3,12 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "tests/e2e",
   workers: 1,
+  // A dev server compiles each route on first visit, so some first loads are slow; CI serves a production
+  // build instead (below), and a single retry absorbs the odd genuine hiccup without hiding real failures.
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
+  retries: process.env.CI ? 1 : 0,
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: "http://localhost:3000",
     // Cloud sandboxes ship a pre-installed Chromium; set to use it instead of downloading.
@@ -27,9 +33,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
+    // CI builds first (a separate step) and serves the production build. PW_PROD=1 does the same locally.
+    command: process.env.CI || process.env.PW_PROD ? "npm run start" : "npm run dev",
     url: "http://localhost:3000/login",
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
 });

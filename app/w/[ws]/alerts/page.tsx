@@ -1,7 +1,7 @@
 import { desc, eq, inArray } from "drizzle-orm";
 import Link from "next/link";
 import { alertEvents, alertRules, db, queries } from "@/db/client";
-import { AlertRowActions } from "@/components/alerts/AlertRowActions";
+import { RuleRow } from "@/components/alerts/RuleRow";
 import { NewAlertButton } from "@/components/alerts/NewAlertButton";
 import { SeverityBadge, StatusBadge } from "@/components/alerts/badges";
 import { requireWorkspace } from "@/lib/auth/session";
@@ -196,10 +196,13 @@ export default async function AlertsPage({
                 </thead>
                 <tbody>
                   {rules.map(({ rule, queryName }) => (
-                    <tr
+                    <RuleRow
                       key={rule.id}
-                      className="border-b border-[var(--border)] last:border-0"
-                      data-testid="rule-row"
+                      ws={slug}
+                      id={rule.id}
+                      name={rule.name}
+                      muted={rule.status === "muted"}
+                      canEdit={editable}
                     >
                       <th scope="row" className="px-3 py-2 font-medium">
                         {rule.name}
@@ -219,19 +222,7 @@ export default async function AlertsPage({
                           ? relativeTime(lastFired.get(rule.id)!.toISOString(), now)
                           : "Never"}
                       </td>
-                      <td className="px-3 py-2" data-testid="rule-status">
-                        {rule.status === "muted" ? "Muted" : "Active"}
-                      </td>
-                      <td className="px-3 py-2">
-                        <AlertRowActions
-                          ws={slug}
-                          id={rule.id}
-                          name={rule.name}
-                          muted={rule.status === "muted"}
-                          canEdit={editable}
-                        />
-                      </td>
-                    </tr>
+                    </RuleRow>
                   ))}
                 </tbody>
               </table>

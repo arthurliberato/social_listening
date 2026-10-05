@@ -1,6 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 import { accounts, db, pool, queries, usageCounters, workspaces } from "@/db/client";
+import { brandQuery, busiestBrands } from "@/lib/testing/corpus";
 import { visibleUntil } from "@/lib/entitlements/plans";
 import { runBackfill } from "./backfill";
 import { runRelease } from "./release";
@@ -41,7 +42,7 @@ describe("plan refresh tiers", () => {
 
 describe("release job", () => {
   it("reveals mentions published after the backfill as the sim clock advances", async () => {
-    const { q } = await fixture("agency", "voltara");
+    const { q } = await fixture("agency", brandQuery((await busiestBrands(1))[0]!));
     expect(q.releasedThrough).not.toBeNull();
     const base = await count(q.id);
     // Advance the sim clock 20 days: the corpus holds 'future' mentions that now become visible.
@@ -64,7 +65,7 @@ describe("release job", () => {
   });
 
   it("only releases what the plan's refresh tier allows", async () => {
-    const { q } = await fixture("starter", "voltara");
+    const { q } = await fixture("starter", brandQuery((await busiestBrands(1))[0]!));
     const now = new Date(q.releasedThrough!.getTime() + 30 * 3_600_000);
     await runRelease(q.id, now);
     const [row] = await db.select().from(queries).where(eq(queries.id, q.id));
@@ -78,7 +79,7 @@ describe("release job", () => {
   });
 
   it("stops collecting at the monthly limit but still advances the clock", async () => {
-    const { a, q } = await fixture("agency", "voltara");
+    const { a, q } = await fixture("agency", brandQuery((await busiestBrands(1))[0]!));
     await db.update(usageCounters).set({ value: 199_995 }).where(eq(usageCounters.accountId, a.id)); // 5 left of 200,000
     const r = await runRelease(q.id, new Date(q.releasedThrough!.getTime() + 20 * 86_400_000));
     expect(r!.matched).toBeLessThanOrEqual(5);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   addTags,
@@ -27,6 +27,7 @@ import {
   PAGE_SIZES,
   clearedFilters,
   RANGE_DAYS,
+  parseFilters,
   removeChip,
   toSearchParams,
   type Chip,
@@ -111,6 +112,7 @@ export function MentionsFeed({
   const router = useRouter();
   const pathname = usePathname();
   const toast = useToast();
+  const urlParams = useSearchParams();
   const [pending, startNav] = useTransition();
   const [rows, setRows] = useState(feed.rows);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -154,6 +156,26 @@ export function MentionsFeed({
 
   const byId = useMemo(() => new Map(rows.map((r) => [r.id, r])), [rows]);
   const rowEls = useRef(new Map<number, HTMLElement>());
+
+  // Back and forward can leave the address bar on one filter set and the list on another (the browser restores
+  // the URL, the router occasionally keeps the other page's data). The URL is the truth: if the two disagree,
+  // load what the URL asks for, once per address.
+  const syncedFor = useRef("");
+  useEffect(() => {
+    const strip = (p: URLSearchParams) => {
+      const c = new URLSearchParams(p);
+      c.delete("m");
+      c.sort();
+      return c.toString();
+    };
+    const want = strip(
+      toSearchParams({ ...parseFilters(new URLSearchParams(urlParams.toString())) }),
+    );
+    const have = strip(toSearchParams({ ...filters }));
+    if (want === have || syncedFor.current === want) return;
+    syncedFor.current = want;
+    router.refresh();
+  }, [urlParams, filters, router]);
 
   // ---- URL helpers -----------------------------------------------------------------------
   const go = useCallback(
