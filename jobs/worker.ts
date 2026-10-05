@@ -1,5 +1,6 @@
 import { getBoss, QUEUES } from "@/lib/jobs/boss";
 import { runBackfill } from "./backfill";
+import { runHistoryBackfill } from "./history-pack";
 import { runBillingLifecycle } from "@/lib/billing/lifecycle";
 import { runDueReports } from "./reports";
 import { runNightlyScoring } from "./pqa";
@@ -16,6 +17,13 @@ export async function startWorkers() {
   await boss.work<{ queryId: string }>(QUEUES.backfill, { localConcurrency: 2 }, async (jobs) => {
     for (const job of jobs) await runBackfill(job.data.queryId);
   });
+  await boss.work<{ packId: string }>(
+    QUEUES.historyBackfill,
+    { localConcurrency: 1 },
+    async (jobs) => {
+      for (const job of jobs) await runHistoryBackfill(job.data.packId);
+    },
+  );
   // Reveal newly published mentions every 5 minutes (a plan's refresh tier decides what it sees).
   await boss.schedule(QUEUES.release, "*/5 * * * *");
   await boss.work(QUEUES.release, async () => {

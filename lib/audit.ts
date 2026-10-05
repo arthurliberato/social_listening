@@ -71,6 +71,7 @@ export const AUDIT_LABEL: Record<string, string> = {
   "branding.updated": "Changed white-label settings",
   "plan.subscribed": "Started a plan",
   "plan.upgraded": "Upgraded the plan",
+  "plan.addon_purchased": "Bought an add-on",
   "plan.downgrade_scheduled": "Scheduled a downgrade",
   "plan.canceled": "Cancelled the plan",
   "plan.resumed": "Resumed the plan",
@@ -141,6 +142,8 @@ export function auditDetail(
       return `${m("plan")} (${m("interval")})`;
     case "plan.canceled":
       return m("reason").replace("_", " ");
+    case "plan.addon_purchased":
+      return `${m("addon")}: ${m("name")}`;
     case "query.copied":
       return m("from") ? `${m("name")} (from ${m("from")})` : m("name");
     case "dashboard.shared_publicly":

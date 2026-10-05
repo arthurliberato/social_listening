@@ -7,7 +7,9 @@ import { db, queries } from "@/db/client";
 import { trackServer } from "@/lib/analytics/server";
 import { auditIn } from "@/lib/audit";
 import { requireWorkspace, userWorkspaces } from "@/lib/auth/session";
+import { buyHistoryPack } from "@/lib/billing/history-pack";
 import { can, PLANS, type PlanTier } from "@/lib/entitlements/plans";
+import { can as roleCan } from "@/lib/permissions";
 import { enqueueBackfill } from "@/lib/jobs/boss";
 import {
   accountPlan,
@@ -337,4 +339,29 @@ export async function copyQuery(
   revalidatePath(`/w/${slug}/queries`);
   revalidatePath(`/w/${target.slug}/queries`);
   return { ok: true, id: row!.id, targetSlug: target.slug };
+}
+
+/** Buy a history pack for one query: owners and admins only, because it spends the account's money. */
+export async function buyHistory(
+  slug: string,
+  queryId: string,
+): Promise<
+  | { ok: true; invoiceNumber: string }
+  | { ok: false; error: string; code?: string; upgradeTo?: PlanTier }
+> {
+  const { user, ws } = await requireWorkspace(slug);
+  if (!roleCan(ws.role, "billing.manage"))
+    return {
+      ok: false,
+      error: "Only an owner or admin can buy add-ons. Ask one of them to add this.",
+    };
+  const [q] = await db
+    .select({ id: queries.id })
+    .from(queries)
+    .where(and(eq(queries.id, queryId), eq(queries.workspaceId, ws.id)));
+  if (!q) return { ok: false, error: "That query no longer exists." };
+  const r = await buyHistoryPack({ accountId: ws.accountId, queryId, userId: user.id });
+  if (!r.ok) return { ok: false, error: r.error, code: r.code, upgradeTo: r.upgradeTo };
+  revalidatePath(`/w/${slug}/queries`);
+  return { ok: true, invoiceNumber: r.invoiceNumber };
 }

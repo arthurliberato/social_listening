@@ -7,6 +7,7 @@ import { copyQuery, deleteQuery, setQueryStatus } from "@/app/w/[ws]/queries/act
 import { Button } from "@/components/ui/button";
 import { PaywallModal, type PaywallProps } from "@/components/listening/PaywallModal";
 import { PLANS } from "@/lib/entitlements/plans";
+import { HistoryPackControl, type PackInfo } from "./HistoryPackControl";
 
 export function QueryRowActions({
   ws,
@@ -15,6 +16,7 @@ export function QueryRowActions({
   status,
   canEdit,
   copyTargets = [],
+  pack,
 }: {
   ws: string;
   id: string;
@@ -22,6 +24,7 @@ export function QueryRowActions({
   status: string;
   canEdit: boolean;
   copyTargets?: { slug: string; name: string }[];
+  pack?: PackInfo;
 }) {
   const router = useRouter();
   const [pending, start] = useBusy();
@@ -101,6 +104,7 @@ export function QueryRowActions({
       >
         {status === "live" ? "Pause" : "Resume"}
       </Button>
+      {pack && <HistoryPackControl ws={ws} queryId={id} name={name} pack={pack} />}
       {copyTargets.length > 0 &&
         (copying ? (
           <span

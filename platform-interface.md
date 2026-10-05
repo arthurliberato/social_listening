@@ -95,7 +95,7 @@ Not present as screens: Sources/upload, API/keys, notifications settings page be
 
 ## 5. Tracking
 
-- **Plan:** `docs/tracking-plan.json` (source of truth, 108 events, each with `area`, `side` client/server, `properties`, `destinations`, optional `ga4_name`). `lib/analytics/events.ts` is generated from it (`npm run gen:events`), so unknown events or properties fail typecheck.
+- **Plan:** `docs/tracking-plan.json` (source of truth, 110 events, each with `area`, `side` client/server, `properties`, `destinations`, optional `ga4_name`). `lib/analytics/events.ts` is generated from it (`npm run gen:events`), so unknown events or properties fail typecheck.
 - **Path:** client `track()` (`lib/analytics/client.ts`) → Amplitude Browser SDK (if `NEXT_PUBLIC_AMPLITUDE_KEY`) and `POST /api/track` (beacon); server `trackServer()` (`lib/analytics/server.ts`) **always** inserts into Postgres `analytics_events` (the warehouse mirror), then sends to Amplitude Node SDK (`AMPLITUDE_API_KEY`) and GA4 Measurement Protocol (`GA4_MEASUREMENT_ID`, `GA4_API_SECRET`, funnel events only, no PII). Without keys, only the Postgres mirror is written; this is the dataset agents will populate.
 - **Global properties on every event:** `account_id, workspace_id, plan_tier, trial_day, user_role, persona_archetype, is_synthetic, agent_run_id, app_version, route, ui_theme`. Plus groups `account` and `workspace`; `groupIdentifyAccount()` pushes nightly scores (PQA, health band).
 - **Agent labelling:** the harness sets a cookie `rw_sim` = base64 JSON `{persona, run, model}` before sign-up (`lib/sim-context.ts`). Sign-up stores it on the user (`personaArchetype`, `agentRunId`, `agentModel`; `isSynthetic` is always true). It labels analytics only and changes no behavior.
@@ -121,7 +121,7 @@ Not present as screens: Sources/upload, API/keys, notifications settings page be
 | Custom dashboards and templates | Present | 12 widget types, templates, edit mode with keyboard move |
 | AI summaries | Present | crisis-room summary, Ask AI with ≥3 citations, peak explanation, AI query writer; simulated provider behind a swappable interface; monthly quota per plan |
 | Share of voice | Present | widget (growth+) |
-| Historical backfill | Automatic only | runs on save; no manual "request backfill" or add-on (G6) |
+| Historical backfill | Automatic, plus a paid add-on | the plan's window is collected on save; a **history pack** adds one more year before it for one query (Queries page → *Add history*; `buyHistory` / `buyHistoryPack`; $49 one-time, up to 50,000 older mentions, outside the monthly allowance; paid plans, owner/admin only, card on file; one per query). It widens how far back the account can read (`accounts.history_extra_days`, applied in `accountPlan`), is invoiced as `kind = addon`, audited as `plan.addon_purchased`, tracked as `Add-on Purchased` and `History Pack Completed`, and survives a rebuild of the query. Still no overage pricing |
 | Custom source upload | **Absent** | (G7) |
 | Scheduled reports | Present | growth+; deliveries land in `/inbox`; open/click tracked |
 | Conditional alerts | Present | three rule types in `lib/alerts/rules.ts` (`volume_spike`, `sentiment_drop`, `influencer`), email/in-app channels, backtest preview |
@@ -144,7 +144,7 @@ Not present as screens: Sources/upload, API/keys, notifications settings page be
 
 - Feature flags per plan: sentiment alerts, crisis room, scheduled reports, white label, share of voice, emotion widget, public share links, SSO, audit log, API, logo recognition (growth adds the first six, agency adds white label; enterprise the rest).
 - When a limit is hit the UI opens a paywall modal (10 placements) and the server action returns `{ok:false, error, upgradeTo}`. Mention quota exhaustion sets `backfill_status = quota_exhausted` and the release job still advances the clock.
-- **No overage pricing and no add-ons** (the agent spec's "slots, overage, add-ons" in 4J are not modeled; G6).
+- **One add-on, no overage pricing.** The history pack is the only add-on; going over the monthly mentions allowance stops collection rather than billing extra (the agent spec's "overage" in 4J is not modeled; G6).
 - Billing is a simulated internal provider in test mode only; trial lifecycle: reminder at 3 days, trial ended → grace (3 days) → read-only lock (`lib/billing`, `runBillingLifecycle`). Cancellation: Billing → Cancel → reason → (save offer once) → confirm.
 - Throughput limits: no HTTP rate limiting in the app. Concurrency is bounded by Postgres and the Next process. Previews and widget queries run against the shared corpus (target: preview <1.5 s on 1M rows). `npm run loadtest` measures page-load throughput (`docs/loadtest.md`); the e2e suite itself runs one worker.
 
@@ -173,7 +173,7 @@ Not present as screens: Sources/upload, API/keys, notifications settings page be
 | G3 | Cases, briefs, truth packs and a ledger → none in the app | Keep them outside the app (agent orchestrator + ledger store); the platform only needs to expose `agent_run_id` (done). Truth for the corpus is in `datagen` output | S |
 | G4 | **Done:** `replyto:` operator (see section 6). Original: URL operator for replies → absent | Add `url:`/`reply_to:` field in `lib/query/grammar.peggy` plus a `mentions.parent_url` column from datagen (corpus is threaded already) | M |
 | G5 | **Categories done; auto-tagging rules still absent.** Original: Categories and auto-tagging rules → absent (tags only) | Add `categories` (name, keywords) and `tag_rules` (query → tag) tables with a rule-application job and UI under Mentions or Queries | M |
-| G6 | Manual backfill request, add-ons, overage → automatic backfill only | Add a "Backfill more history" action (plan-gated) and an add-on/overage model in `plans.ts` | M |
+| G6 | **Mostly done:** history pack add-on (section 6) is the manual backfill. Overage pricing and other add-ons are not built. Original: Manual backfill request, add-ons, overage → automatic backfill only | Add a "Backfill more history" action (plan-gated) and an add-on/overage model in `plans.ts` | M |
 | G7 | Custom source upload → absent | Add a CSV upload per workspace into a workspace-scoped mentions table merged in query compile | L |
 | G8 | **Done:** copy to workspace (section 6). Original: Query reuse across projects → absent | Add "Copy to workspace" for queries and a template library | S |
 | G9 | Event names differ from spec snake_case | Keep the platform's Title Case plan as source of truth and write a mapping table in the agent repo; add missing events only if agents need them (`screen_view`, `help_opened` exists as `Help Opened` but there is no Help screen, `Support Contacted`) | S |

@@ -361,6 +361,21 @@
   },
   {
    "area": "Query",
+   "name": "History Pack Completed",
+   "side": "server",
+   "properties": [
+    "query_id",
+    "matched_count",
+    "duration_ms"
+   ],
+   "description": "Older history collected for a query that has a history pack.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Query",
    "name": "AI Query Generated",
    "side": "client",
    "properties": [
@@ -1184,6 +1199,20 @@
     "mrr_delta"
    ],
    "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Plan",
+   "name": "Add-on Purchased",
+   "side": "server",
+   "properties": [
+    "addon",
+    "price_cents"
+   ],
+   "description": "A one-time add-on bought, such as a history pack.",
    "destinations": [
     "amplitude",
     "warehouse"

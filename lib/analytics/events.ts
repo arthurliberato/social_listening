@@ -289,6 +289,19 @@ export const EVENTS = {
     ],
     "ga4Name": null
   },
+  "History Pack Completed": {
+    "side": "server",
+    "properties": [
+      "query_id",
+      "matched_count",
+      "duration_ms"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
   "AI Query Generated": {
     "side": "client",
     "properties": [
@@ -991,6 +1004,18 @@ export const EVENTS = {
     "properties": [
       "seats_total",
       "mrr_delta"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Add-on Purchased": {
+    "side": "server",
+    "properties": [
+      "addon",
+      "price_cents"
     ],
     "destinations": [
       "amplitude",

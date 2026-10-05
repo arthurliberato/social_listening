@@ -574,6 +574,17 @@ test("the audit log records what happened, filters, and is a paywall below Enter
     "data-role",
     "viewer",
   );
+  // The row flips at once; wait for the server to have the change before leaving the page, or the request is cancelled.
+  await expect
+    .poll(
+      async () =>
+        (
+          await pool.query(
+            `SELECT m.role FROM memberships m JOIN users u ON u.id = m.user_id WHERE u.name = 'Eddie Editor' ORDER BY m.role LIMIT 1`,
+          )
+        ).rows[0]?.role,
+    )
+    .toBe("viewer");
 
   await page.goto("/settings/audit");
   // History from before the upgrade was kept (the invitation), and so was everything since.

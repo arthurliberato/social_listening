@@ -44,6 +44,8 @@ export const accounts = pgTable("accounts", {
   /** Save-offer discount: percent off the next N renewals. */
   discountPct: integer("discount_pct").notNull().default(0),
   discountCyclesLeft: integer("discount_cycles_left").notNull().default(0),
+  /** Extra days of history readable on top of the plan's window, once a history pack has been bought. */
+  historyExtraDays: integer("history_extra_days").notNull().default(0),
   /** Set when the save offer is first shown, so it is never offered twice. */
   saveOfferShownAt: ts("save_offer_shown_at"),
   dunningAttempts: integer("dunning_attempts").notNull().default(0),
@@ -950,4 +952,35 @@ export const supportRequests = pgTable(
       .$defaultFn(() => simNow()),
   },
   (t) => [index("support_requests_user_idx").on(t.userId, t.createdAt)],
+);
+
+/**
+ * A one-time add-on: another year of history for one query, collected beyond the plan's window. Bought from the
+ * Queries page, charged like any other payment, and not counted against the monthly mentions allowance.
+ */
+export const historyPacks = pgTable(
+  "history_packs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    queryId: uuid("query_id")
+      .notNull()
+      .references(() => queries.id, { onDelete: "cascade" }),
+    purchasedBy: uuid("purchased_by").references(() => users.id, { onDelete: "set null" }),
+    priceCents: integer("price_cents").notNull(),
+    extraDays: integer("extra_days").notNull(),
+    status: text("status").notNull().default("pending"), // pending|running|done|failed
+    matched: integer("matched").notNull().default(0),
+    /** The older stretch that was collected (set when the job finishes). */
+    fromAt: ts("from_at"),
+    toAt: ts("to_at"),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
+    completedAt: ts("completed_at"),
+  },
+  (t) => [uniqueIndex("history_packs_query_idx").on(t.queryId)],
 );

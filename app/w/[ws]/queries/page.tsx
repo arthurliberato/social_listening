@@ -1,6 +1,10 @@
 import { desc, eq } from "drizzle-orm";
 import Link from "next/link";
-import { db, queries } from "@/db/client";
+import { db, historyPacks, queries } from "@/db/client";
+import { HISTORY_PACK, PACK_TIERS, usd } from "@/lib/billing/history-pack";
+import { defaultMethod, getAccount } from "@/lib/billing/service";
+import { can as roleCan } from "@/lib/permissions";
+import type { PlanTier } from "@/lib/entitlements/plans";
 import { BackfillPoller } from "@/components/listening/BackfillPoller";
 import { NewQueryButton } from "@/components/listening/NewQueryButton";
 import { QueryRowActions } from "@/components/listening/QueryRowActions";
@@ -41,10 +45,19 @@ export default async function QueriesPage({
     (["starter", "growth", "agency", "enterprise"] as const).find(
       (t) => PLANS[t].activeQueries > plan.activeQueries,
     ) ?? "enterprise";
-  const collecting = rows.some(
-    (r) =>
-      r.status === "live" && (r.backfillStatus === "pending" || r.backfillStatus === "running"),
-  );
+  const [packs, acct, card] = await Promise.all([
+    db.select().from(historyPacks).where(eq(historyPacks.accountId, ws.accountId)),
+    getAccount(ws.accountId),
+    defaultMethod(ws.accountId),
+  ]);
+  const packOf = new Map(packs.map((p) => [p.queryId, p]));
+  const eligible =
+    acct?.billingStatus === "active" && PACK_TIERS.includes(acct.planTier as PlanTier);
+  const collecting =
+    rows.some(
+      (r) =>
+        r.status === "live" && (r.backfillStatus === "pending" || r.backfillStatus === "running"),
+    ) || packs.some((p) => p.status === "pending" || p.status === "running");
   const editable = canEdit(ws.role);
   // Where this person can copy a query: any workspace of the account they can edit (this one duplicates).
   const targets = (await userWorkspaces(user.id))
@@ -161,6 +174,21 @@ export default async function QueriesPage({
                       status={q.status}
                       canEdit={editable}
                       copyTargets={targets}
+                      pack={{
+                        status:
+                          (packOf.get(q.id)?.status as
+                            "pending" | "running" | "done" | "failed" | undefined) ?? null,
+                        matched: packOf.get(q.id)?.matched ?? 0,
+                        ready:
+                          q.status === "live" &&
+                          ["done", "quota_exhausted"].includes(q.backfillStatus),
+                        eligible,
+                        canBuy: roleCan(ws.role, "billing.manage"),
+                        card: card ? `${card.last4}` : null,
+                        price: usd(HISTORY_PACK.priceCents),
+                        extraDays: HISTORY_PACK.extraDays,
+                        maxMentions: HISTORY_PACK.maxMentions,
+                      }}
                     />
                   </td>
                 </tr>

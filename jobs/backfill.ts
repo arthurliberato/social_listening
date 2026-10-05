@@ -1,5 +1,6 @@
 import { eq, sql } from "drizzle-orm";
-import { accounts, db, queries, workspaces } from "@/db/client";
+import { accounts, db, historyPacks, queries, workspaces } from "@/db/client";
+import { runHistoryBackfill } from "./history-pack";
 import { trackServer } from "@/lib/analytics/server";
 import { limits, visibleUntil, type PlanTier } from "@/lib/entitlements/plans";
 import { compile, compileFilters } from "@/lib/query/compile";
@@ -96,4 +97,7 @@ export async function runBackfill(queryId: string, actorUserId?: string | null):
       quota_type: "mentions",
       threshold_pct: 80,
     });
+  // A query with a history pack keeps its older stretch when it is rebuilt (an edited query starts from scratch).
+  const [pack] = await db.select().from(historyPacks).where(eq(historyPacks.queryId, queryId));
+  if (pack) await runHistoryBackfill(pack.id);
 }
