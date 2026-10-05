@@ -3,6 +3,7 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { db, emails, reportDeliveries } from "@/db/client";
 import { trackServer } from "@/lib/analytics/server";
+import { simNow } from "@/lib/simclock";
 
 /** Email types we measure. Verification and invitation mail is transactional and is not tracked. */
 export const TRACKED_TYPES = ["report", "digest", "alert"] as const;
@@ -17,7 +18,7 @@ export async function recordOpen(emailId: string): Promise<void> {
   if (!/^[0-9a-f-]{36}$/.test(emailId)) return;
   const [m] = await db
     .update(emails)
-    .set({ openedAt: new Date() })
+    .set({ openedAt: simNow() })
     .where(and(eq(emails.id, emailId), isNull(emails.openedAt)))
     .returning({ type: emails.type, userId: emails.toUserId });
   if (!m || !isTracked(m.type)) return; // already counted, unknown, or not a tracked type
@@ -25,7 +26,7 @@ export async function recordOpen(emailId: string): Promise<void> {
   if (d)
     await db
       .update(reportDeliveries)
-      .set({ openedAt: new Date() })
+      .set({ openedAt: simNow() })
       .where(and(eq(reportDeliveries.id, d.id), isNull(reportDeliveries.openedAt)));
   const ctx = { userId: m.userId, workspaceId: d?.workspaceId ?? null };
   await trackServer("Email Opened", ctx, { email_type: m.type });
@@ -40,13 +41,13 @@ export async function recordClick(emailId: string, to: string | null): Promise<s
   if (!m || !isTracked(m.type)) return safe;
   await db
     .update(emails)
-    .set({ clickedAt: new Date() })
+    .set({ clickedAt: simNow() })
     .where(and(eq(emails.id, emailId), isNull(emails.clickedAt)));
   const d = await deliveryOf(emailId);
   if (d)
     await db
       .update(reportDeliveries)
-      .set({ clickedAt: new Date() })
+      .set({ clickedAt: simNow() })
       .where(and(eq(reportDeliveries.id, d.id), isNull(reportDeliveries.clickedAt)));
   await trackServer(
     "Email Link Clicked",

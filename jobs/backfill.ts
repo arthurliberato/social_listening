@@ -68,7 +68,7 @@ export async function runBackfill(queryId: string, actorUserId?: string | null):
     .set({
       backfillStatus: exhausted ? "quota_exhausted" : "done",
       backfillMatched: matched,
-      backfilledAt: new Date(),
+      backfilledAt: simNow(),
       releasedThrough: end,
     })
     .where(eq(queries.id, queryId));

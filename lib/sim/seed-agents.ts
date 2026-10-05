@@ -111,7 +111,7 @@ export async function seedAgents(o: SeedOptions): Promise<AgentSeed[]> {
           tokenHash: hashToken(inviteToken),
           invitedBy: ownerId,
           source: "settings",
-          expiresAt: new Date(Date.now() + 7 * 86_400_000),
+          expiresAt: new Date(simNow().getTime() + 7 * 86_400_000),
         });
       }
       const res = await createAccountAndUser({

@@ -20,6 +20,7 @@ import {
 import { stats } from "@/lib/query/ast";
 import { analyze } from "@/lib/query/lint";
 import { previewQuery, type Preview } from "@/lib/query/preview";
+import { simNow } from "@/lib/simclock";
 
 const Filters = z.object({
   sources: z.array(z.enum(SOURCE_TYPES)).default([]),
@@ -120,7 +121,7 @@ export async function saveQuery(slug: string, input: unknown): Promise<SaveResul
     languages: v.filters.languages,
     countries: v.filters.countries,
     status: "live",
-    updatedAt: new Date(),
+    updatedAt: simNow(),
   };
   const changed =
     !existing ||
@@ -223,7 +224,7 @@ export async function setQueryStatus(
     .update(queries)
     .set({
       status,
-      updatedAt: new Date(),
+      updatedAt: simNow(),
       ...(status === "live" ? { backfillStatus: "pending" } : {}),
     })
     .where(eq(queries.id, id));

@@ -60,6 +60,9 @@ export function TaskList({
   const [assignee, setAssignee] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  // Tasks added here show at once; the refreshed list takes over (matched by id) when it arrives.
+  const [added, setAdded] = useState<Task[]>([]);
+  const shown = [...tasks, ...added.filter((a) => !tasks.some((t) => t.id === a.id))];
   // Optimistic: the box flips at once and reverts if the server refuses.
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 
@@ -71,6 +74,15 @@ export function TaskList({
     setBusy(false);
     if (!r.ok) return setError(r.error);
     track("Crisis Task Created", { crisis_id: crisisId });
+    setAdded((a) => [
+      ...a,
+      {
+        id: r.id,
+        title: title.trim(),
+        done: false,
+        assignee: members.find((m) => m.id === assignee)?.name ?? null,
+      },
+    ]);
     setTitle("");
     router.refresh();
   };
@@ -91,13 +103,13 @@ export function TaskList({
       <h2 id="tasks-h" className="text-lg font-semibold">
         Response plan
       </h2>
-      {tasks.length === 0 ? (
+      {shown.length === 0 ? (
         <p className="mt-2 text-sm text-[var(--text-muted)]" data-testid="tasks-empty">
           No tasks yet. Write down who is doing what so nothing falls through.
         </p>
       ) : (
         <ul className="mt-2 flex flex-col gap-1">
-          {tasks.map((raw) => {
+          {shown.map((raw) => {
             const t = { ...raw, done: flipped[raw.id] ?? raw.done };
             return (
               <li key={t.id} className="flex items-center gap-2 text-sm" data-testid="task">

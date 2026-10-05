@@ -1,5 +1,5 @@
 import { analyticsEvents, db } from "@/db/client";
-import { readSimContext } from "@/lib/sim-context";
+import { simNow } from "@/lib/simclock";
 import { globalProps, type AnalyticsContext } from "./context";
 import { EVENTS, type EventName, type EventProps, type Prop } from "./events";
 
@@ -31,11 +31,10 @@ export async function trackServer<N extends EventName>(
       ui_theme: extras.ui_theme ?? null,
       ...(props as Record<string, Prop>),
     };
-    // A synthetic agent may carry its own simulated clock (cookie `rw_sim`); otherwise the database stamps wall time.
-    const clock = (await readSimContext()).clock;
-    const at = clock ? new Date(clock) : undefined;
+    // The agent's own clock when it has one (cookie `rw_sim`, see lib/simclock.ts), else the app's simulated now.
+    const at = simNow();
     await db.insert(analyticsEvents).values({
-      ...(at ? { ts: at } : {}),
+      ts: at,
       name,
       side: extras.side ?? def.side,
       userId: ctx.userId ?? null,
