@@ -7,3 +7,6 @@ playwright-report
 next-env.d.ts
 data/
 tests/.auth
+
+# agent run output
+agents/out

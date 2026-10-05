@@ -186,6 +186,8 @@ Not present as screens: Sources/upload, API/keys, notifications settings page be
 
 ## 11. Quick reference for an agent harness
 
+The harness itself now exists in `agents/` (see `docs/agents.md`); this section is the manual version of what it does.
+
 1. Start: `docker compose up` or `npm run start` (prod build); wait for `/login` to return 200.
 2. Before sign-up set cookie `rw_sim=<base64 {"persona":"analyst_mid","run":"run-001","model":"..."}>` on the app origin.
 3. Sign up at `/signup` (`signup-name`, `signup-email`, `signup-company`, `signup-password`, `signup-submit`), open `/inbox`, follow the verification link, complete or skip the 5 onboarding steps (`role-*`, `onboarding-next`, `onboarding-skip`, `brand-name`).
