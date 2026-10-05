@@ -35,6 +35,23 @@ Output goes to `agents/out/<run>/<agent>/`: `ledger.jsonl`, `deliverable.md`, `e
 Set `PW_CHROMIUM_PATH` to use a preinstalled Chromium. For the Claude brain set `ANTHROPIC_API_KEY` (and optionally
 `AGENT_MODEL`); it has been tested against a mocked API only, not live.
 
+## Seeing the screen (vision mode)
+
+By default an agent reads page text and element attributes, like a screen reader. Two opt-in flags change that:
+
+- `--shots` saves a JPEG at each key screen (query preview, feed sample, categories, final feed) in
+  `agents/out/<run>/<agent>/screens/`, with a `screenshot` ledger entry. No model is involved; it is for people to
+  review what the agent was looking at, and `--headed` lets you watch the browser live.
+- `--vision` (needs `--provider claude`) also shows each screenshot to the brain through the Messages API (an image
+  block), with a question for that step. The brain returns what it saw and anything that looks visually wrong
+  (overlapping or cut-off text, empty or broken charts, unreadable contrast). Each look is a `look` ledger entry; what it
+  saw is passed into the write-up; and the problems it spotted are saved to `visual-issues.json`, so agents double as a
+  visual QA pass on the product. The profile records `perception: "text+vision"`.
+
+Vision mode is tested with a stand-in brain that can look (it proves screenshots are real, reach the brain with the right
+question, are logged and flow into the write-up) and with a mocked API for the image request. The live model has not been
+called. A scripted brain cannot look, so `--vision` with it is refused up front.
+
 ## What the first runs show
 
 On the CI-sized corpus, with the scripted brain, case CS-001:
@@ -57,4 +74,4 @@ On the CI-sized corpus, with the scripted brain, case CS-001:
   release) use the process-wide clock, so a clock far from the corpus's present would make the agent's windows
   disagree with what the jobs collected. The orchestrator (M3) is meant to drive both.
 - **Deliverables** are files, not platform objects; M2 can submit them as reports in the platform.
-- **Reading the screen** is DOM text, not screenshots (spec 6). Attention limits and misreads are not injected yet.
+- **Attention limits and misreads** are not injected yet (spec 6). By default the agent reads page text; vision is opt-in (below).

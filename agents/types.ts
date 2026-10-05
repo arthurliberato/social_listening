@@ -38,7 +38,13 @@ export interface AgentProfile {
     frustration: number;
     trust_in_data: number;
   };
-  policy: { tier: 0 | 1 | 2; provider: string; model: string | null; prompt_version: string };
+  policy: {
+    tier: 0 | 1 | 2;
+    provider: string;
+    model: string | null;
+    prompt_version: string;
+    perception: "text" | "text+vision";
+  };
   seed: number;
 }
 
@@ -99,11 +105,19 @@ export interface Brain {
     scope: string;
     mentions: SampleMention[];
   }): Promise<{ name: string; search: string }[]>;
+  /** Optional: a brain that can look at a screenshot. Without it the agent works from page text alone. */
+  look?(i: {
+    step: string;
+    question: string;
+    image: { base64: string; mediaType: "image/jpeg" };
+  }): Promise<{ observation: string; visual_issues: string[] }>;
   writeDeliverable(i: {
     brief: string;
     scope: string;
     numbers: Deliverable["numbers"];
     categories: Deliverable["categories"];
     negatives: string[];
+    /** What the agent saw on screen, when it can look. */
+    visualNotes?: string[];
   }): Promise<Deliverable>;
 }

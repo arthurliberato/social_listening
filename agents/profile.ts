@@ -24,7 +24,7 @@ export function sampleProfile(
     region: string;
     persona: string;
   },
-  opts: { provider?: string; model?: string | null; tier?: 0 | 1 | 2 } = {},
+  opts: { provider?: string; model?: string | null; tier?: 0 | 1 | 2; vision?: boolean } = {},
 ): AgentProfile {
   const seed = hashSeed(a.agent_id);
   const r = new Rng(seed);
@@ -79,7 +79,8 @@ export function sampleProfile(
       tier: opts.tier ?? 1,
       provider: opts.provider ?? "scripted",
       model: opts.model ?? null,
-      prompt_version: "m1-0",
+      prompt_version: "m1-1",
+      perception: opts.vision ? "text+vision" : "text",
     },
     seed,
   };

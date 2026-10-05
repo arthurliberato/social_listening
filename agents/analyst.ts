@@ -2,7 +2,7 @@
 // name the themes, and write up the findings. Content decisions come from the brain; how much effort and how
 // carefully comes from the profile; errors are injected by the skill layer and logged (spec 7, 9).
 import { writeFileSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { hashSeed, Rng } from "../datagen/rng";
 import type { Ledger } from "./ledger";
 import { degradeQuery, knownOperators, refinementBudget, type Injected } from "./skill";
@@ -18,6 +18,8 @@ export interface RunResult {
   rounds: number;
   overridden: { id: number; to: string }[];
   injected: Injected[];
+  /** Things the agent noticed looking wrong on screen (vision mode only). */
+  visualIssues: string[];
 }
 
 export interface RunOptions {
@@ -25,6 +27,10 @@ export interface RunOptions {
   /** Test hook: make the weak-query error certain, to exercise the refinement path. */
   forceWeakQuery?: boolean;
   deliverablePath?: string | null;
+  /** Take a screenshot at the key screens and keep them in this folder. */
+  shotsDir?: string | null;
+  /** Show the screenshots to the brain, so decisions can use what is on screen. Needs a brain that can look. */
+  vision?: boolean;
 }
 
 export async function runAnalystCase(o: {
@@ -43,6 +49,48 @@ export async function runAnalystCase(o: {
     ledger.record(e);
   };
   const ops = knownOperators(p);
+  if (o.options.vision && !brain.look)
+    throw new Error("vision needs a brain that can look: use --provider claude");
+  // What the agent sees: a screenshot at the key screens, optionally shown to the brain (spec 6).
+  let shot = 0;
+  const visualNotes: string[] = [];
+  const visualIssues: string[] = [];
+  const see = async (step: string, question: string) => {
+    if (!o.options.shotsDir && !o.options.vision) return;
+    const img = await ws.screenshot();
+    let file: string | null = null;
+    if (o.options.shotsDir) {
+      mkdirSync(o.options.shotsDir, { recursive: true });
+      file = join(o.options.shotsDir, `${String(++shot).padStart(2, "0")}-${step}.jpg`);
+      writeFileSync(file, img);
+    }
+    if (o.options.vision && brain.look) {
+      const r = await brain.look({
+        step,
+        question,
+        image: { base64: img.toString("base64"), mediaType: "image/jpeg" },
+      });
+      visualNotes.push(`${step}: ${r.observation}`);
+      visualIssues.push(...r.visual_issues.map((x) => `${step}: ${x}`));
+      log({
+        step: "look",
+        tool: "look",
+        intent: question,
+        observed: {
+          screen: step,
+          screenshot: file,
+          observation: r.observation,
+          visual_issues: r.visual_issues,
+        },
+      });
+    } else
+      log({
+        step: "screenshot",
+        tool: "screenshot",
+        intent: "keep a picture of what was on screen",
+        observed: { screen: step, screenshot: file },
+      });
+  };
   const name = `${c.id} ${c.monitoring_scope.split(",")[0]}`;
 
   // 1. Write the search the way this person would.
@@ -54,7 +102,12 @@ export async function runAnalystCase(o: {
   const degraded = degradeQuery(p, draft.text, rng, o.options.forceWeakQuery);
   let text = degraded.text;
   const initialQueryText = text;
-  const created = await ws.createQuery(name, text);
+  const created = await ws.createQuery(name, text, () =>
+    see(
+      "query_preview",
+      "Does the preview suggest this query will find the right mentions? Is the noise estimate acceptable?",
+    ),
+  );
   log({
     step: "create_query",
     tool: "create_query",
@@ -75,6 +128,10 @@ export async function runAnalystCase(o: {
       irrelevant: sample.filter((m) => !rel.has(m.id)),
     };
   };
+  await see(
+    "feed_sample",
+    "Do these mentions look relevant to the brand, and is the feed easy to read?",
+  );
   let split = await judge(read.sample);
   log({
     step: "read_sample",
@@ -189,8 +246,17 @@ export async function runAnalystCase(o: {
     });
   }
 
+  if (categories.length) {
+    await ws.openTags();
+    await see("categories", "Do the categories and their counts look sensible and readable?");
+  }
+
   // 6. Read the final numbers and write the deliverable.
   const all = await ws.openMentions(created.queryId, { windowDays: c.window_days, n: 50 });
+  await see(
+    "final_feed",
+    "Is this the filtered feed you expected? Anything confusing about the numbers shown?",
+  );
   const neg = await ws.openMentions(created.queryId, {
     windowDays: c.window_days,
     sentiment: "negative",
@@ -213,6 +279,7 @@ export async function runAnalystCase(o: {
     numbers,
     categories,
     negatives: neg.sample.map((m) => m.text),
+    visualNotes,
   });
   if (o.options.deliverablePath) {
     mkdirSync(dirname(o.options.deliverablePath), { recursive: true });
@@ -233,6 +300,7 @@ export async function runAnalystCase(o: {
     rounds,
     overridden,
     injected,
+    visualIssues,
   };
 }
 

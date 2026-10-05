@@ -37,6 +37,7 @@ export class Workspace {
   async createQuery(
     name: string,
     text: string,
+    onPreview?: () => Promise<void>,
   ): Promise<{ queryId: string; previewCount: number; noise: string }> {
     await this.go(`/w/${this.slug}/queries/new`);
     await this.page.getByTestId("mode-advanced").click();
@@ -45,6 +46,7 @@ export class Workspace {
     await this.page.keyboard.type(text);
     await this.page.getByTestId("query-name").fill(name);
     const preview = await this.readPreview();
+    await onPreview?.();
     await this.page.getByTestId("save-query").click();
     await this.page.waitForURL(/\/queries\?saved=/, { timeout: 30_000 });
     const href = await this.page
@@ -55,6 +57,17 @@ export class Workspace {
       .first()
       .getAttribute("href");
     return { queryId: href!.split("/").pop()!, ...preview };
+  }
+
+  /** What is on screen right now, as a JPEG: the agent's eyes (spec 6, a vision-enabled agent). */
+  async screenshot(): Promise<Buffer> {
+    await this.page.waitForTimeout(300); // let charts and transitions settle
+    return this.page.screenshot({ type: "jpeg", quality: 70 });
+  }
+
+  /** The tags and categories page, for looking at. */
+  async openTags(): Promise<void> {
+    await this.go(`/w/${this.slug}/tags`);
   }
 
   /** preview_query: the live count and noise estimate beside the editor. */

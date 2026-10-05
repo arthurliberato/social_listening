@@ -1,5 +1,5 @@
 // Usage: npx tsx agents/run-case.ts --manifest agents.json --agent acc001_u04 --case CS-001
-//          [--provider scripted|claude] [--base http://localhost:3000] [--out agents/out] [--headed] [--clock ISO]
+//          [--provider scripted|claude] [--base http://localhost:3000] [--out agents/out] [--headed] [--shots] [--vision] [--clock ISO]
 // Runs one agent through one case on a running platform, writes the ledger, the deliverable and the evaluation.
 import { chromium } from "@playwright/test";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
@@ -37,16 +37,24 @@ export async function runCase(o: {
   clock?: string;
   headed?: boolean;
   forceWeakQuery?: boolean;
+  /** Save a screenshot at each key screen. */
+  shots?: boolean;
+  /** Show screenshots to the brain (needs --provider claude). Implies shots. */
+  vision?: boolean;
+  /** Test hook: use this brain instead of building one from `provider`. */
+  brain?: Brain;
 }) {
   const assignment = loadCase(o.caseId);
   const calls: CallRecord[] = [];
   const brain: Brain =
-    o.provider === "claude"
+    o.brain ??
+    (o.provider === "claude"
       ? new ClaudeBrain(undefined, (c) => calls.push(c))
-      : new ScriptedBrain();
+      : new ScriptedBrain());
   const profile: AgentProfile = sampleProfile(o.agent, {
     provider: brain.name,
     model: brain.model,
+    vision: o.vision,
   });
   const dir = join(o.outDir, o.runId, o.agent.agent_id);
   mkdirSync(dir, { recursive: true });
@@ -90,6 +98,8 @@ export async function runCase(o: {
         runId: o.runId,
         forceWeakQuery: o.forceWeakQuery,
         deliverablePath: join(dir, "deliverable.md"),
+        shotsDir: o.shots || o.vision ? join(dir, "screens") : null,
+        vision: o.vision,
       },
     });
     for (const c of calls)
@@ -100,6 +110,8 @@ export async function runCase(o: {
         llm_call_id: c.llm_call_id,
         observed: { ...c },
       });
+    if (result.visualIssues.length)
+      writeFileSync(join(dir, "visual-issues.json"), JSON.stringify(result.visualIssues, null, 2));
     const evaluation = await evaluate({
       assignment,
       truth: loadTruth(o.caseId),
@@ -139,6 +151,8 @@ async function main() {
     provider: arg("provider", "scripted") as "scripted" | "claude",
     clock: arg("clock"),
     headed: process.argv.includes("--headed"),
+    shots: process.argv.includes("--shots"),
+    vision: process.argv.includes("--vision"),
   });
   console.log(JSON.stringify(out.evaluation, null, 2));
   console.log(`\nledger, deliverable and evaluation in ${out.dir}`);

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { ScriptedBrain } from "../../agents/brain/scripted";
 import { runCase } from "../../agents/run-case";
 import { seedAgents } from "../../lib/sim/seed-agents";
 import { pool } from "./helpers";
@@ -72,4 +73,64 @@ test("an analyst agent completes CS-001 through the platform, and is scored", as
   expect(out.evaluation.query.matched).toBeGreaterThan(50);
   expect(out.evaluation.query.recall).toBeGreaterThan(0.3);
   expect(out.evaluation.query.precision).toBeGreaterThan(0.5);
+});
+
+// A brain that can look, standing in for Claude: it proves screenshots are taken, shown to the brain with the
+// right question, recorded in the ledger, and carried into the write-up. (The live model is not called in tests.)
+test("a vision-enabled agent looks at the screen and records what it sees", async ({}, testInfo) => {
+  test.setTimeout(300_000);
+  const run = `m1v-${Date.now().toString(36)}`;
+  const agents = await seedAgents({ accounts: 1, seed: 6, run, onboardOwner: true });
+  const analyst = agents.find((a) => a.role === "analyst" && a.seniority === "senior")!;
+  const looks: { step: string; bytes: number; question: string }[] = [];
+  const seen: string[][] = [];
+  class SeeingBrain extends ScriptedBrain {
+    async look(i: {
+      step: string;
+      question: string;
+      image: { base64: string; mediaType: "image/jpeg" };
+    }) {
+      looks.push({
+        step: i.step,
+        bytes: Buffer.from(i.image.base64, "base64").length,
+        question: i.question,
+      });
+      return {
+        observation: `Saw the ${i.step} screen.`,
+        visual_issues: i.step === "feed_sample" ? ["Example issue: label too small"] : [],
+      };
+    }
+    async writeDeliverable(i: Parameters<ScriptedBrain["writeDeliverable"]>[0]) {
+      seen.push(i.visualNotes ?? []);
+      return super.writeDeliverable(i);
+    }
+  }
+  const out = await runCase({
+    agent: analyst,
+    caseId: "CS-001",
+    runId: run,
+    baseUrl: "http://localhost:3000",
+    outDir: join(testInfo.outputDir, "agents"),
+    brain: new SeeingBrain(),
+    vision: true,
+  });
+
+  expect(out.profile.policy.perception).toBe("text+vision");
+  const steps = looks.map((l) => l.step);
+  expect(steps).toEqual(expect.arrayContaining(["query_preview", "feed_sample", "final_feed"]));
+  for (const l of looks) {
+    expect(l.bytes, l.step).toBeGreaterThan(5_000); // a real JPEG, not an empty page
+    expect(l.question.length).toBeGreaterThan(20);
+  }
+  // Saved next to the ledger, and recorded as looks.
+  for (const l of out.ledger.filter((e) => e.step === "look")) {
+    const f = (l.observed as { screenshot: string }).screenshot;
+    expect(existsSync(f), f).toBe(true);
+  }
+  expect(out.ledger.filter((e) => e.step === "look").length).toBe(looks.length);
+  // What it saw reaches the write-up, and what looked wrong is kept for the people who build the platform.
+  expect(seen[0]!.join(" ")).toContain("Saw the feed_sample screen.");
+  expect(out.result.visualIssues).toContain("feed_sample: Example issue: label too small");
+  expect(existsSync(join(out.dir, "visual-issues.json"))).toBe(true);
+  expect(out.evaluation.deliverable.rubric_pass).toBe(true);
 });
