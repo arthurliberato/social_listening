@@ -36,19 +36,20 @@ import {
   newToken,
   type Response,
 } from "./outreach-flow";
+import { contractOutstanding } from "./contract-state";
 import { ensureLink, linkFor } from "./tracking";
 import { brandNotice, creatorNotice, invitationEmail } from "./outreach-emails";
 
 export type Fail = { ok: false; error: string; upgradeTo?: PlanTier; upgradeLabel?: string };
-const fail = (error: string): Fail => ({ ok: false, error });
+export const fail = (error: string): Fail => ({ ok: false, error });
 const METRIC = "creator_invites";
 
-interface Actor {
+export interface Actor {
   id: string;
   name: string;
   email: string;
 }
-interface Scope {
+export interface Scope {
   id: string;
   accountId: string;
   name: string;
@@ -56,7 +57,7 @@ interface Scope {
 
 const campaignUrl = (slug: string, id: string) => `${APP_URL}/w/${slug}/creators/campaigns/${id}`;
 
-async function workspaceOf(campaignId: string) {
+export async function workspaceOf(campaignId: string) {
   const [row] = await db
     .select({
       campaign: campaigns,
@@ -71,7 +72,7 @@ async function workspaceOf(campaignId: string) {
   return row ?? null;
 }
 
-const isOpen = (status: string) => status === "draft" || status === "active";
+export const isOpen = (status: string) => status === "draft" || status === "active";
 
 /** Invitations sent this month by the account, for the plan's allowance. */
 export async function invitationsUsed(accountId: string) {
@@ -111,7 +112,7 @@ export function canInvite(tier: PlanTier, used: number) {
   };
 }
 
-async function rosterRow(campaignId: string, creatorId: number) {
+export async function rosterRow(campaignId: string, creatorId: number) {
   const [r] = await db
     .select({
       status: campaignCreators.status,
@@ -486,7 +487,7 @@ export async function reviewContent(o: {
   return { ok: true };
 }
 
-async function acceptedInvite(campaignId: string, creatorId: number) {
+export async function acceptedInvite(campaignId: string, creatorId: number) {
   const [i] = await db
     .select()
     .from(campaignInvites)
@@ -702,6 +703,9 @@ export async function submitContent(
     p.invite.status !== "accepted"
   )
     return fail("You can submit content once you've accepted, and not while it's being reviewed.");
+  // An agreement the brand sent has to be dealt with first: signed, or revised after the creator asked for changes.
+  if (await contractOutstanding(p.campaign.id, p.creator.id))
+    return fail("Sign your agreement before submitting content. It's on this page.");
   const check = checkSubmission(url, caption);
   if (!check.ok) return fail(check.reason);
   const version = (p.content[0]?.version ?? 0) + 1;
@@ -756,6 +760,27 @@ export interface PortalView {
   agreedUsd: number | null;
   /** The creator's own tracking link, once they're confirmed and the brand has set a landing page. */
   trackingLink: string | null;
+  /** The agreement waiting for, or signed by, this creator. Filled in by portal-extras. */
+  contract: {
+    version: number;
+    status: string;
+    text: string;
+    signedName: string | null;
+    signedAt: string | null;
+    requestNote: string;
+  } | null;
+  /** Payout details and the latest payout. `enabled` is false when the brand's plan can't pay from Ripplewise. */
+  payout: {
+    enabled: boolean;
+    details: { holderName: string; last4: string; country: string } | null;
+    latest: {
+      status: string;
+      amountUsd: number;
+      reference: string;
+      settleAt: string;
+      failureReason: string;
+    } | null;
+  };
   content: {
     version: number;
     url: string;
@@ -785,6 +810,8 @@ export function portalView(p: Portal, trackingLink: string | null = null): Porta
     expiresAt: p.invite.expiresAt.toISOString(),
     agreedUsd: p.agreedUsd,
     trackingLink,
+    contract: null,
+    payout: { enabled: false, details: null, latest: null },
     content: p.content.map((c) => ({
       version: c.version,
       url: c.url,

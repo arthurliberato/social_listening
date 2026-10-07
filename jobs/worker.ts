@@ -5,6 +5,7 @@ import { runDueReports } from "./reports";
 import { runNightlyScoring } from "./pqa";
 import { runSalesDesk } from "@/lib/sales/desk";
 import { runReleaseAll } from "./release";
+import { settleDuePayouts } from "@/lib/creators/payouts";
 
 let started = false;
 
@@ -35,6 +36,11 @@ export async function startWorkers() {
   await boss.schedule(QUEUES.scoring, "0 2 * * *");
   await boss.work(QUEUES.scoring, async () => {
     await runNightlyScoring();
+  });
+  // Creator payouts that have come due either arrive or fail, even if nobody has the campaign open.
+  await boss.schedule(QUEUES.payouts, "*/5 * * * *");
+  await boss.work(QUEUES.payouts, async () => {
+    await settleDuePayouts();
   });
   // A simulated sales desk answers contact requests and follows up on demos.
   await boss.schedule(QUEUES.sales, "*/5 * * * *");

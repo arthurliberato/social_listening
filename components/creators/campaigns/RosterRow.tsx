@@ -13,7 +13,9 @@ import {
   type CreatorStatus,
 } from "@/lib/creators/campaign-flow";
 import { useBusy } from "@/lib/use-busy";
+import { ContractPanel } from "./ContractPanel";
 import { OutreachPanel } from "./OutreachPanel";
+import { PayoutPanel } from "./PayoutPanel";
 
 /**
  * Moves the outreach panel owns: sending an invitation, and reviewing content the creator submitted. When content
@@ -27,6 +29,9 @@ function handledByOutreach(
   if (status === "shortlisted") return to === "invited";
   if (status === "content_submitted" && full.content?.status === "submitted")
     return to === "approved" || to === "confirmed";
+  // A payout that is on its way (or done) would be paid twice by a manual "mark paid".
+  if (status === "approved" && to === "paid")
+    return full.payout?.status === "processing" || full.payout?.status === "paid";
   return false;
 }
 
@@ -37,7 +42,7 @@ const STEP_VERB: Record<CreatorStatus, string> = {
   confirmed: "Confirm",
   content_submitted: "Content received",
   approved: "Approve content",
-  paid: "Mark paid",
+  paid: "Mark paid (outside Ripplewise)",
   declined: "Decline",
 };
 
@@ -51,12 +56,14 @@ export function RosterRow({
   brand,
   campaignName,
   quota,
+  features,
   full,
 }: {
   onSnapshot: (s: CampaignSnapshot) => void;
   brand: string;
   campaignName: string;
   quota: { used: number; limit: number };
+  features: { contracts: boolean; payouts: boolean };
   full: CampaignSnapshot["roster"][number];
   ws: string;
   campaignId: string;
@@ -100,6 +107,21 @@ export function RosterRow({
         campaignName={campaignName}
         row={full}
         quota={quota}
+        editable={editable}
+        onSnapshot={onSnapshot}
+      />
+      <ContractPanel
+        ws={ws}
+        campaignId={campaignId}
+        row={full}
+        editable={editable}
+        onSnapshot={onSnapshot}
+      />
+      <PayoutPanel
+        ws={ws}
+        campaignId={campaignId}
+        row={full}
+        enabled={features.payouts}
         editable={editable}
         onSnapshot={onSnapshot}
       />

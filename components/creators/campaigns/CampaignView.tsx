@@ -167,6 +167,7 @@ export function CampaignView({
                       brand={brand}
                       campaignName={c.name}
                       quota={snap.quota}
+                      features={snap.features}
                       full={r}
                       row={{
                         creatorId: r.creatorId,

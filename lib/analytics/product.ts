@@ -4,7 +4,7 @@
 import { EVENTS, type EventName } from "./events";
 
 export type Product = "listening" | "influencers" | "creator_portal" | "hub" | "platform";
-export type ActorType = "member" | "creator" | "anonymous";
+export type ActorType = "member" | "creator" | "anonymous" | "system";
 
 /** Paywalls come from server actions that don't know the route; the trigger says which product they were in. */
 const INFLUENCER_PAYWALLS = new Set([
@@ -15,6 +15,10 @@ const INFLUENCER_PAYWALLS = new Set([
   "campaign_limit",
   "outreach_quota",
   "campaign_results",
+  "saved_search_limit",
+  "creator_compare_limit",
+  "creator_contracts",
+  "creator_payouts",
 ]);
 
 /** The product a path belongs to, or null when it isn't inside one (settings, marketing, auth...). */
