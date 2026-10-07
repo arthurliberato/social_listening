@@ -88,9 +88,9 @@ test("a campaign takes creators from a list through the pipeline and tracks the 
   // Content, approval, payment.
   await first.getByTestId("move-content_submitted").click();
   await expect(first.getByTestId("roster-status")).toHaveText("Content submitted");
-  // Reviewing content is outreach's job, not a manual step.
-  await expect(first.getByTestId("move-approved")).toHaveCount(0);
-  await first.getByTestId("review-approve").click();
+  // Marked received by hand, so there is no submission to review: the manual step stays available.
+  await expect(first.getByTestId("review-panel")).toHaveCount(0);
+  await first.getByTestId("move-approved").click();
   await expect(first.getByTestId("roster-status")).toHaveText("Content approved");
   await first.getByTestId("move-paid").click();
   await expect(first.getByTestId("roster-status")).toHaveText("Paid");

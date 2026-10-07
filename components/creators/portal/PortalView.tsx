@@ -282,6 +282,7 @@ export function PortalView({ token, initial }: { token: string; initial: View })
                   setCaption("");
                 });
               }}
+              noValidate
               className="mt-3 grid max-w-xl gap-3"
               aria-label="Submit content"
             >

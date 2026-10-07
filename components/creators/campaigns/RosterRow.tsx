@@ -15,11 +15,20 @@ import {
 import { useBusy } from "@/lib/use-busy";
 import { OutreachPanel } from "./OutreachPanel";
 
-/** Moves the outreach panel owns: sending an invitation, and reviewing submitted content. */
-const HANDLED_BY_OUTREACH: Partial<Record<CreatorStatus, CreatorStatus[]>> = {
-  shortlisted: ["invited"],
-  content_submitted: ["approved", "confirmed"],
-};
+/**
+ * Moves the outreach panel owns: sending an invitation, and reviewing content the creator submitted. When content
+ * was marked received by hand (no submission to review), the manual approve / send-back moves stay available.
+ */
+function handledByOutreach(
+  status: CreatorStatus,
+  to: CreatorStatus,
+  full: CampaignSnapshot["roster"][number],
+) {
+  if (status === "shortlisted") return to === "invited";
+  if (status === "content_submitted" && full.content?.status === "submitted")
+    return to === "approved" || to === "confirmed";
+  return false;
+}
 
 const STEP_VERB: Record<CreatorStatus, string> = {
   shortlisted: "Reconsider",
@@ -121,7 +130,7 @@ export function RosterRow({
           aria-label={`Next steps for ${row.name}`}
         >
           {nextStatuses(status)
-            .filter((to) => !HANDLED_BY_OUTREACH[status]?.includes(to))
+            .filter((to) => !handledByOutreach(status, to, full))
             .map((to) => (
               <button
                 key={to}

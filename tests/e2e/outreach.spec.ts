@@ -265,6 +265,7 @@ test("the monthly invitation allowance is a paywall, and viewers can't invite", 
     `INSERT INTO usage_counters (account_id, period, metric, value) VALUES ($1, to_char(now(), 'YYYY-MM'), 'creator_invites', 5) ON CONFLICT (account_id, period, metric) DO UPDATE SET value = 5`,
     [acct],
   );
+  await page.reload();
   const row = page.getByTestId("roster-row").first();
   await row.getByTestId("invite-open").click();
   await expect(row.getByTestId("invite-quota")).toContainText("5 of 5");
