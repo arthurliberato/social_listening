@@ -101,7 +101,7 @@ export function TrackingSetup({
           {error}
         </p>
       )}
-      {saved && key && (
+      {saved && (key || !canEdit) && (
         <div className="mt-4" data-testid="postback-setup">
           <h3 className="font-medium">Report conversions from your site</h3>
           <p className="mt-1 max-w-prose text-sm text-[var(--text-muted)]">
@@ -114,7 +114,7 @@ export function TrackingSetup({
               <CopyField
                 label="conversion postback address"
                 testId="postback-url"
-                value={`${postbackBase}?cid={rw_cid}&key=${key}&value={amount_usd}&ref={order_id}`}
+                value={`${postbackBase}?cid={rw_cid}&key=${key ?? ""}&value={amount_usd}&ref={order_id}`}
               />
               <p className="mt-1 text-xs text-[var(--text-muted)]">
                 The key is a secret: keep it on your server, never in a page. Only the first 30 days

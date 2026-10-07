@@ -32,13 +32,16 @@ function Tile({
   hint?: string;
   testId: string;
 }) {
+  // A definition list may only hold terms and definitions, so the hint lives inside the definition.
   return (
     <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
       <dt className="text-xs text-[var(--text-muted)]">{label}</dt>
-      <dd className="mt-1 text-2xl font-semibold tabular-nums" data-testid={testId}>
-        {value}
+      <dd className="mt-1">
+        <span className="text-2xl font-semibold tabular-nums" data-testid={testId}>
+          {value}
+        </span>
+        {hint && <span className="mt-1 block text-xs text-[var(--text-muted)]">{hint}</span>}
       </dd>
-      {hint && <p className="mt-1 text-xs text-[var(--text-muted)]">{hint}</p>}
     </div>
   );
 }
