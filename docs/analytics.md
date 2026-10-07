@@ -4,7 +4,7 @@ The product is instrumented the way a real B2B SaaS would be: one plan for what 
 
 ## 1. The plan is the source of truth
 
-`docs/tracking-plan.json` defines **134 events** (86 sent from the browser, 48 from the server) in 19 areas, plus the properties each one may carry. Typed code is generated from it, so an event or property that is not in the plan fails the build. Events are named "Object Action" in the past tense (`Alert Created`, `Quote Accepted`), and the plan states up front that this is B2B SaaS: there are no cart or purchase events. A plan change is a subscription event (`Plan Upgraded`, `Subscription Started`), not a "purchase".
+`docs/tracking-plan.json` defines **138 events** (87 sent from the browser, 51 from the server) in 19 areas, plus the properties each one may carry. Typed code is generated from it, so an event or property that is not in the plan fails the build. Events are named "Object Action" in the past tense (`Alert Created`, `Quote Accepted`), and the plan states up front that this is B2B SaaS: there are no cart or purchase events. A plan change is a subscription event (`Plan Upgraded`, `Subscription Started`), not a "purchase".
 
 Every event carries the same global properties: account, workspace, plan tier, trial day, user role, persona archetype, whether the user is synthetic, the agent run, app version, route and theme, plus two that exist for cross-product analysis: `product` and `actor_type` (below). They are filled in on the server from the database, so a screen cannot forget one.
 

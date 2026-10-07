@@ -2064,6 +2064,65 @@
     "warehouse"
    ],
    "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Search Saved",
+   "side": "server",
+   "properties": [
+    "saved_search_id",
+    "filter_count"
+   ],
+   "description": "A discovery search was saved under a name.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Saved Search Opened",
+   "side": "client",
+   "properties": [
+    "saved_search_id",
+    "filter_count"
+   ],
+   "description": "A saved search was opened from the discovery page.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Saved Search Deleted",
+   "side": "server",
+   "properties": [
+    "saved_search_id"
+   ],
+   "description": "A saved search was deleted.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creators Compared",
+   "side": "server",
+   "properties": [
+    "creator_count",
+    "truncated"
+   ],
+   "description": "A side-by-side comparison was opened. truncated: the link asked for more creators than the plan compares.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
   }
  ],
  "destinations": {

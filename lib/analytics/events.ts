@@ -1766,6 +1766,57 @@ export const EVENTS = {
     ],
     "ga4Name": null,
     "product": "influencers"
+  },
+  "Creator Search Saved": {
+    "side": "server",
+    "properties": [
+      "saved_search_id",
+      "filter_count"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
+  },
+  "Saved Search Opened": {
+    "side": "client",
+    "properties": [
+      "saved_search_id",
+      "filter_count"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
+  },
+  "Saved Search Deleted": {
+    "side": "server",
+    "properties": [
+      "saved_search_id"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
+  },
+  "Creators Compared": {
+    "side": "server",
+    "properties": [
+      "creator_count",
+      "truncated"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
   }
 } as const;
 

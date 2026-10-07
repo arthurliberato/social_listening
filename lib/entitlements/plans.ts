@@ -21,6 +21,9 @@ export interface Entitlements {
   activeCampaigns: number;
   /** Creator invitations sent per month (each new or revised offer counts). */
   invitationsPerMonth: number;
+  /** Saved discovery searches per account, and how many creators can be compared side by side. */
+  savedSearches: number;
+  compareSize: number;
   features: {
     sentimentAlerts: boolean;
     crisisRoom: boolean;
@@ -76,6 +79,8 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     creatorLists: 2,
     activeCampaigns: 1,
     invitationsPerMonth: 5,
+    savedSearches: 3,
+    compareSize: 2,
     features: { ...none },
   },
   starter: {
@@ -93,6 +98,8 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     creatorLists: 2,
     activeCampaigns: 1,
     invitationsPerMonth: 10,
+    savedSearches: 3,
+    compareSize: 2,
     features: { ...none },
   },
   growth: {
@@ -110,6 +117,8 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     creatorLists: 10,
     activeCampaigns: 5,
     invitationsPerMonth: 200,
+    savedSearches: 25,
+    compareSize: 4,
     features: {
       ...none,
       sentimentAlerts: true,
@@ -139,6 +148,8 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     creatorLists: 50,
     activeCampaigns: 25,
     invitationsPerMonth: 1000,
+    savedSearches: 100,
+    compareSize: 6,
     features: {
       ...none,
       sentimentAlerts: true,
@@ -170,6 +181,8 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     creatorLists: 1000,
     activeCampaigns: 500,
     invitationsPerMonth: 10000,
+    savedSearches: 1000,
+    compareSize: 6,
     features: {
       sentimentAlerts: true,
       crisisRoom: true,
@@ -219,6 +232,23 @@ export function canCreateCreatorList(
     upgradeTo:
       (["starter", "growth", "agency", "enterprise"] as PlanTier[]).find(
         (t) => PLANS[t].creatorLists > p.creatorLists,
+      ) ?? "enterprise",
+  };
+}
+
+/** Saved searches: the plan caps how many an account keeps. */
+export function canSaveSearch(
+  tier: PlanTier,
+  saved: number,
+): { ok: true } | { ok: false; reason: string; upgradeTo: PlanTier } {
+  const p = PLANS[tier];
+  if (saved < p.savedSearches) return { ok: true };
+  return {
+    ok: false,
+    reason: `Your ${p.label} plan includes ${p.savedSearches} saved searches. Delete one, or upgrade.`,
+    upgradeTo:
+      (["starter", "growth", "agency", "enterprise"] as PlanTier[]).find(
+        (t) => PLANS[t].savedSearches > p.savedSearches,
       ) ?? "enterprise",
   };
 }
