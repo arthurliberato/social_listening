@@ -5,13 +5,18 @@ import {
   campaignCreators,
   campaignInvites,
   campaigns,
+  creatorContracts,
+  creatorPayoutDetails,
+  creatorPayouts,
   creators,
   db,
   workspaces,
 } from "@/db/client";
 import { limits, type PlanTier } from "@/lib/entitlements/plans";
 import { simNow } from "@/lib/simclock";
+import type { Terms } from "./contract-flow";
 import { invitationsUsed } from "./outreach";
+import { settleDuePayouts } from "./payouts";
 import { inviteState } from "./outreach-flow";
 import { portalLink } from "./outreach-emails";
 import { COUNTS_AGAINST_PLAN, budgetSummary, type BudgetSummary } from "./campaign-flow";
@@ -105,7 +110,42 @@ export async function getCampaign(workspaceId: string, id: string) {
   }
   const content = new Map<number, (typeof allContent)[number]>();
   for (const c of allContent) content.set(c.creatorId, c);
-  return { campaign, roster, budget, invites, rounds, content };
+
+  // Agreements, payouts and payout details: the latest of each for every creator.
+  const [allContracts, allPayouts, allDetails] = await Promise.all([
+    db
+      .select()
+      .from(creatorContracts)
+      .where(eq(creatorContracts.campaignId, campaign.id))
+      .orderBy(asc(creatorContracts.version)),
+    db
+      .select()
+      .from(creatorPayouts)
+      .where(eq(creatorPayouts.campaignId, campaign.id))
+      .orderBy(asc(creatorPayouts.initiatedAt)),
+    db.select().from(creatorPayoutDetails).where(eq(creatorPayoutDetails.campaignId, campaign.id)),
+  ]);
+  const contracts = new Map<number, (typeof allContracts)[number]>();
+  for (const c of allContracts) contracts.set(c.creatorId, c);
+  const payouts = new Map<number, (typeof allPayouts)[number]>();
+  const attempts = new Map<number, number>();
+  for (const p of allPayouts) {
+    payouts.set(p.creatorId, p);
+    attempts.set(p.creatorId, (attempts.get(p.creatorId) ?? 0) + 1);
+  }
+  const details = new Map(allDetails.map((d) => [d.creatorId, d]));
+  return {
+    campaign,
+    roster,
+    budget,
+    invites,
+    rounds,
+    content,
+    contracts,
+    payouts,
+    attempts,
+    details,
+  };
 }
 
 /** Plain, serialisable view of a campaign. Server actions return it so the page can update without waiting on a re-render. */
@@ -123,6 +163,8 @@ export interface CampaignSnapshot {
   budget: BudgetSummary;
   /** Creator invitations used this month, against the plan's allowance. */
   quota: { used: number; limit: number };
+  /** What the plan allows, so the page can offer or lock agreements and payouts. */
+  features: { contracts: boolean; payouts: boolean };
   roster: {
     creatorId: number;
     displayName: string;
@@ -156,12 +198,32 @@ export interface CampaignSnapshot {
       feedback: string;
       submittedAt: string;
     } | null;
+    contract: {
+      version: number;
+      status: string;
+      terms: Terms;
+      text: string;
+      signedName: string | null;
+      signedAt: string | null;
+      requestNote: string;
+    } | null;
+    /** Where the creator wants to be paid: the last four digits and holder, never the number. */
+    payoutDetails: { holderName: string; last4: string; country: string } | null;
+    payout: {
+      status: string;
+      amountUsd: number;
+      reference: string;
+      settleAt: string;
+      failureReason: string;
+      attempt: number;
+    } | null;
   }[];
 }
 
 export function snapshotOf(
   data: NonNullable<Awaited<ReturnType<typeof getCampaign>>>,
   quota: { used: number; limit: number },
+  features: { contracts: boolean; payouts: boolean },
 ): CampaignSnapshot {
   const c = data.campaign;
   return {
@@ -177,6 +239,7 @@ export function snapshotOf(
     },
     budget: data.budget,
     quota,
+    features,
     roster: data.roster.map((r) => ({
       creatorId: r.creatorId,
       displayName: r.displayName,
@@ -219,12 +282,45 @@ export function snapshotOf(
             }
           : null;
       })(),
+      contract: (() => {
+        const k = data.contracts.get(r.creatorId);
+        return k && k.status !== "withdrawn"
+          ? {
+              version: k.version,
+              status: k.status,
+              terms: k.terms as Terms,
+              text: k.bodyText,
+              signedName: k.signedName,
+              signedAt: k.signedAt?.toISOString() ?? null,
+              requestNote: k.requestNote,
+            }
+          : null;
+      })(),
+      payoutDetails: (() => {
+        const d = data.details.get(r.creatorId);
+        return d ? { holderName: d.holderName, last4: d.last4, country: d.country } : null;
+      })(),
+      payout: (() => {
+        const p = data.payouts.get(r.creatorId);
+        return p
+          ? {
+              status: p.status,
+              amountUsd: p.amountUsd,
+              reference: p.reference,
+              settleAt: p.settleAt.toISOString(),
+              failureReason: p.failureReason,
+              attempt: data.attempts.get(r.creatorId) ?? 1,
+            }
+          : null;
+      })(),
     })),
   };
 }
 
 /** The campaign as it is now (for server actions to hand back to the page). */
 export async function freshSnapshot(workspaceId: string, id: string): Promise<CampaignSnapshot> {
+  // Settle anything that has come due first, so what the brand sees is true.
+  await settleDuePayouts(simNow(), id);
   const data = (await getCampaign(workspaceId, id))!;
   const [w] = await db
     .select({ accountId: workspaces.accountId, tier: accounts.planTier })
@@ -232,5 +328,10 @@ export async function freshSnapshot(workspaceId: string, id: string): Promise<Ca
     .innerJoin(accounts, eq(accounts.id, workspaces.accountId))
     .where(eq(workspaces.id, workspaceId));
   const used = await invitationsUsed(w!.accountId);
-  return snapshotOf(data, { used, limit: limits(w!.tier as PlanTier).invitationsPerMonth });
+  const plan = limits(w!.tier as PlanTier);
+  return snapshotOf(
+    data,
+    { used, limit: plan.invitationsPerMonth },
+    { contracts: plan.features.creatorContracts, payouts: plan.features.creatorPayouts },
+  );
 }
