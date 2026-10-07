@@ -20,12 +20,15 @@ export function PayoutPanel({
   ws,
   campaignId,
   row,
+  enabled,
   editable,
   onSnapshot,
 }: {
   ws: string;
   campaignId: string;
   row: Row;
+  /** Whether the plan includes paying creators from Ripplewise. */
+  enabled: boolean;
   editable: boolean;
   onSnapshot: (s: CampaignSnapshot) => void;
 }) {
@@ -36,6 +39,40 @@ export function PayoutPanel({
   const pay = row.payout;
   // Only relevant once the content is approved (or the creator has been paid).
   if (row.status !== "approved" && row.status !== "paid" && !pay) return null;
+  // Where the plan doesn't include payouts, say what it would add rather than leaving a gap.
+  if (!enabled && !pay && row.status === "approved" && editable)
+    return (
+      <div>
+        <button
+          type="button"
+          className={small}
+          data-testid="payout-locked"
+          onClick={() =>
+            setPaywall({
+              reason: "Paying creators from Ripplewise is part of Agency.",
+              to: "agency",
+            })
+          }
+        >
+          Pay from Ripplewise<span className="sr-only"> (not on your plan)</span>
+        </button>
+        {paywall && p && (
+          <PaywallModal
+            trigger="creator_payouts"
+            title="Pay creators from Ripplewise"
+            reason={paywall.reason}
+            planLabel={p.label}
+            priceLine={p.priceMonthly ? `${p.label} is $${p.priceMonthly}/month.` : undefined}
+            bullets={[
+              "Creators add their own payout details",
+              "Payouts settle and report back automatically",
+              "Failed payouts can be retried",
+            ]}
+            onClose={() => setPaywall(null)}
+          />
+        )}
+      </div>
+    );
 
   const blocker = payBlocker({
     rosterStatus: row.status,

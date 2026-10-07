@@ -56,12 +56,14 @@ export function RosterRow({
   brand,
   campaignName,
   quota,
+  features,
   full,
 }: {
   onSnapshot: (s: CampaignSnapshot) => void;
   brand: string;
   campaignName: string;
   quota: { used: number; limit: number };
+  features: { contracts: boolean; payouts: boolean };
   full: CampaignSnapshot["roster"][number];
   ws: string;
   campaignId: string;
@@ -119,6 +121,7 @@ export function RosterRow({
         ws={ws}
         campaignId={campaignId}
         row={full}
+        enabled={features.payouts}
         editable={editable}
         onSnapshot={onSnapshot}
       />
