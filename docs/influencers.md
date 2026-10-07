@@ -70,6 +70,14 @@ Test accounts, in the manner of a payment processor's test mode (also listed on 
 
 **Events:** `Creator Contract Sent`, `Creator Contract Signed`, `Creator Contract Changes Requested`, `Creator Payout Details Saved` (no account data), `Creator Payout Initiated` (with the attempt number) and `Creator Payout Settled`. The creator-side events have `actor_type: creator`; settlement has **`actor_type: system`** because nobody did it, the clock did, so it isn't attributed to whoever happened to load the page.
 
+## Saved searches and comparison (I6)
+
+**Saved searches.** On the discovery page, the filters in use can be saved under a name and opened again with one click. What is stored is the *canonical* query string, rebuilt from the parsed filters, so only valid filters ever reach the database, the page number is forgotten (a saved search starts on page one), and the same search always looks the same. A search with no filters can't be saved (it would just be the whole directory). Names are unique within a workspace. Each saved search shows how many creators match it today, counted by the same code the discovery page uses. The plan caps how many an account keeps (Trial and Starter 3, Growth 25, Agency 100, Enterprise 1,000), with a paywall at the limit; viewers can open saved searches but not save or delete them.
+
+**Comparison.** Tick *Compare* on the creators you're weighing up (the ticks follow you across pages and filters within the tab), then open the comparison: creators as columns, measures as rows. It shows the facts (platform, niche, country, brand safety) and the numbers (followers, engagement rate, average views, posts per week, 30-day growth, authenticity, estimated rate, and **cost per 1,000 views**, the fairest single number across creators of different sizes). The best creator on each measure is marked with the word "Best" (never colour alone): highest engagement, growth, authenticity and views; lowest rate and cost per 1,000 views. Ties share it, and nothing is marked when everyone is equal or only one creator has a value. Followers and posting frequency are facts, not scores, so nobody is "best" at them. How many creators can be compared at once depends on the plan (Trial and Starter 2, Growth 4, Agency and Enterprise 6); ticking one too many, or opening a link that asks for more, shows what the next plan adds. The comparison uses only the figures already visible in discovery, so it can't be used to read gated audience details or to get around the monthly profile allowance; those stay on each creator's profile.
+
+**Events:** `Creator Search Saved`, `Saved Search Opened`, `Saved Search Deleted`, `Creators Compared`.
+
 ## Plans
 
 Defined once in `lib/entitlements/plans.ts`, enforced on the server, mirrored in the interface.
@@ -85,6 +93,8 @@ Defined once in `lib/entitlements/plans.ts`, enforced on the server, mirrored in
 | Tracking links and results | – | – | yes | yes | yes |
 | Creator agreements | – | – | yes | yes | yes |
 | Pay creators from Ripplewise | – | – | – | yes | yes |
+| Saved searches | 3 | 3 | 25 | 100 | 1,000 |
+| Creators compared at once | 2 | 2 | 4 | 6 | 6 |
 
 Opening a profile counts once per creator per month (`creator_profile_views`), so re-opening one is free. Past the limit, new profiles are blocked and the person sees what the allowance is and the plan that raises it; profiles already opened stay available. Four paywall placements were added: `creator_list_limit`, `creator_profile_quota`, `creator_audience` and `creator_export`. Each is dismissible with equal-weight "Not now".
 
@@ -98,8 +108,8 @@ Roles: owners, admins and editors change lists; viewers can browse and export; c
 
 ## Analytics
 
-New events in `docs/tracking-plan.json` (134 total): `Product Hub Viewed`, `Product Opened` (`target_product` says which), `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events, the six outreach events the five tracking events and the six contract and payout events above. Paywalls reuse `Paywall Viewed`.
+New events in `docs/tracking-plan.json` (138 total): `Product Hub Viewed`, `Product Opened` (`target_product` says which), `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events, the six outreach events the five tracking events the six contract and payout events, and the four search and comparison events above. Paywalls reuse `Paywall Viewed`.
 
 ## Not yet built
 
-Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery, and no reminder emails for an invitation about to expire. Content is a link to a post, not an uploaded file. Still to build: anything that estimates reach or earned media value (results are measured visits and conversions only), tax forms and withholding, and a real payment provider behind the payout rail. Creator data is a snapshot; there is no refresh job. Comparing creators side by side, saved searches, and linking creators to the listening corpus (what people say about a creator's brand mentions) are natural follow-ups.
+Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery, and no reminder emails for an invitation about to expire. Content is a link to a post, not an uploaded file. Still to build: anything that estimates reach or earned media value (results are measured visits and conversions only), tax forms and withholding, and a real payment provider behind the payout rail. Creator data is a snapshot; there is no refresh job. Linking creators to the listening corpus (what people say about a creator's brand mentions) are natural follow-ups.
