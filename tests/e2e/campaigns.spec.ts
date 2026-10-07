@@ -20,6 +20,13 @@ async function makeList(page: Page, slug: string, name: string) {
   }
 }
 
+/** Send an invitation to one roster row through the real form. */
+async function invite(row: ReturnType<Page["getByTestId"]>) {
+  await row.getByTestId("invite-open").click();
+  await row.getByTestId("invite-send").click();
+  await expect(row.getByTestId("roster-status")).toHaveText("Invited");
+}
+
 async function newCampaign(page: Page, slug: string, name: string, budget: number) {
   await page.goto(`/w/${slug}/creators/campaigns`);
   await page.getByTestId("campaign-name").fill(name);
@@ -53,7 +60,9 @@ test("a campaign takes creators from a list through the pipeline and tracks the 
   await expect(first.getByTestId("roster-status")).toHaveText("Shortlisted");
   // Can't jump ahead: the pipeline only offers the next steps.
   await expect(first.getByTestId("move-paid")).toHaveCount(0);
-  await first.getByTestId("move-invited").click();
+  // Inviting goes through outreach now: there is no manual "mark invited".
+  await expect(first.getByTestId("move-invited")).toHaveCount(0);
+  await invite(first);
   await expect(first.getByTestId("roster-status")).toHaveText("Invited");
 
   // Confirming needs a fee.
@@ -68,7 +77,7 @@ test("a campaign takes creators from a list through the pipeline and tracks the 
 
   // Confirming a second creator past the budget is allowed, with a clear warning.
   const second = page.getByTestId("roster-row").nth(1);
-  await second.getByTestId("move-invited").click();
+  await invite(second);
   await expect(second.getByTestId("roster-status")).toHaveText("Invited");
   await second.getByTestId("creator-fee").fill("700");
   await second.getByTestId("creator-fee").blur();
@@ -77,14 +86,14 @@ test("a campaign takes creators from a list through the pipeline and tracks the 
   await expect(page.getByTestId("budget-state")).toContainText("Over budget by $300");
 
   // Content, approval, payment.
-  for (const [step, label] of [
-    ["content_submitted", "Content submitted"],
-    ["approved", "Content approved"],
-    ["paid", "Paid"],
-  ] as const) {
-    await first.getByTestId(`move-${step}`).click();
-    await expect(first.getByTestId("roster-status")).toHaveText(label);
-  }
+  await first.getByTestId("move-content_submitted").click();
+  await expect(first.getByTestId("roster-status")).toHaveText("Content submitted");
+  // Reviewing content is outreach's job, not a manual step.
+  await expect(first.getByTestId("move-approved")).toHaveCount(0);
+  await first.getByTestId("review-approve").click();
+  await expect(first.getByTestId("roster-status")).toHaveText("Content approved");
+  await first.getByTestId("move-paid").click();
+  await expect(first.getByTestId("roster-status")).toHaveText("Paid");
   await expect(first.getByTestId("move-paid")).toHaveCount(0); // terminal
 
   // Remove the other creator; the budget follows.

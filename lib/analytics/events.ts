@@ -1407,6 +1407,87 @@ export const EVENTS = {
       "warehouse"
     ],
     "ga4Name": null
+  },
+  "Creator Invitation Sent": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "offered_usd",
+      "round"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Creator Portal Viewed": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "invite_state"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Creator Invitation Answered": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "response",
+      "counter_usd"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Creator Counter Resolved": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "decision"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Creator Content Submitted": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "version"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Creator Content Reviewed": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "decision",
+      "version"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
   }
 } as const;
 

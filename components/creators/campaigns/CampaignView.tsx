@@ -26,7 +26,9 @@ export function CampaignView({
   initial,
   lists,
   canEdit,
+  brand,
 }: {
+  brand: string;
   ws: string;
   initial: CampaignSnapshot;
   lists: { id: string; name: string; size: number }[];
@@ -153,6 +155,10 @@ export function CampaignView({
                       campaignId={c.id}
                       editable={canEdit && open}
                       onSnapshot={setSnap}
+                      brand={brand}
+                      campaignName={c.name}
+                      quota={snap.quota}
+                      full={r}
                       row={{
                         creatorId: r.creatorId,
                         name: r.displayName,

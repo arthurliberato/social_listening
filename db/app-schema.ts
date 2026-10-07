@@ -876,6 +876,56 @@ export const campaignCreators = pgTable(
   (t) => [primaryKey({ columns: [t.campaignId, t.creatorId] })],
 );
 
+/**
+ * An invitation to a creator for one campaign, reachable by the creator through an unguessable link (no account).
+ * A revised offer supersedes the previous invitation, so a creator's history for a campaign is the list of rows.
+ */
+export const campaignInvites = pgTable(
+  "campaign_invites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => campaigns.id, { onDelete: "cascade" }),
+    creatorId: integer("creator_id").notNull(),
+    token: text("token").notNull().unique(),
+    offeredUsd: integer("offered_usd").notNull(),
+    message: text("message").notNull().default(""),
+    /** sent | accepted | declined | countered | superseded | revoked */
+    status: text("status").notNull().default("sent"),
+    counterUsd: integer("counter_usd"),
+    creatorNote: text("creator_note").notNull().default(""),
+    sentBy: uuid("sent_by").references(() => users.id),
+    sentAt: ts("sent_at").notNull().defaultNow(),
+    expiresAt: ts("expires_at").notNull(),
+    viewedAt: ts("viewed_at"),
+    respondedAt: ts("responded_at"),
+  },
+  (t) => [index("campaign_invites_creator_idx").on(t.campaignId, t.creatorId)],
+);
+
+/** Content a creator submitted for a campaign; each resubmission is a new version. */
+export const campaignContent = pgTable(
+  "campaign_content",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => campaigns.id, { onDelete: "cascade" }),
+    creatorId: integer("creator_id").notNull(),
+    version: integer("version").notNull(),
+    url: text("url").notNull(),
+    caption: text("caption").notNull().default(""),
+    /** submitted | approved | changes_requested */
+    status: text("status").notNull().default("submitted"),
+    feedback: text("feedback").notNull().default(""),
+    submittedAt: ts("submitted_at").notNull().defaultNow(),
+    reviewedAt: ts("reviewed_at"),
+    reviewedBy: uuid("reviewed_by").references(() => users.id),
+  },
+  (t) => [index("campaign_content_creator_idx").on(t.campaignId, t.creatorId, t.version)],
+);
+
 /** Failed password logins per (hashed) email, for throttling guessing. Unknown emails are tracked too, so locking never reveals who has an account. */
 export const loginThrottle = pgTable("login_throttle", {
   keyHash: text("key_hash").primaryKey(),

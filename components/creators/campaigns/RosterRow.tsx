@@ -13,6 +13,13 @@ import {
   type CreatorStatus,
 } from "@/lib/creators/campaign-flow";
 import { useBusy } from "@/lib/use-busy";
+import { OutreachPanel } from "./OutreachPanel";
+
+/** Moves the outreach panel owns: sending an invitation, and reviewing submitted content. */
+const HANDLED_BY_OUTREACH: Partial<Record<CreatorStatus, CreatorStatus[]>> = {
+  shortlisted: ["invited"],
+  content_submitted: ["approved", "confirmed"],
+};
 
 const STEP_VERB: Record<CreatorStatus, string> = {
   shortlisted: "Reconsider",
@@ -32,8 +39,16 @@ export function RosterRow({
   row,
   editable,
   onSnapshot,
+  brand,
+  campaignName,
+  quota,
+  full,
 }: {
   onSnapshot: (s: CampaignSnapshot) => void;
+  brand: string;
+  campaignName: string;
+  quota: { used: number; limit: number };
+  full: CampaignSnapshot["roster"][number];
   ws: string;
   campaignId: string;
   row: {
@@ -69,6 +84,16 @@ export function RosterRow({
 
   return (
     <div className="flex flex-col gap-2">
+      <OutreachPanel
+        ws={ws}
+        campaignId={campaignId}
+        brand={brand}
+        campaignName={campaignName}
+        row={full}
+        quota={quota}
+        editable={editable}
+        onSnapshot={onSnapshot}
+      />
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
           <label htmlFor={`fee-${row.creatorId}`} className="text-xs text-[var(--text-muted)]">
@@ -95,21 +120,23 @@ export function RosterRow({
           role="group"
           aria-label={`Next steps for ${row.name}`}
         >
-          {nextStatuses(status).map((to) => (
-            <button
-              key={to}
-              type="button"
-              disabled={!editable || busy}
-              onClick={() => send(to)}
-              data-testid={`move-${to}`}
-              className="min-h-8 rounded-md border border-[var(--border)] px-3 text-sm hover:bg-[var(--surface-2)] disabled:opacity-60"
-            >
-              {status === "content_submitted" && to === "confirmed"
-                ? "Request changes"
-                : STEP_VERB[to]}
-              <span className="sr-only"> for {row.name}</span>
-            </button>
-          ))}
+          {nextStatuses(status)
+            .filter((to) => !HANDLED_BY_OUTREACH[status]?.includes(to))
+            .map((to) => (
+              <button
+                key={to}
+                type="button"
+                disabled={!editable || busy}
+                onClick={() => send(to)}
+                data-testid={`move-${to}`}
+                className="min-h-8 rounded-md border border-[var(--border)] px-3 text-sm hover:bg-[var(--surface-2)] disabled:opacity-60"
+              >
+                {status === "content_submitted" && to === "confirmed"
+                  ? "Request changes"
+                  : STEP_VERB[to]}
+                <span className="sr-only"> for {row.name}</span>
+              </button>
+            ))}
           <button
             type="button"
             disabled={!editable || busy}

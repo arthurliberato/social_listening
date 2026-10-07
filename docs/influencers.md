@@ -25,6 +25,25 @@ A campaign (`/w/:ws/creators/campaigns`) has a name, objective, brief, budget an
 - **Roles.** Owners, admins and editors change campaigns; viewers read them.
 - **Events and audit.** `Campaign Created`, `Campaign Status Changed`, `Campaign Creators Added`, `Campaign Creator Status Changed`, `Campaign Creator Removed`, plus audit-log entries.
 
+## Outreach and the creator page (I3)
+
+Creators don't have accounts. A brand invites a creator from the campaign roster, and the creator answers from their own page, reached with a link and nothing else.
+
+**The brand's side** (on a creator's row in the campaign):
+1. *Send invitation*: an offer per post, and a message (pre-filled, editable). The creator gets an email (`type: outreach`, addressed to a creator address; it's stored in `emails` and delivered to Mailpit when `SMTP_URL` is set) with the link. The row also shows the link so it can be copied and sent another way.
+2. *Follow the answer*: invitation sent, opened, accepted, declined, countered, or expired. The brand gets an email for each answer.
+3. *Settle a counter-offer*: accept it, send a revised offer (which replaces the old invitation and its link), or decline.
+4. *Review content*: approve, or request changes with feedback the creator can read.
+5. *Mark paid* (as before) tells the creator by email.
+
+**The creator's page** (`/creator/:token`, no login, `noindex`): the campaign's brief, dates and goal, the offer, and what's due. They can accept, decline (a second confirming step), or suggest a different fee with a note; after accepting they submit a link to their post and a caption, see feedback if changes were requested, resubmit, and see "approved" and "paid". It never shows the budget, the other creators or the brand's notes.
+
+**Rules** (`lib/creators/outreach-flow.ts`, tested): an invitation is open for 14 days of simulated time; it can be answered once (a double-click or a second tab is a no-op, enforced by a conditional update, not just the interface); a counter must be a whole-dollar amount different from the offer; content must be a real http(s) link; asking for changes needs feedback. Links are 48 random hex characters. A superseded or withdrawn invitation says so rather than failing. A made-up link gets the same "can't find that page" as an expired record, so it reveals nothing.
+
+**Plan allowance**: invitations per month (each new or revised offer counts): 5 on Trial, 10 Starter, 200 Growth, 1,000 Agency, 10,000 Enterprise. Past it, the brand sees a paywall (`outreach_quota`) and nothing is sent.
+
+**Events**: `Creator Invitation Sent`, `Creator Portal Viewed` (first open only), `Creator Invitation Answered`, `Creator Counter Resolved`, `Creator Content Submitted`, `Creator Content Reviewed`. Creator-side events carry the workspace and account but no user, since creators aren't users.
+
 ## Plans
 
 Defined once in `lib/entitlements/plans.ts`, enforced on the server, mirrored in the interface.
@@ -36,6 +55,7 @@ Defined once in `lib/entitlements/plans.ts`, enforced on the server, mirrored in
 | Audience insights and follower quality | – | – | yes | yes | yes |
 | List export (CSV) | – | – | yes | yes | yes |
 | Active campaigns | 1 | 1 | 5 | 25 | 500 |
+| Creator invitations / month | 5 | 10 | 200 | 1,000 | 10,000 |
 
 Opening a profile counts once per creator per month (`creator_profile_views`), so re-opening one is free. Past the limit, new profiles are blocked and the person sees what the allowance is and the plan that raises it; profiles already opened stay available. Four paywall placements were added: `creator_list_limit`, `creator_profile_quota`, `creator_audience` and `creator_export`. Each is dismissible with equal-weight "Not now".
 
@@ -49,8 +69,8 @@ Roles: owners, admins and editors change lists; viewers can browse and export; c
 
 ## Analytics
 
-New events in `docs/tracking-plan.json` (117 total): `Product Hub Viewed`, `Product Opened`, `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, and the five campaign events above. Paywalls reuse `Paywall Viewed`.
+New events in `docs/tracking-plan.json` (123 total): `Product Hub Viewed`, `Product Opened`, `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events and the six outreach events above. Paywalls reuse `Paywall Viewed`.
 
 ## Not yet built
 
-Campaign tracking is manual: someone on the brand's team moves each creator along the pipeline. Still to build: real outreach (emails to creators and a creator-facing portal), contracts, content upload and review, tracking links with results, and payouts. Creator data is a snapshot; there is no refresh job. Comparing creators side by side, saved searches, and linking creators to the listening corpus (what people say about a creator's brand mentions) are natural follow-ups.
+Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery, and no reminder emails for an invitation about to expire. Content is a link to a post, not an uploaded file. Still to build: contracts, tracking links with results, and real payouts (payment is marked by the brand). Creator data is a snapshot; there is no refresh job. Comparing creators side by side, saved searches, and linking creators to the listening corpus (what people say about a creator's brand mentions) are natural follow-ups.

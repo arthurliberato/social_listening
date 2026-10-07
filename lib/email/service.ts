@@ -13,7 +13,8 @@ export type EmailType =
   | "trial"
   | "billing"
   | "sales"
-  | "security";
+  | "security"
+  | "outreach";
 
 export const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
 

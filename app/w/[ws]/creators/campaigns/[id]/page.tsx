@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { CampaignView } from "@/components/creators/campaigns/CampaignView";
 import { requireWorkspace } from "@/lib/auth/session";
-import { getCampaign, snapshotOf } from "@/lib/creators/campaigns";
+import { freshSnapshot, getCampaign } from "@/lib/creators/campaigns";
 import { workspaceLists } from "@/lib/creators/service";
 import { canEdit } from "@/lib/queries";
 
@@ -21,7 +21,8 @@ export default async function CampaignPage({
   return (
     <CampaignView
       ws={slug}
-      initial={snapshotOf(data)}
+      brand={ws.name}
+      initial={await freshSnapshot(ws.id, id)}
       canEdit={canEdit(ws.role)}
       lists={lists.map((l) => ({ id: l.id, name: l.name, size: l.size }))}
     />

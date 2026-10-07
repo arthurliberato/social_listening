@@ -19,6 +19,8 @@ export interface Entitlements {
   creatorLists: number;
   /** Campaigns that are drafts or running; completed and archived ones don't count. */
   activeCampaigns: number;
+  /** Creator invitations sent per month (each new or revised offer counts). */
+  invitationsPerMonth: number;
   features: {
     sentimentAlerts: boolean;
     crisisRoom: boolean;
@@ -67,6 +69,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     creatorProfilesPerMonth: 15,
     creatorLists: 2,
     activeCampaigns: 1,
+    invitationsPerMonth: 5,
     features: { ...none },
   },
   starter: {
@@ -83,6 +86,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     creatorProfilesPerMonth: 25,
     creatorLists: 2,
     activeCampaigns: 1,
+    invitationsPerMonth: 10,
     features: { ...none },
   },
   growth: {
@@ -99,6 +103,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     creatorProfilesPerMonth: 250,
     creatorLists: 10,
     activeCampaigns: 5,
+    invitationsPerMonth: 200,
     features: {
       ...none,
       sentimentAlerts: true,
@@ -125,6 +130,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     creatorProfilesPerMonth: 1000,
     creatorLists: 50,
     activeCampaigns: 25,
+    invitationsPerMonth: 1000,
     features: {
       ...none,
       sentimentAlerts: true,
@@ -152,6 +158,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     creatorProfilesPerMonth: 10000,
     creatorLists: 1000,
     activeCampaigns: 500,
+    invitationsPerMonth: 10000,
     features: {
       sentimentAlerts: true,
       crisisRoom: true,
