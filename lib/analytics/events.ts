@@ -1358,7 +1358,7 @@ export const EVENTS = {
   "Product Opened": {
     "side": "client",
     "properties": [
-      "product",
+      "target_product",
       "source"
     ],
     "destinations": [

@@ -3,6 +3,16 @@ import { EVENTS } from "./events";
 import { productFor, productOfRoute } from "./product";
 
 describe("event product", () => {
+  it("no event declares its own `product` or `actor_type`", () => {
+    // `product` once meant two things on one event (where it happened, and which product was opened); the global
+    // one silently lost. Events use their own names (target_product) and this keeps it that way. (A few older
+    // events deliberately reuse `plan_tier` for "the plan switched to"; that is a different, intended override.)
+    for (const [name, e] of Object.entries(EVENTS))
+      expect(
+        (e.properties as readonly string[]).filter((p) => p === "product" || p === "actor_type"),
+        name,
+      ).toEqual([]);
+  });
   it("every event in the plan has a known product", () => {
     for (const [name, e] of Object.entries(EVENTS))
       expect(["listening", "influencers", "creator_portal", "hub", "platform"], name).toContain(

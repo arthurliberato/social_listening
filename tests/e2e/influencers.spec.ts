@@ -36,6 +36,15 @@ test("after login a split screen leads to either product, and remembers the last
       )
     ).rows.map((r) => r.props.product);
   await expect.poll(() => tagged("Product Opened")).toEqual(["hub"]);
+  const opened = await pool.query(
+    `SELECT props FROM analytics_events e JOIN workspaces w ON w.id = e.workspace_id WHERE e.name = 'Product Opened' AND w.slug = $1`,
+    [slug],
+  );
+  expect(opened.rows[0].props).toMatchObject({
+    target_product: "influencers",
+    source: "hub",
+    product: "hub",
+  });
   await expect.poll(() => tagged("Creator Search Run")).toContain("influencers");
   await expect(page.getByRole("heading", { name: "Discover creators" })).toBeVisible();
   await expect(page.getByTestId("switch-influencers")).toHaveAttribute("aria-current", "page");

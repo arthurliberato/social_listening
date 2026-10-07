@@ -69,7 +69,7 @@ Roles: owners, admins and editors change lists; viewers can browse and export; c
 
 ## Analytics
 
-New events in `docs/tracking-plan.json` (123 total): `Product Hub Viewed`, `Product Opened`, `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events and the six outreach events above. Paywalls reuse `Paywall Viewed`.
+New events in `docs/tracking-plan.json` (123 total): `Product Hub Viewed`, `Product Opened` (`target_product` says which), `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events and the six outreach events above. Paywalls reuse `Paywall Viewed`.
 
 ## Not yet built
 

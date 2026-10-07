@@ -1600,10 +1600,10 @@
    "name": "Product Opened",
    "side": "client",
    "properties": [
-    "product",
+    "target_product",
     "source"
    ],
-   "description": "A person chose a product from the hub or the product switcher. source: hub | switcher.",
+   "description": "A person chose a product from the hub or the product switcher. target_product: listening | influencers. source: hub | switcher.",
    "destinations": [
     "amplitude",
     "warehouse"

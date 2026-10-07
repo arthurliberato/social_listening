@@ -27,10 +27,12 @@ export async function trackServer<N extends EventName>(
     const g = await globalProps(ctx);
     const all: Record<string, Prop> = {
       ...g.props,
-      product: productFor(name, { route: extras.route, props: props as Record<string, unknown> }),
       route: extras.route ?? null,
       ui_theme: extras.ui_theme ?? null,
       ...(props as Record<string, Prop>),
+      // Global properties are set last: an event's own properties can never overwrite where it happened.
+      product: productFor(name, { route: extras.route, props: props as Record<string, unknown> }),
+      actor_type: g.props.actor_type,
     };
     await db.insert(analyticsEvents).values({
       name,
