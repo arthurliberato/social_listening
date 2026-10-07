@@ -19,6 +19,11 @@ const base: Signals = {
   daysSinceActive: null,
   cancelAtPeriodEnd: false,
   openSalesRequest: false,
+  creatorLists: 0,
+  activeCampaigns: 0,
+  creatorProfilesPct: 0,
+  invitationsPct: 0,
+  productsUsed: [],
 };
 const power: Signals = {
   ...base,
@@ -56,6 +61,32 @@ describe("PQA", () => {
     expect(pqa({ ...power, openSalesRequest: true }).eligible).toBe(false);
     expect(pqa({ ...power, billingStatus: "locked" }).eligible).toBe(false);
     expect(pqa({ ...power, billingStatus: "canceled" }).eligible).toBe(false);
+  });
+});
+
+describe("PQA across products", () => {
+  it("Influencers depth adds points, with reasons", () => {
+    const r = pqa({ ...base, activeCampaigns: 3, creatorProfilesPct: 85, invitationsPct: 90 });
+    expect(r.score).toBe(30);
+    expect(r.reasons.join(" ")).toMatch(/3 active campaigns/);
+    expect(r.reasons.join(" ")).toMatch(/creator invitations used/);
+  });
+  it("using both products is a signal on its own", () => {
+    expect(pqa({ ...base, productsUsed: ["listening", "influencers"] }).reasons.join(" ")).toMatch(
+      /both products/,
+    );
+    expect(pqa({ ...base, productsUsed: ["influencers"] }).score).toBe(0);
+  });
+  it("an account that only uses Influencers still reads as engaged", () => {
+    const only = health({
+      ...base,
+      productsUsed: ["influencers"],
+      activeDays14d: 8,
+      activeUsers14d: 3,
+      daysSinceActive: 0,
+    });
+    expect(only.band).toBe("healthy");
+    expect(only.reasons.join(" ")).toMatch(/1 of 5 core features/);
   });
 });
 

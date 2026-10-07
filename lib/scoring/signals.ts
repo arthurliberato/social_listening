@@ -10,7 +10,10 @@ import {
   workspaces,
 } from "@/db/client";
 import { accountUsage } from "@/lib/billing/usage";
-import type { PlanTier } from "@/lib/entitlements/plans";
+import { accountActiveCampaigns } from "@/lib/creators/campaigns";
+import { invitationsUsed } from "@/lib/creators/outreach";
+import { accountListCount, profileViewUsage } from "@/lib/creators/service";
+import { limits, type PlanTier } from "@/lib/entitlements/plans";
 import type { Signals } from "./score";
 
 const DAY = 86_400_000;
@@ -72,6 +75,19 @@ export async function gatherSignals(accountId: string, now: Date): Promise<Signa
         gt(salesRequests.createdAt, new Date(now.getTime() - 60 * DAY)),
       ),
     );
+  const [lists, campaignsActive, profiles, invitesUsed] = await Promise.all([
+    accountListCount(wsIds),
+    accountActiveCampaigns(accountId),
+    profileViewUsage(accountId, a.planTier as PlanTier),
+    invitationsUsed(accountId),
+  ]);
+  const inviteLimit = limits(a.planTier as PlanTier).invitationsPerMonth;
+  const listening =
+    (meters.queries?.used ?? 0) > 0 ||
+    (meters.alerts?.used ?? 0) > 0 ||
+    (dash?.n ?? 0) > 0 ||
+    (sched?.n ?? 0) > 0;
+  const influencers = lists > 0 || campaignsActive > 0 || profiles.used > 0;
   return {
     tier: a.planTier,
     billingStatus: a.billingStatus,
@@ -92,5 +108,12 @@ export async function gatherSignals(accountId: string, now: Date): Promise<Signa
       : null,
     cancelAtPeriodEnd: a.cancelAtPeriodEnd,
     openSalesRequest: (open?.n ?? 0) > 0,
+    creatorLists: lists,
+    activeCampaigns: campaignsActive,
+    creatorProfilesPct: profiles.pct,
+    invitationsPct: Math.min(100, Math.round((invitesUsed / inviteLimit) * 100)),
+    productsUsed: [listening ? "listening" : null, influencers ? "influencers" : null].filter(
+      (x): x is string => !!x,
+    ),
   };
 }

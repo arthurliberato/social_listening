@@ -66,6 +66,13 @@ export async function runNightlyScoring(
       live_queries: s.liveQueries,
       seats_used: s.seatsUsed,
       active_users_14d: s.activeUsers14d,
+      // Account-level product mix and Influencers depth, so cohorts can be cut by what an account actually uses.
+      products_used: s.productsUsed.join(",") || "none",
+      uses_both_products: s.productsUsed.length >= 2,
+      creator_lists: s.creatorLists,
+      active_campaigns: s.activeCampaigns,
+      creator_profiles_pct: s.creatorProfilesPct,
+      invitations_pct: s.invitationsPct,
     });
     const sdrNotified = p.eligible && p.score >= PQA_THRESHOLD && (await notifySdr(id, p, now));
     out.push({ accountId: id, pqa: p.score, health: h.score, band: h.band, sdrNotified });

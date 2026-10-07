@@ -36,6 +36,16 @@ async function sendInvite(row: Locator, offer?: string) {
   return row.getByTestId("invite-link").inputValue();
 }
 
+/** Analytics events recorded for a workspace, newest last. */
+async function eventsOf(slug: string, name: string) {
+  return (
+    await pool.query(
+      `SELECT user_id, props FROM analytics_events WHERE name = $1 AND workspace_id = (SELECT id FROM workspaces WHERE slug = $2) ORDER BY ts`,
+      [name, slug],
+    )
+  ).rows as { user_id: string | null; props: Record<string, unknown> }[];
+}
+
 /** The creator opens their link in their own browser, signed in as nobody. */
 async function asCreator(browser: Browser, link: string) {
   const ctx = await browser.newContext();
@@ -129,6 +139,39 @@ test("invite, accept, submit content, request changes, resubmit, approve, pay: b
   expect(paid.rows.length).toBeGreaterThanOrEqual(1);
   await ctx.close();
   expect(campaign).toMatch(/campaigns\//);
+
+  // Analytics: brand-side events belong to Influencers and a member; the creator's own events belong to the
+  // creator page and carry no member id, only a creator actor.
+  const sent = (await eventsOf(slug, "Creator Invitation Sent"))[0]!;
+  expect(sent.user_id).not.toBeNull();
+  expect(sent.props).toMatchObject({
+    product: "influencers",
+    actor_type: "member",
+    offered_usd: 800,
+  });
+  for (const name of [
+    "Creator Portal Viewed",
+    "Creator Invitation Answered",
+    "Creator Content Submitted",
+  ]) {
+    const rows = await eventsOf(slug, name);
+    expect(rows.length, name).toBeGreaterThanOrEqual(1);
+    for (const r of rows) {
+      expect(r.user_id, name).toBeNull();
+      expect(r.props, name).toMatchObject({ product: "creator_portal", actor_type: "creator" });
+      expect(r.props.account_id, name).toBeTruthy();
+      expect(r.props.workspace_id, name).toBeTruthy();
+    }
+  }
+  expect((await eventsOf(slug, "Creator Invitation Answered"))[0]!.props).toMatchObject({
+    response: "accepted",
+  });
+  expect((await eventsOf(slug, "Creator Content Reviewed")).map((r) => r.props.decision)).toEqual([
+    "changes_requested",
+    "approved",
+  ]);
+  // The creator's page was opened once, however many times it was reloaded.
+  expect(await eventsOf(slug, "Creator Portal Viewed")).toHaveLength(1);
 });
 
 test("a counter-offer can be accepted, or answered with a revised offer that replaces the old link", async ({

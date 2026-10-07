@@ -2,8 +2,10 @@
 
 import * as amplitude from "@amplitude/analytics-browser";
 import { EVENTS, type EventName, type EventProps } from "./events";
+import { productFor } from "./product";
 
 let ampReady = false;
+let identified = false;
 let deviceId: string | null = null;
 
 function getDeviceId(): string {
@@ -34,11 +36,13 @@ export function identify(ids: {
   initAmplitude();
   if (!ampReady) return;
   amplitude.setUserId(ids.userId);
+  identified = true;
   if (ids.accountId) amplitude.setGroup("account", ids.accountId);
   if (ids.workspaceId) amplitude.setGroup("workspace", ids.workspaceId);
 }
 
 export function resetIdentity() {
+  identified = false;
   if (ampReady) amplitude.reset();
 }
 
@@ -56,7 +60,9 @@ export function track<N extends EventName>(name: N, props: EventProps<N> = {}) {
   const ui_theme =
     document.documentElement.dataset.theme ??
     (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-  if (ampReady) amplitude.track(name, { ...props, route, ui_theme });
+  const product = productFor(name, { route, props: props as Record<string, unknown> });
+  const actor_type = identified ? "member" : "anonymous";
+  if (ampReady) amplitude.track(name, { ...props, route, ui_theme, product, actor_type });
   const body = JSON.stringify({
     name,
     props,

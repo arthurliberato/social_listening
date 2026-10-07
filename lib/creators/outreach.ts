@@ -593,7 +593,7 @@ export async function markPortalViewed(p: Portal) {
   if (first.length)
     await trackServer(
       "Creator Portal Viewed",
-      { workspaceId: p.workspaceId, accountId: p.accountId },
+      { workspaceId: p.workspaceId, accountId: p.accountId, creatorId: p.creator.id },
       { campaign_id: p.campaign.id, creator_id: p.creator.id, invite_state: p.state },
     );
 }
@@ -673,7 +673,7 @@ export async function respondToInvitation(
   );
   await trackServer(
     "Creator Invitation Answered",
-    { workspaceId: p.workspaceId, accountId: p.accountId },
+    { workspaceId: p.workspaceId, accountId: p.accountId, creatorId: p.creator.id },
     {
       campaign_id: p.campaign.id,
       creator_id: p.creator.id,
@@ -727,7 +727,7 @@ export async function submitContent(
   await notifyBrand(p, "content", {});
   await trackServer(
     "Creator Content Submitted",
-    { workspaceId: p.workspaceId, accountId: p.accountId },
+    { workspaceId: p.workspaceId, accountId: p.accountId, creatorId: p.creator.id },
     { campaign_id: p.campaign.id, creator_id: p.creator.id, version },
   );
   return { ok: true, version };

@@ -1,5 +1,6 @@
 import { analyticsEvents, db } from "@/db/client";
 import { globalProps, type AnalyticsContext } from "./context";
+import { productFor } from "./product";
 import { EVENTS, type EventName, type EventProps, type Prop } from "./events";
 
 export interface ClientExtras {
@@ -29,6 +30,9 @@ export async function trackServer<N extends EventName>(
       route: extras.route ?? null,
       ui_theme: extras.ui_theme ?? null,
       ...(props as Record<string, Prop>),
+      // Global properties are set last: an event's own properties can never overwrite where it happened.
+      product: productFor(name, { route: extras.route, props: props as Record<string, unknown> }),
+      actor_type: g.props.actor_type,
     };
     await db.insert(analyticsEvents).values({
       name,
@@ -41,11 +45,20 @@ export async function trackServer<N extends EventName>(
     });
     const dest = def.destinations as readonly string[];
     if (dest.includes("amplitude") && !extras.forwarded)
-      await sendAmplitude(name, ctx.userId ?? null, extras.device_id, all, g);
+      await sendAmplitude(name, amplitudeUserId(ctx), extras.device_id, all, g);
     if (dest.includes("ga4") && def.ga4Name) await sendGa4(def.ga4Name, ctx.userId ?? null, all);
   } catch (err) {
     console.error("[analytics] failed to record", name, err);
   }
+}
+
+/**
+ * Who Amplitude sees. Members are their UUID. A creator on an invitation page has no account, so they get a stable
+ * synthetic id (`creator_<directory id>`), which lets a creator's journey (invited, viewed, answered, delivered, paid)
+ * be followed as one user without storing anything personal. Everyone else is anonymous.
+ */
+export function amplitudeUserId(ctx: AnalyticsContext): string | null {
+  return ctx.userId ?? (ctx.creatorId ? `creator_${ctx.creatorId}` : null);
 }
 
 async function sendAmplitude(
@@ -65,7 +78,13 @@ async function sendAmplitude(
   amp.track(
     name,
     props as Record<string, never>,
-    { user_id: userId ?? undefined, device_id: deviceId, groups } as never,
+    {
+      user_id: userId ?? undefined,
+      device_id: deviceId,
+      groups,
+      // Lets cohorts separate creators from members without a join.
+      ...(userId?.startsWith("creator_") ? { user_properties: { user_type: "creator" } } : {}),
+    } as never,
   );
 }
 
