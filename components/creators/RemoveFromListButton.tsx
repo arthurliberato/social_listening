@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { removeFromList } from "@/app/w/[ws]/creators/actions";
 import { useBusy } from "@/lib/use-busy";
@@ -18,7 +17,6 @@ export function RemoveFromListButton({
   name: string;
   canEdit: boolean;
 }) {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [busy, run] = useBusy();
   return (
@@ -31,7 +29,6 @@ export function RemoveFromListButton({
           run(async () => {
             const r = await removeFromList(ws, listId, creatorId, "list");
             if (!r.ok) return setError(r.error);
-            router.refresh();
           })
         }
         data-testid="remove-from-list"

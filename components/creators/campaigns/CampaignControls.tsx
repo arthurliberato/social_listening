@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   addListToCampaign,
@@ -39,7 +38,6 @@ export function StatusButtons({
   status: CampaignStatus;
   canEdit: boolean;
 }) {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [paywall, setPaywall] = useState<{ reason: string; to: PlanTier } | null>(null);
   const [busy, run] = useBusy();
@@ -61,7 +59,6 @@ export function StatusButtons({
                 if (r.upgradeTo) return setPaywall({ reason: r.error, to: r.upgradeTo });
                 return setError(r.error);
               }
-              router.refresh();
             })
           }
         >
@@ -106,7 +103,6 @@ export function EditDetails({
   };
   canEdit: boolean;
 }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [busy, run] = useBusy();
@@ -138,7 +134,6 @@ export function EditDetails({
           });
           if (!r.ok) return setError(r.error);
           setOpen(false);
-          router.refresh();
         });
       }}
       className="grid w-full gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 md:grid-cols-2"
@@ -250,7 +245,6 @@ export function AddFromList({
   lists: { id: string; name: string; size: number }[];
   canEdit: boolean;
 }) {
-  const router = useRouter();
   const [listId, setListId] = useState(lists[0]?.id ?? "");
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
@@ -273,7 +267,6 @@ export function AddFromList({
           setMsg(
             `Added ${r.added} creator${r.added === 1 ? "" : "s"}${r.skipped ? `; ${r.skipped} already on the campaign` : ""}.`,
           );
-          router.refresh();
         });
       }}
       className="flex flex-wrap items-end gap-3"

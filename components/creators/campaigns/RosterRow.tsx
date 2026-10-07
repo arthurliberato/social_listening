@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   removeCampaignCreator,
@@ -44,7 +43,6 @@ export function RosterRow({
   };
   editable: boolean;
 }) {
-  const router = useRouter();
   const status: CreatorStatus = isCreatorStatus(row.status) ? row.status : "shortlisted";
   const [fee, setFee] = useState(row.feeUsd == null ? "" : String(row.feeUsd));
   const [note, setNote] = useState(row.note);
@@ -63,7 +61,6 @@ export function RosterRow({
       });
       if (!r.ok) return setError(r.error);
       if (r.warning) setWarning(r.warning);
-      router.refresh();
     });
 
   return (
@@ -116,7 +113,6 @@ export function RosterRow({
               run(async () => {
                 const r = await removeCampaignCreator(ws, campaignId, row.creatorId);
                 if (!r.ok) return setError(r.error);
-                router.refresh();
               })
             }
             data-testid="remove-creator"
