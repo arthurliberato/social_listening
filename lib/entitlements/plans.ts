@@ -35,6 +35,7 @@ export interface Entitlements {
     logoRecognition: boolean;
     creatorAudience: boolean; // audience demographics and authenticity on creator profiles
     creatorExport: boolean; // CSV export of creator lists
+    campaignResults: boolean; // tracking links and the campaign results page
   };
 }
 
@@ -52,6 +53,7 @@ const none = {
   logoRecognition: false,
   creatorAudience: false,
   creatorExport: false,
+  campaignResults: false,
 };
 
 export const PLANS: Record<PlanTier, Entitlements> = {
@@ -111,6 +113,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
       scheduledReports: true,
       creatorAudience: true,
       creatorExport: true,
+      campaignResults: true,
       shareOfVoice: true,
       emotionWidget: true,
       publicShareLinks: true,
@@ -138,6 +141,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
       scheduledReports: true,
       creatorAudience: true,
       creatorExport: true,
+      campaignResults: true,
       shareOfVoice: true,
       emotionWidget: true,
       publicShareLinks: true,
@@ -173,6 +177,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
       logoRecognition: true,
       creatorAudience: true,
       creatorExport: true,
+      campaignResults: true,
     },
   },
 };

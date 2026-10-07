@@ -59,13 +59,22 @@ export function CampaignView({
             {c.startsOn || c.endsOn ? ` · ${c.startsOn ?? "…"} to ${c.endsOn ?? "…"}` : ""}
           </p>
         </div>
-        <StatusButtons
-          ws={ws}
-          id={c.id}
-          status={c.status as CampaignStatus}
-          canEdit={canEdit}
-          onSnapshot={setSnap}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/w/${ws}/creators/campaigns/${c.id}/results`}
+            className="inline-flex min-h-9 items-center rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-medium hover:bg-[var(--surface-2)]"
+            data-testid="campaign-results-link"
+          >
+            Results and tracking
+          </Link>
+          <StatusButtons
+            ws={ws}
+            id={c.id}
+            status={c.status as CampaignStatus}
+            canEdit={canEdit}
+            onSnapshot={setSnap}
+          />
+        </div>
       </div>
       {c.brief && (
         <p className="mt-3 max-w-prose whitespace-pre-line" data-testid="campaign-brief">

@@ -848,6 +848,10 @@ export const campaigns = pgTable(
     name: text("name").notNull(),
     objective: text("objective").notNull().default("awareness"), // awareness|conversions|content|launch
     brief: text("brief").notNull().default(""),
+    /** Where tracking links send people (the brand's own page). Null until the brand sets it. */
+    destinationUrl: text("destination_url"),
+    /** Shared secret for the conversion postback; generated when the destination is first set. */
+    conversionKey: text("conversion_key"),
     budgetUsd: integer("budget_usd").notNull().default(0),
     startsOn: date("starts_on"),
     endsOn: date("ends_on"),
@@ -924,6 +928,55 @@ export const campaignContent = pgTable(
     reviewedBy: uuid("reviewed_by").references(() => users.id),
   },
   (t) => [index("campaign_content_creator_idx").on(t.campaignId, t.creatorId, t.version)],
+);
+
+/** One tracking link per creator per campaign: a short code that redirects to the campaign's destination. */
+export const trackingLinks = pgTable(
+  "tracking_links",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => campaigns.id, { onDelete: "cascade" }),
+    creatorId: integer("creator_id").notNull(),
+    code: text("code").notNull().unique(),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("tracking_links_creator_uq").on(t.campaignId, t.creatorId)],
+);
+
+/** A visit through a tracking link. Visitors are a salted hash, never an address; bots are kept but not counted. */
+export const linkClicks = pgTable(
+  "link_clicks",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    linkId: uuid("link_id")
+      .notNull()
+      .references(() => trackingLinks.id, { onDelete: "cascade" }),
+    /** Passed to the destination as rw_cid; the brand's site sends it back with a conversion. */
+    clickId: text("click_id").notNull().unique(),
+    ts: ts("ts").notNull().defaultNow(),
+    visitorHash: text("visitor_hash").notNull(),
+    isBot: boolean("is_bot").notNull().default(false),
+    isUnique: boolean("is_unique").notNull().default(false),
+  },
+  (t) => [index("link_clicks_link_ts_idx").on(t.linkId, t.ts)],
+);
+
+export const linkConversions = pgTable(
+  "link_conversions",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    linkId: uuid("link_id")
+      .notNull()
+      .references(() => trackingLinks.id, { onDelete: "cascade" }),
+    clickId: text("click_id").notNull(),
+    ts: ts("ts").notNull().defaultNow(),
+    valueUsd: integer("value_usd").notNull().default(0),
+    /** The brand's order reference, or the click id when none was sent: one conversion per key. */
+    dedupeKey: text("dedupe_key").notNull(),
+  },
+  (t) => [uniqueIndex("link_conversions_dedupe_uq").on(t.linkId, t.dedupeKey)],
 );
 
 /** Failed password logins per (hashed) email, for throttling guessing. Unknown emails are tracked too, so locking never reveals who has an account. */

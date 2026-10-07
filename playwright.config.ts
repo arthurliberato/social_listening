@@ -22,7 +22,7 @@ export default defineConfig({
     {
       name: "anonymous",
       testMatch:
-        /onboarding\.spec\.ts|public\.spec\.ts|queries\.spec\.ts|mentions\.spec\.ts|dashboards\.spec\.ts|alerts\.spec\.ts|ai\.spec\.ts|add-to-report\.spec\.ts|audit-coverage\.spec\.ts|throttle\.spec\.ts|auth-methods\.spec\.ts|insights\.spec\.ts|sales\.spec\.ts|reports\.spec\.ts|billing\.spec\.ts|team\.spec\.ts|influencers\.spec\.ts|campaigns\.spec\.ts|outreach\.spec\.ts/,
+        /onboarding\.spec\.ts|public\.spec\.ts|queries\.spec\.ts|mentions\.spec\.ts|dashboards\.spec\.ts|alerts\.spec\.ts|ai\.spec\.ts|add-to-report\.spec\.ts|audit-coverage\.spec\.ts|throttle\.spec\.ts|auth-methods\.spec\.ts|insights\.spec\.ts|sales\.spec\.ts|reports\.spec\.ts|billing\.spec\.ts|team\.spec\.ts|influencers\.spec\.ts|campaigns\.spec\.ts|outreach\.spec\.ts|tracking\.spec\.ts/,
     },
     // Specs that need a signed-in, onboarded user.
     {

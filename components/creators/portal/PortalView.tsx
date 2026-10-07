@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { OBJECTIVE_LABEL, type Objective } from "@/lib/creators/campaign-flow";
 import type { PortalState, PortalView as View } from "@/lib/creators/outreach";
 import { useBusy } from "@/lib/use-busy";
+import { CopyField } from "@/components/creators/results/CopyField";
 
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 const day = (iso: string) =>
@@ -256,6 +257,25 @@ export function PortalView({ token, initial }: { token: string; initial: View })
             <p className="mt-2" data-testid="portal-paid">
               {usd(v.agreedUsd ?? 0)} was marked as paid. Thank you!
             </p>
+          )}
+          {v.trackingLink && (
+            <div
+              className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4"
+              data-testid="portal-tracking"
+            >
+              <p className="font-medium">Your tracking link</p>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
+                Use this link in your post or bio, so visits and sales that come from you are
+                credited to you.
+              </p>
+              <div className="mt-2">
+                <CopyField
+                  label="your tracking link"
+                  value={v.trackingLink}
+                  testId="portal-tracking-link"
+                />
+              </div>
+            </div>
           )}
           {changes && v.state === "confirmed" && (
             <div

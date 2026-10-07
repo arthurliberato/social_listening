@@ -44,6 +44,22 @@ Creators don't have accounts. A brand invites a creator from the campaign roster
 
 **Events**: `Creator Invitation Sent`, `Creator Portal Viewed` (first open only), `Creator Invitation Answered`, `Creator Counter Resolved`, `Creator Content Submitted`, `Creator Content Reviewed`. Creator-side events carry the workspace and account but no member id, since creators aren't users: they have `actor_type: creator` and appear in Amplitude as `creator_<id>`. Every event also carries `product`. See `docs/analytics.md`.
 
+## Tracking links and results (I4)
+
+Every confirmed creator gets one tracking link per campaign: `/r/<code>`, ten characters from a 31-symbol alphabet (no look-alikes), unguessable. It records the visit and redirects to the campaign's landing page with the creator and campaign added to the address (`utm_source`, `utm_medium=influencer`, `utm_campaign`, plus `rw_cid`, the click id). The brand's own tags always win. Creators see their link on their own page as soon as they're confirmed and the brand has set a landing page; the brand sees all links on the results page.
+
+**Setting up** (`/w/:ws/creators/campaigns/:id/results`): the brand sets the landing page (a real http/https address, no credentials in it). That also creates links for creators already confirmed, and creates the campaign's secret conversion key.
+
+**Clicks.** A visit stores a salted hash of address and browser (not reversible, and different each day), never the address itself. A person counts once per link per day as a *unique visitor*. Crawlers and link previewers are redirected like anyone else but are flagged and left out of every number. A browser driven by an automated agent still counts as a visitor. Links on a completed campaign keep working, so a creator's old posts don't break; archived ones show "This link isn't active".
+
+**Conversions.** The brand's own server reports a result with `GET` or `POST /api/t/conversion?cid=<rw_cid>&key=<campaign key>&value=<dollars>&ref=<order id>`. It needs the secret key (compared in constant time), a real click made in the last 30 days, and a non-crawler click; the same order reference is counted once; without a reference, one conversion per click. An unknown click and a wrong key look identical (401), so the endpoint can't be used to discover click ids.
+
+**Results.** Clicks, unique visitors, conversions, revenue, spend (the agreed fees of confirmed creators), cost per click, cost per conversion, return on spend, and the conversion rate (conversions per unique visitor), overall and for each creator, plus a daily chart of clicks and conversions with a table alternative. Anything that can't be worked out (cost per conversion with no conversions) shows a dash, never zero or infinity. The arithmetic is in `lib/creators/tracking-flow.ts` and is tested.
+
+**Plan:** tracking and results are on Growth and above (`campaignResults`, paywall `campaign_results`); links stay live if an account later downgrades, only the results page locks. Viewers can read results but not the setup or the key.
+
+**Events:** `Campaign Destination Set`, `Tracking Link Created`, `Tracking Link Clicked` and `Campaign Conversion Recorded` (the last two have an anonymous audience actor and belong to Influencers), and `Campaign Results Viewed`.
+
 ## Plans
 
 Defined once in `lib/entitlements/plans.ts`, enforced on the server, mirrored in the interface.
@@ -56,6 +72,7 @@ Defined once in `lib/entitlements/plans.ts`, enforced on the server, mirrored in
 | List export (CSV) | – | – | yes | yes | yes |
 | Active campaigns | 1 | 1 | 5 | 25 | 500 |
 | Creator invitations / month | 5 | 10 | 200 | 1,000 | 10,000 |
+| Tracking links and results | – | – | yes | yes | yes |
 
 Opening a profile counts once per creator per month (`creator_profile_views`), so re-opening one is free. Past the limit, new profiles are blocked and the person sees what the allowance is and the plan that raises it; profiles already opened stay available. Four paywall placements were added: `creator_list_limit`, `creator_profile_quota`, `creator_audience` and `creator_export`. Each is dismissible with equal-weight "Not now".
 
@@ -69,8 +86,8 @@ Roles: owners, admins and editors change lists; viewers can browse and export; c
 
 ## Analytics
 
-New events in `docs/tracking-plan.json` (123 total): `Product Hub Viewed`, `Product Opened` (`target_product` says which), `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events and the six outreach events above. Paywalls reuse `Paywall Viewed`.
+New events in `docs/tracking-plan.json` (128 total): `Product Hub Viewed`, `Product Opened` (`target_product` says which), `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events, the six outreach events and the five tracking events above. Paywalls reuse `Paywall Viewed`.
 
 ## Not yet built
 
-Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery, and no reminder emails for an invitation about to expire. Content is a link to a post, not an uploaded file. Still to build: contracts, tracking links with results, and real payouts (payment is marked by the brand). Creator data is a snapshot; there is no refresh job. Comparing creators side by side, saved searches, and linking creators to the listening corpus (what people say about a creator's brand mentions) are natural follow-ups.
+Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery, and no reminder emails for an invitation about to expire. Content is a link to a post, not an uploaded file. Still to build: contracts, real payouts (payment is marked by the brand), and anything that estimates reach or earned media value (results are measured visits and conversions only). Creator data is a snapshot; there is no refresh job. Comparing creators side by side, saved searches, and linking creators to the listening corpus (what people say about a creator's brand mentions) are natural follow-ups.

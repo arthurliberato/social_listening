@@ -1611,6 +1611,75 @@ export const EVENTS = {
     ],
     "ga4Name": null,
     "product": "influencers"
+  },
+  "Campaign Destination Set": {
+    "side": "server",
+    "properties": [
+      "campaign_id"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
+  },
+  "Tracking Link Created": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "source"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
+  },
+  "Tracking Link Clicked": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "is_unique",
+      "is_bot"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
+  },
+  "Campaign Conversion Recorded": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "value_usd"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
+  },
+  "Campaign Results Viewed": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "clicks",
+      "conversions"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
   }
 } as const;
 

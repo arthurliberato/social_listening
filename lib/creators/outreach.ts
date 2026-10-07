@@ -36,6 +36,7 @@ import {
   newToken,
   type Response,
 } from "./outreach-flow";
+import { ensureLink, linkFor } from "./tracking";
 import { brandNotice, creatorNotice, invitationEmail } from "./outreach-emails";
 
 export type Fail = { ok: false; error: string; upgradeTo?: PlanTier; upgradeLabel?: string };
@@ -348,6 +349,7 @@ export async function resolveCounter(o: {
           ),
         );
     });
+    await ensureLink(o.campaignId, o.creatorId, "confirmed");
     await sendEmail({
       to: creatorAddress(row.handle),
       type: "outreach",
@@ -666,6 +668,7 @@ export async function respondToInvitation(
       ),
     );
 
+  if (kind === "accept") await ensureLink(p.campaign.id, p.creator.id, "confirmed");
   await notifyBrand(
     p,
     kind === "accept" ? "accepted" : kind === "decline" ? "declined" : "countered",
@@ -751,6 +754,8 @@ export interface PortalView {
   creatorNote: string;
   expiresAt: string;
   agreedUsd: number | null;
+  /** The creator's own tracking link, once they're confirmed and the brand has set a landing page. */
+  trackingLink: string | null;
   content: {
     version: number;
     url: string;
@@ -761,7 +766,7 @@ export interface PortalView {
   }[];
 }
 
-export function portalView(p: Portal): PortalView {
+export function portalView(p: Portal, trackingLink: string | null = null): PortalView {
   return {
     state: p.state,
     brand: p.brand,
@@ -779,6 +784,7 @@ export function portalView(p: Portal): PortalView {
     creatorNote: p.invite.creatorNote,
     expiresAt: p.invite.expiresAt.toISOString(),
     agreedUsd: p.agreedUsd,
+    trackingLink,
     content: p.content.map((c) => ({
       version: c.version,
       url: c.url,
@@ -790,7 +796,14 @@ export function portalView(p: Portal): PortalView {
   };
 }
 
+/** Only creators who've said yes get a link; it appears the moment the brand has set somewhere to send people. */
+export async function trackingLinkOf(p: Portal): Promise<string | null> {
+  if (!["confirmed", "in_review", "approved", "paid"].includes(p.state)) return null;
+  const made = await ensureLink(p.campaign.id, p.creator.id, "confirmed");
+  return made ? await linkFor(p.campaign.id, p.creator.id) : null;
+}
+
 export async function portalViewFor(token: string): Promise<PortalView | null> {
   const p = await portalFor(token);
-  return p ? portalView(p) : null;
+  return p ? portalView(p, await trackingLinkOf(p)) : null;
 }
