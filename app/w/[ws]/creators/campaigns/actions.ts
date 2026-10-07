@@ -23,6 +23,7 @@ import {
   type CampaignSnapshot,
 } from "@/lib/creators/campaigns";
 import { notifyPaid } from "@/lib/creators/outreach";
+import { ensureLink } from "@/lib/creators/tracking";
 import { PLANS, canCreateCampaign, type PlanTier } from "@/lib/entitlements/plans";
 import { accountPlan, canEdit } from "@/lib/queries";
 
@@ -284,6 +285,7 @@ export async function updateCampaignCreator(
     );
   }
   // Budget is advisory: confirming over budget is allowed, but the person is told.
+  if (moving && to === "confirmed") await ensureLink(campaignId, creatorId, "confirmed");
   if (moving && to === "paid")
     await notifyPaid({
       ws: { id: ws.id, accountId: ws.accountId, name: ws.name },

@@ -1,5 +1,5 @@
 import { PortalView } from "@/components/creators/portal/PortalView";
-import { markPortalViewed, portalFor, portalView } from "@/lib/creators/outreach";
+import { markPortalViewed, portalFor, portalView, trackingLinkOf } from "@/lib/creators/outreach";
 import { isToken } from "@/lib/creators/outreach-flow";
 
 export const metadata = { title: "Your invitation · Ripplewise" };
@@ -19,5 +19,5 @@ export default async function CreatorPage({ params }: { params: Promise<{ token:
       </div>
     );
   await markPortalViewed(p);
-  return <PortalView token={token} initial={portalView(p)} />;
+  return <PortalView token={token} initial={portalView(p, await trackingLinkOf(p))} />;
 }

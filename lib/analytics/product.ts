@@ -14,6 +14,7 @@ const INFLUENCER_PAYWALLS = new Set([
   "creator_export",
   "campaign_limit",
   "outreach_quota",
+  "campaign_results",
 ]);
 
 /** The product a path belongs to, or null when it isn't inside one (settings, marketing, auth...). */

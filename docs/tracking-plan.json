@@ -1887,6 +1887,85 @@
     "warehouse"
    ],
    "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Campaign Destination Set",
+   "side": "server",
+   "properties": [
+    "campaign_id"
+   ],
+   "description": "A brand set (or changed) where a campaign's tracking links send people.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Tracking Link Created",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "source"
+   ],
+   "description": "A creator's tracking link was created. source: destination_set | confirmed | brand.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Tracking Link Clicked",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "is_unique",
+    "is_bot"
+   ],
+   "description": "Someone followed a creator's tracking link. The actor is the audience member: anonymous, no account. is_unique: first non-bot visit by that visitor in 24 hours.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Campaign Conversion Recorded",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "value_usd"
+   ],
+   "description": "The brand's site reported a conversion for a click through the postback. Anonymous actor.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Campaign Results Viewed",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "clicks",
+    "conversions"
+   ],
+   "description": "A brand opened a campaign's results page.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
   }
  ],
  "destinations": {
