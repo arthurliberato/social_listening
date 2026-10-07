@@ -80,5 +80,6 @@ export async function signUp(_prev: SignupState, form: FormData): Promise<Signup
       };
     throw e;
   }
-  redirect(invite ? "/" : "/verify");
+  // Someone who joined by invitation goes straight into the workspace they were invited to, not the product hub.
+  redirect(invite ? "/?to=workspace" : "/verify");
 }
