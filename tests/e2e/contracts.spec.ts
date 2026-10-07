@@ -335,6 +335,8 @@ for (const theme of ["light", "dark"] as const) {
     await expect(cp2.getByTestId("contract-status")).toContainText("Signed by");
     await cp2.getByTestId("content-url").fill("https://social.example.test/p/1");
     await cp2.getByTestId("content-submit").click();
+    // Wait for the submission to land before the brand looks for it.
+    await expect(cp2.getByTestId("portal-heading")).toContainText("is with");
     await page.goto(campaign);
     await row().getByTestId("review-approve").click();
     await expect(row().getByTestId("roster-status")).toHaveText("Content approved");
