@@ -60,6 +60,16 @@ Every confirmed creator gets one tracking link per campaign: `/r/<code>`, ten ch
 
 **Events:** `Campaign Destination Set`, `Tracking Link Created`, `Tracking Link Clicked` and `Campaign Conversion Recorded` (the last two have an anonymous audience actor and belong to Influencers), and `Campaign Results Viewed`.
 
+## Agreements and payouts (I5)
+
+**Agreements** (Growth and above). Once a creator is confirmed through Ripplewise, the brand can put the terms in writing: deliverables, how long the brand may reuse the content (own post only, 30, 90, 180 or 365 days), exclusivity, when payment is due after approval, an optional due date and any extra terms. The agreement is rendered once in plain words (fee included), stored word for word with a SHA-256 hash, and shown on the creator's own page. The creator signs by typing their name and ticking an explicit yes, or asks for changes with a note; the brand sees the note, revises, and the new version replaces the old (the history stays). A signed agreement can't be replaced, and what was signed can't change afterwards. Signing is a conditional update, so a double-click or a second tab is refused, not repeated. While an agreement is waiting on the creator (or on a revision), content can't be submitted and payment can't start; a brand that never sends one is not blocked (deals made elsewhere still work).
+
+**Payouts** (Agency and above, simulated; nothing here moves real money). The creator adds where they want to be paid on their own page: name on the account, account number, country. **Only the last four digits and the holder's name are stored**; the number never reaches the database, the logs or analytics. Once the content is approved, any agreement is signed and details are on file, the brand starts a payout for the agreed fee (the panel says exactly what is still missing when it can't). The payout settles after two simulated days: the creator becomes *Paid*, both sides are told by email, and the budget meter's "paid" total follows. A settle job runs every five minutes, and a payout that has come due is also settled the moment either side loads the campaign, so what's on screen is true. Settling is a conditional claim, so it happens once however many callers race.
+
+Test accounts, in the manner of a payment processor's test mode (also listed on the creator's form): `000123456789` works every time; `000999999991` saves fine, then every payout to it fails (to see a failed payout and the retry); `000999999992` can't be verified when saved. A failed payout tells both sides and leaves the creator *approved*, not paid; the brand retries once the creator has fixed their details (each retry is a numbered attempt). "Mark paid (outside Ripplewise)" stays for payments made elsewhere, and is hidden while a payout is on its way so nobody is paid twice.
+
+**Events:** `Creator Contract Sent`, `Creator Contract Signed`, `Creator Contract Changes Requested`, `Creator Payout Details Saved` (no account data), `Creator Payout Initiated` (with the attempt number) and `Creator Payout Settled`. The creator-side events have `actor_type: creator`; settlement has **`actor_type: system`** because nobody did it, the clock did, so it isn't attributed to whoever happened to load the page.
+
 ## Plans
 
 Defined once in `lib/entitlements/plans.ts`, enforced on the server, mirrored in the interface.
@@ -73,6 +83,8 @@ Defined once in `lib/entitlements/plans.ts`, enforced on the server, mirrored in
 | Active campaigns | 1 | 1 | 5 | 25 | 500 |
 | Creator invitations / month | 5 | 10 | 200 | 1,000 | 10,000 |
 | Tracking links and results | – | – | yes | yes | yes |
+| Creator agreements | – | – | yes | yes | yes |
+| Pay creators from Ripplewise | – | – | – | yes | yes |
 
 Opening a profile counts once per creator per month (`creator_profile_views`), so re-opening one is free. Past the limit, new profiles are blocked and the person sees what the allowance is and the plan that raises it; profiles already opened stay available. Four paywall placements were added: `creator_list_limit`, `creator_profile_quota`, `creator_audience` and `creator_export`. Each is dismissible with equal-weight "Not now".
 
@@ -86,8 +98,8 @@ Roles: owners, admins and editors change lists; viewers can browse and export; c
 
 ## Analytics
 
-New events in `docs/tracking-plan.json` (128 total): `Product Hub Viewed`, `Product Opened` (`target_product` says which), `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events, the six outreach events and the five tracking events above. Paywalls reuse `Paywall Viewed`.
+New events in `docs/tracking-plan.json` (134 total): `Product Hub Viewed`, `Product Opened` (`target_product` says which), `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events, the six outreach events the five tracking events and the six contract and payout events above. Paywalls reuse `Paywall Viewed`.
 
 ## Not yet built
 
-Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery, and no reminder emails for an invitation about to expire. Content is a link to a post, not an uploaded file. Still to build: contracts, real payouts (payment is marked by the brand), and anything that estimates reach or earned media value (results are measured visits and conversions only). Creator data is a snapshot; there is no refresh job. Comparing creators side by side, saved searches, and linking creators to the listening corpus (what people say about a creator's brand mentions) are natural follow-ups.
+Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery, and no reminder emails for an invitation about to expire. Content is a link to a post, not an uploaded file. Still to build: anything that estimates reach or earned media value (results are measured visits and conversions only), tax forms and withholding, and a real payment provider behind the payout rail. Creator data is a snapshot; there is no refresh job. Comparing creators side by side, saved searches, and linking creators to the listening corpus (what people say about a creator's brand mentions) are natural follow-ups.

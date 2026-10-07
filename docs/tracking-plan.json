@@ -2090,6 +2090,7 @@
  "actor_type_values": {
   "member": "A signed-in person (Amplitude user_id is their UUID)",
   "creator": "A creator acting from their invitation page (Amplitude user_id is creator_<directory id>, a synthetic non-personal id)",
-  "anonymous": "Neither: marketing visitors, signed-out screens"
+  "anonymous": "Neither: marketing visitors, signed-out screens, the audience following a creator's tracking link, the brand's site reporting a conversion",
+  "system": "Nobody acted: a payout settling because its time came, a scheduled job. Never attributed to whoever happened to load the page."
  }
 }
