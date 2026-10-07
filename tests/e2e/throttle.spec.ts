@@ -72,7 +72,7 @@ test("five wrong passwords lock the account for a while; resetting the password 
   await p.getByTestId("reset-submit").click();
   await p.waitForURL(/login\?reset=1/);
   await tryLogin(p, email, "a brand new passphrase");
-  await p.waitForURL(/\/w\/.+\/home/, { timeout: 30_000 });
+  await p.waitForURL(/\/hub/, { timeout: 30_000 });
   await ctx.close();
 });
 
@@ -85,7 +85,7 @@ test("a successful login resets the count", async ({ page, browser }) => {
     await expect(p.getByTestId("login-error")).toBeVisible({ timeout: 20_000 });
   }
   await tryLogin(p, email, PASSWORD);
-  await p.waitForURL(/\/w\/.+\/home/, { timeout: 30_000 });
+  await p.waitForURL(/\/hub/, { timeout: 30_000 });
   const row = await pool.query(
     `SELECT count(*)::int AS n FROM login_throttle l WHERE l.failures > 0 AND l.key_hash = encode(sha256($1::bytea), 'hex')`,
     [email],

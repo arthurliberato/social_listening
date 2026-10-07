@@ -17,6 +17,8 @@ export interface Entitlements {
   /** Influencers product: new creator profiles opened per month, and shortlists. */
   creatorProfilesPerMonth: number;
   creatorLists: number;
+  /** Campaigns that are drafts or running; completed and archived ones don't count. */
+  activeCampaigns: number;
   features: {
     sentimentAlerts: boolean;
     crisisRoom: boolean;
@@ -64,6 +66,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     askAiPerMonth: 10,
     creatorProfilesPerMonth: 15,
     creatorLists: 2,
+    activeCampaigns: 1,
     features: { ...none },
   },
   starter: {
@@ -79,6 +82,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     askAiPerMonth: 10,
     creatorProfilesPerMonth: 25,
     creatorLists: 2,
+    activeCampaigns: 1,
     features: { ...none },
   },
   growth: {
@@ -94,6 +98,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     askAiPerMonth: 100,
     creatorProfilesPerMonth: 250,
     creatorLists: 10,
+    activeCampaigns: 5,
     features: {
       ...none,
       sentimentAlerts: true,
@@ -119,6 +124,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     askAiPerMonth: 500,
     creatorProfilesPerMonth: 1000,
     creatorLists: 50,
+    activeCampaigns: 25,
     features: {
       ...none,
       sentimentAlerts: true,
@@ -145,6 +151,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     askAiPerMonth: 5_000,
     creatorProfilesPerMonth: 10000,
     creatorLists: 1000,
+    activeCampaigns: 500,
     features: {
       sentimentAlerts: true,
       crisisRoom: true,
@@ -191,6 +198,23 @@ export function canCreateCreatorList(
     upgradeTo:
       (["starter", "growth", "agency", "enterprise"] as PlanTier[]).find(
         (t) => PLANS[t].creatorLists > p.creatorLists,
+      ) ?? "enterprise",
+  };
+}
+
+/** Campaigns: the plan caps how many can be in draft or running at once. */
+export function canCreateCampaign(
+  tier: PlanTier,
+  activeCampaigns: number,
+): { ok: true } | { ok: false; reason: string; upgradeTo: PlanTier } {
+  const p = PLANS[tier];
+  if (activeCampaigns < p.activeCampaigns) return { ok: true };
+  return {
+    ok: false,
+    reason: `Your ${p.label} plan includes ${p.activeCampaigns} active campaign${p.activeCampaigns === 1 ? "" : "s"}. Complete or archive one, or upgrade.`,
+    upgradeTo:
+      (["starter", "growth", "agency", "enterprise"] as PlanTier[]).find(
+        (t) => PLANS[t].activeCampaigns > p.activeCampaigns,
       ) ?? "enterprise",
   };
 }

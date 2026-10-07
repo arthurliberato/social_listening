@@ -51,4 +51,8 @@ export const CREATOR_NAV_GROUPS: NavGroup[] = [
       { key: "creator-lists", label: "Lists", href: "creators/lists" },
     ],
   },
+  {
+    label: "Work",
+    items: [{ key: "campaigns", label: "Campaigns", href: "creators/campaigns" }],
+  },
 ];

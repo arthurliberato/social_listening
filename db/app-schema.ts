@@ -837,6 +837,45 @@ export const creatorProfileViews = pgTable(
   (t) => [primaryKey({ columns: [t.accountId, t.creatorId, t.period] })],
 );
 
+/** An influencer campaign: a brief, a budget and a roster of creators moving through a pipeline. */
+export const campaigns = pgTable(
+  "campaigns",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    objective: text("objective").notNull().default("awareness"), // awareness|conversions|content|launch
+    brief: text("brief").notNull().default(""),
+    budgetUsd: integer("budget_usd").notNull().default(0),
+    startsOn: date("starts_on"),
+    endsOn: date("ends_on"),
+    status: text("status").notNull().default("draft"), // draft|active|completed|archived
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("campaigns_ws_idx").on(t.workspaceId, t.status)],
+);
+
+export const campaignCreators = pgTable(
+  "campaign_creators",
+  {
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => campaigns.id, { onDelete: "cascade" }),
+    creatorId: integer("creator_id").notNull(),
+    /** shortlisted|invited|negotiating|confirmed|content_submitted|approved|paid|declined */
+    status: text("status").notNull().default("shortlisted"),
+    feeUsd: integer("fee_usd"),
+    note: text("note").notNull().default(""),
+    addedBy: uuid("added_by").references(() => users.id),
+    addedAt: ts("added_at").notNull().defaultNow(),
+    statusChangedAt: ts("status_changed_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.campaignId, t.creatorId] })],
+);
+
 /** Failed password logins per (hashed) email, for throttling guessing. Unknown emails are tracked too, so locking never reveals who has an account. */
 export const loginThrottle = pgTable("login_throttle", {
   keyHash: text("key_hash").primaryKey(),
