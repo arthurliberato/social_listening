@@ -278,6 +278,7 @@ test("agreements and payouts are plan features, and viewers can't act on them", 
   await expect(cp.getByTestId("portal-payout")).toHaveCount(0);
   await cp.getByTestId("content-url").fill("https://social.example.test/p/1");
   await cp.getByTestId("content-submit").click();
+  await expect(cp.getByTestId("portal-heading")).toContainText("is with");
   await page.reload();
   await row().getByTestId("review-approve").click();
   await expect(row().getByTestId("roster-status")).toHaveText("Content approved");
