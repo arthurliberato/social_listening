@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { Avatar } from "@/components/creators/Avatar";
 import { AddToListButton } from "@/components/creators/AddToListButton";
+import { CompareBar, CompareCheckbox } from "@/components/creators/CompareControls";
+import { SavedSearches } from "@/components/creators/SavedSearches";
 import { SearchTracker } from "@/components/creators/SearchTracker";
+import { PLANS } from "@/lib/entitlements/plans";
+import { workspaceSavedSearches } from "@/lib/creators/saved-searches";
 import { COUNTRIES } from "@/datagen/config";
 import { CREATOR_NICHES, CREATOR_PLATFORMS } from "@/datagen/creators";
 import { requireWorkspace } from "@/lib/auth/session";
@@ -89,12 +93,19 @@ export default async function DiscoverPage({
   const sp = await searchParams;
   const { ws } = await requireWorkspace(slug);
   const f = parseCreatorFilters(sp);
-  const { accountId, tier } = await accountPlan(ws.id);
-  const [{ rows, total, pages }, lists, usage] = await Promise.all([
+  const { accountId, tier, plan } = await accountPlan(ws.id);
+  const [{ rows, total, pages }, lists, usage, saved] = await Promise.all([
     searchCreators(f),
     workspaceLists(ws.id),
     profileViewUsage(accountId, tier),
+    workspaceSavedSearches(ws.id),
   ]);
+  // The next plan that compares more creators, for the paywall when someone ticks one too many.
+  const nextCompareTier =
+    (["starter", "growth", "agency", "enterprise"] as const).find(
+      (t) => PLANS[t].compareSize > plan.compareSize,
+    ) ?? "enterprise";
+  const nextCompare = PLANS[nextCompareTier];
   const membership = await listsContaining(
     ws.id,
     rows.map((r) => r.id),
@@ -258,6 +269,18 @@ export default async function DiscoverPage({
         </div>
       </form>
 
+      <div className="mt-4">
+        <SavedSearches
+          ws={slug}
+          initial={saved}
+          current={Object.fromEntries(filtersToParams({ ...f, page: 1 }))}
+          currentCount={filterCount}
+          currentMatches={total}
+          canEdit={editable}
+          limit={plan.savedSearches}
+        />
+      </div>
+
       <p
         className="mt-5 text-sm text-[var(--text-muted)]"
         role="status"
@@ -302,6 +325,7 @@ export default async function DiscoverPage({
                   "Brand safety",
                   "Est. rate / post",
                   "Shortlist",
+                  "Compare",
                 ].map((h) => (
                   <th key={h} scope="col" className="px-2 py-2 font-medium">
                     {h}
@@ -361,6 +385,9 @@ export default async function DiscoverPage({
                       source="discovery"
                     />
                   </td>
+                  <td className="px-2 py-2">
+                    <CompareCheckbox id={c.id} name={c.displayName} max={plan.compareSize} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -402,6 +429,19 @@ export default async function DiscoverPage({
           )}
         </nav>
       )}
+      {/* Leaves room under the page so the bar never covers the last row. */}
+      <div aria-hidden className="h-16" />
+      <CompareBar
+        ws={slug}
+        max={plan.compareSize}
+        upgrade={{
+          label: nextCompare.label,
+          priceLine: nextCompare.priceMonthly
+            ? `${nextCompare.label} is $${nextCompare.priceMonthly}/month.`
+            : undefined,
+          compareSize: nextCompare.compareSize,
+        }}
+      />
     </div>
   );
 }

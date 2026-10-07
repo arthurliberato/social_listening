@@ -148,6 +148,13 @@
       "when": 1791397053088,
       "tag": "0020_contracts",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791412607696,
+      "tag": "0021_search_compare",
+      "breakpoints": true
     }
   ]
 }

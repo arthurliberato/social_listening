@@ -1049,6 +1049,23 @@ export const creatorPayouts = pgTable(
   (t) => [index("creator_payouts_creator_idx").on(t.campaignId, t.creatorId, t.initiatedAt)],
 );
 
+/** A discovery search worth coming back to: a name and the canonical filters (the query string of the discovery page). */
+export const creatorSavedSearches = pgTable(
+  "creator_saved_searches",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    /** Canonical query string, rebuilt from the parsed filters so nothing but valid filters is ever stored. */
+    query: text("query").notNull(),
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("creator_saved_searches_ws_name_uq").on(t.workspaceId, t.name)],
+);
+
 /** Failed password logins per (hashed) email, for throttling guessing. Unknown emails are tracked too, so locking never reveals who has an account. */
 export const loginThrottle = pgTable("login_throttle", {
   keyHash: text("key_hash").primaryKey(),

@@ -15,6 +15,8 @@ const INFLUENCER_PAYWALLS = new Set([
   "campaign_limit",
   "outreach_quota",
   "campaign_results",
+  "saved_search_limit",
+  "creator_compare_limit",
   "creator_contracts",
   "creator_payouts",
 ]);
