@@ -182,7 +182,11 @@ test("creators can be compared side by side, with the best marked, up to what th
   await expect(page.getByTestId("compare-col")).toHaveCount(4);
   await expect(page.getByTestId("compare-truncated")).toContainText("up to 4");
   await expect(page.getByTestId("compare-remove")).toHaveCount(4);
-  await page.getByTestId("compare-remove").first().click();
+  // A click that lands while the page is still taking over can be dropped, so retry it until it navigates.
+  await expect(async () => {
+    await page.getByTestId("compare-remove").first().click();
+    await expect(page).toHaveURL(/ids=2,3,4$/, { timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
   await expect(page.getByTestId("compare-col")).toHaveCount(3);
   await page.goto(`/w/${slug}/creators/compare?ids=1`);
   await expect(page.getByTestId("compare-empty")).toBeVisible();
