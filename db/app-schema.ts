@@ -793,6 +793,50 @@ export const authorWatchlist = pgTable(
   (t) => [primaryKey({ columns: [t.workspaceId, t.authorId] })],
 );
 
+/** A named shortlist of creators in a workspace (Influencers product). */
+export const creatorLists = pgTable(
+  "creator_lists",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("creator_lists_ws_idx").on(t.workspaceId)],
+);
+
+export const creatorListItems = pgTable(
+  "creator_list_items",
+  {
+    listId: uuid("list_id")
+      .notNull()
+      .references(() => creatorLists.id, { onDelete: "cascade" }),
+    creatorId: integer("creator_id").notNull(),
+    note: text("note").notNull().default(""),
+    addedBy: uuid("added_by").references(() => users.id),
+    addedAt: ts("added_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.listId, t.creatorId] })],
+);
+
+/** One row per account, creator and month: opening the same profile again doesn't use more of the monthly allowance. */
+export const creatorProfileViews = pgTable(
+  "creator_profile_views",
+  {
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    creatorId: integer("creator_id").notNull(),
+    period: text("period").notNull(), // YYYY-MM
+    firstViewedAt: ts("first_viewed_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.accountId, t.creatorId, t.period] })],
+);
+
 /** Failed password logins per (hashed) email, for throttling guessing. Unknown emails are tracked too, so locking never reveals who has an account. */
 export const loginThrottle = pgTable("login_throttle", {
   keyHash: text("key_hash").primaryKey(),

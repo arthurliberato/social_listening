@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Identity } from "@/components/analytics/Identity";
 import { GlobalShortcuts } from "@/components/shell/GlobalShortcuts";
@@ -11,6 +12,7 @@ import { desc, eq, and, count } from "drizzle-orm";
 import { accounts, alertEvents, alertRules, db } from "@/db/client";
 import { BillingBanner } from "@/components/shell/BillingBanner";
 import { simNow } from "@/lib/simclock";
+import { productOfPath } from "@/lib/products";
 
 export default async function WorkspaceLayout({
   children,
@@ -23,6 +25,8 @@ export default async function WorkspaceLayout({
   const { user, ws } = await requireWorkspace(slug);
   if (!user.emailVerifiedAt) redirect("/verify");
   if (!user.onboardingCompletedAt) redirect("/onboarding");
+  // The mention-quota banner belongs to Social listening only.
+  const inListening = productOfPath((await headers()).get("x-pathname") ?? "") === "listening";
   const isClient = ws.realRole === "client_viewer";
   const [usage, myWorkspaces, brand] = await Promise.all([
     getMentionUsage(ws.accountId),
@@ -81,7 +85,7 @@ export default async function WorkspaceLayout({
             now={simNow()}
           />
         )}
-        {!isClient && usage.pct >= 80 && (
+        {!isClient && inListening && usage.pct >= 80 && (
           <p
             role="status"
             data-testid="quota-banner"

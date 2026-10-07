@@ -1237,6 +1237,111 @@ export const EVENTS = {
       "warehouse"
     ],
     "ga4Name": null
+  },
+  "Product Hub Viewed": {
+    "side": "client",
+    "properties": [
+      "products_available",
+      "last_product"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Product Opened": {
+    "side": "client",
+    "properties": [
+      "product",
+      "source"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Creator Search Run": {
+    "side": "client",
+    "properties": [
+      "result_count",
+      "filter_count",
+      "sort",
+      "has_query",
+      "page"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Creator Profile Viewed": {
+    "side": "server",
+    "properties": [
+      "creator_id",
+      "platform",
+      "niche",
+      "audience_locked",
+      "profile_views_used"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Creator List Created": {
+    "side": "server",
+    "properties": [
+      "list_id",
+      "source"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Creator Added To List": {
+    "side": "server",
+    "properties": [
+      "list_id",
+      "creator_id",
+      "source"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Creator Removed From List": {
+    "side": "server",
+    "properties": [
+      "list_id",
+      "creator_id",
+      "source"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Creator List Exported": {
+    "side": "server",
+    "properties": [
+      "list_id",
+      "creator_count",
+      "format"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
   }
 } as const;
 

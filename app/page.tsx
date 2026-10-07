@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { requireUser, userWorkspaces } from "@/lib/auth/session";
+import { requireUser } from "@/lib/auth/session";
 
 /** Route signed-in users to wherever they left off; everyone else to sign-up. */
 export default async function Index() {
@@ -8,5 +8,5 @@ export default async function Index() {
   const user = await requireUser();
   if (!user.emailVerifiedAt) redirect("/verify");
   if (!user.onboardingCompletedAt) redirect("/onboarding");
-  redirect(`/w/${(await userWorkspaces(user.id))[0]!.slug}/home`);
+  redirect("/hub");
 }

@@ -14,6 +14,9 @@ export interface Entitlements {
   refresh: RefreshTier;
   alerts: number;
   askAiPerMonth: number;
+  /** Influencers product: new creator profiles opened per month, and shortlists. */
+  creatorProfilesPerMonth: number;
+  creatorLists: number;
   features: {
     sentimentAlerts: boolean;
     crisisRoom: boolean;
@@ -26,6 +29,8 @@ export interface Entitlements {
     auditLog: boolean;
     api: boolean;
     logoRecognition: boolean;
+    creatorAudience: boolean; // audience demographics and authenticity on creator profiles
+    creatorExport: boolean; // CSV export of creator lists
   };
 }
 
@@ -41,6 +46,8 @@ const none = {
   auditLog: false,
   api: false,
   logoRecognition: false,
+  creatorAudience: false,
+  creatorExport: false,
 };
 
 export const PLANS: Record<PlanTier, Entitlements> = {
@@ -55,6 +62,8 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     refresh: "hourly",
     alerts: 2,
     askAiPerMonth: 10,
+    creatorProfilesPerMonth: 15,
+    creatorLists: 2,
     features: { ...none },
   },
   starter: {
@@ -68,6 +77,8 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     refresh: "12h",
     alerts: 3,
     askAiPerMonth: 10,
+    creatorProfilesPerMonth: 25,
+    creatorLists: 2,
     features: { ...none },
   },
   growth: {
@@ -81,11 +92,15 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     refresh: "hourly",
     alerts: 20,
     askAiPerMonth: 100,
+    creatorProfilesPerMonth: 250,
+    creatorLists: 10,
     features: {
       ...none,
       sentimentAlerts: true,
       crisisRoom: true,
       scheduledReports: true,
+      creatorAudience: true,
+      creatorExport: true,
       shareOfVoice: true,
       emotionWidget: true,
       publicShareLinks: true,
@@ -102,11 +117,15 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     refresh: "realtime",
     alerts: 100,
     askAiPerMonth: 500,
+    creatorProfilesPerMonth: 1000,
+    creatorLists: 50,
     features: {
       ...none,
       sentimentAlerts: true,
       crisisRoom: true,
       scheduledReports: true,
+      creatorAudience: true,
+      creatorExport: true,
       shareOfVoice: true,
       emotionWidget: true,
       publicShareLinks: true,
@@ -124,6 +143,8 @@ export const PLANS: Record<PlanTier, Entitlements> = {
     refresh: "realtime",
     alerts: 10_000,
     askAiPerMonth: 5_000,
+    creatorProfilesPerMonth: 10000,
+    creatorLists: 1000,
     features: {
       sentimentAlerts: true,
       crisisRoom: true,
@@ -136,6 +157,8 @@ export const PLANS: Record<PlanTier, Entitlements> = {
       auditLog: true,
       api: true,
       logoRecognition: true,
+      creatorAudience: true,
+      creatorExport: true,
     },
   },
 };
@@ -153,6 +176,23 @@ export function planUnlocking(feature: keyof Entitlements["features"]): PlanTier
       (t) => PLANS[t].features[feature],
     ) ?? "enterprise"
   );
+}
+
+/** Shortlists: the plan caps how many lists a workspace's account can hold. */
+export function canCreateCreatorList(
+  tier: PlanTier,
+  existingLists: number,
+): { ok: true } | { ok: false; reason: string; upgradeTo: PlanTier } {
+  const p = PLANS[tier];
+  if (existingLists < p.creatorLists) return { ok: true };
+  return {
+    ok: false,
+    reason: `Your ${p.label} plan includes ${p.creatorLists} creator list${p.creatorLists === 1 ? "" : "s"}.`,
+    upgradeTo:
+      (["starter", "growth", "agency", "enterprise"] as PlanTier[]).find(
+        (t) => PLANS[t].creatorLists > p.creatorLists,
+      ) ?? "enterprise",
+  };
 }
 
 export type Action = "create_query" | "invite_member" | "create_workspace" | "create_alert";

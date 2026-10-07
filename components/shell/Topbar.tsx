@@ -1,6 +1,10 @@
 "use client";
 
 import { HelpCircle } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ProductSwitcher } from "./ProductSwitcher";
+import { productOfPath } from "@/lib/products";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { NotificationsMenu, type NotificationItem } from "./NotificationsMenu";
 import { ThemeToggle } from "./ThemeToggle";
@@ -37,6 +41,7 @@ export function Topbar({
   userName: string;
   usage: { used: number; limit: number; pct: number };
 }) {
+  const product = productOfPath(usePathname());
   return (
     <header
       role="banner"
@@ -45,14 +50,26 @@ export function Topbar({
       <span className="font-semibold" data-testid="brand-name">
         {brandName || "Ripplewise"}
       </span>
+      {!isClient && (
+        <>
+          <ProductSwitcher slug={slug} />
+          <Link
+            href="/hub"
+            className="text-sm text-[var(--text-muted)] underline"
+            data-testid="all-products"
+          >
+            All products
+          </Link>
+        </>
+      )}
       <WorkspaceSwitcher
         current={{ id: currentId, name: ws }}
         workspaces={workspaces}
         canManage={canManageBilling}
-        landing={isClient ? "dashboards" : "home"}
+        landing={isClient ? "dashboards" : product === "influencers" ? "creators" : "home"}
       />
       <div className="ml-auto flex items-center gap-3">
-        {!isClient && <QuotaMeter {...usage} />}
+        {!isClient && product === "listening" && <QuotaMeter {...usage} />}
         {/* Help stays in the same spot on every screen (WCAG 3.2.6). */}
         <button
           type="button"

@@ -88,7 +88,7 @@ test("forgot password: one answer for everyone, a single-use link, and old sessi
   await expect(p.getByTestId("login-error")).toBeVisible({ timeout: 20_000 });
   await p.getByTestId("login-password").fill("a brand new passphrase");
   await p.getByTestId("login-submit").click();
-  await p.waitForURL(/\/w\/.+\/home/, { timeout: 30_000 });
+  await p.waitForURL(/\/hub/, { timeout: 30_000 });
   await ctx.close();
 
   // The session that was open before the change is signed out.
