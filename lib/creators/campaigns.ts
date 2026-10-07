@@ -72,3 +72,61 @@ export async function getCampaign(workspaceId: string, id: string) {
   const budget: BudgetSummary = budgetSummary(campaign.budgetUsd, roster);
   return { campaign, roster, budget };
 }
+
+/** Plain, serialisable view of a campaign. Server actions return it so the page can update without waiting on a re-render. */
+export interface CampaignSnapshot {
+  campaign: {
+    id: string;
+    name: string;
+    objective: string;
+    brief: string;
+    budgetUsd: number;
+    startsOn: string | null;
+    endsOn: string | null;
+    status: string;
+  };
+  budget: BudgetSummary;
+  roster: {
+    creatorId: number;
+    displayName: string;
+    handle: string;
+    platform: string;
+    country: string;
+    followers: number;
+    avatarSeed: number;
+    status: string;
+    feeUsd: number | null;
+    note: string;
+    suggestedFee: number;
+  }[];
+}
+
+export function snapshotOf(data: NonNullable<Awaited<ReturnType<typeof getCampaign>>>): CampaignSnapshot {
+  const c = data.campaign;
+  return {
+    campaign: {
+      id: c.id,
+      name: c.name,
+      objective: c.objective,
+      brief: c.brief,
+      budgetUsd: c.budgetUsd,
+      startsOn: c.startsOn,
+      endsOn: c.endsOn,
+      status: c.status,
+    },
+    budget: data.budget,
+    roster: data.roster.map((r) => ({
+      creatorId: r.creatorId,
+      displayName: r.displayName,
+      handle: r.handle,
+      platform: r.platform,
+      country: r.country,
+      followers: r.followers,
+      avatarSeed: r.avatarSeed,
+      status: r.status,
+      feeUsd: r.feeUsd,
+      note: r.note,
+      suggestedFee: r.ratePerPostUsd,
+    })),
+  };
+}

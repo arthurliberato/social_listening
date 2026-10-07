@@ -16,12 +16,22 @@ import {
   isCreatorStatus,
   type CampaignStatus,
 } from "@/lib/creators/campaign-flow";
-import { accountActiveCampaigns, getCampaign } from "@/lib/creators/campaigns";
+import {
+  accountActiveCampaigns,
+  getCampaign,
+  snapshotOf,
+  type CampaignSnapshot,
+} from "@/lib/creators/campaigns";
 import { PLANS, canCreateCampaign, type PlanTier } from "@/lib/entitlements/plans";
 import { accountPlan, canEdit } from "@/lib/queries";
 
 export type Result<T = object> =
   ({ ok: true } & T) | { ok: false; error: string; upgradeTo?: PlanTier; upgradeLabel?: string };
+
+/** The campaign as it is now, for the client to show without waiting on a page re-render. */
+async function fresh(workspaceId: string, id: string): Promise<CampaignSnapshot> {
+  return snapshotOf((await getCampaign(workspaceId, id))!);
+}
 
 const NoEdit = {
   ok: false as const,
@@ -109,7 +119,7 @@ export async function updateCampaign(
   slug: string,
   id: string,
   input: z.input<typeof CampaignInput>,
-): Promise<Result> {
+): Promise<Result<{ snapshot: CampaignSnapshot }>> {
   const { user, ws } = await requireWorkspace(slug);
   if (!canEdit(ws.role)) return NoEdit;
   const v = CampaignInput.safeParse(input);
@@ -129,12 +139,15 @@ export async function updateCampaign(
     })
     .where(and(eq(campaigns.id, id), eq(campaigns.workspaceId, ws.id)));
   await auditIn(ws, user.id, "campaign.updated", { type: "campaign", id }, { name: v.data.name });
-  revalidatePath(`/w/${slug}/creators/campaigns/${id}`);
   revalidatePath(`/w/${slug}/creators/campaigns`);
-  return { ok: true };
+  return { ok: true, snapshot: await fresh(ws.id, id) };
 }
 
-export async function setCampaignStatus(slug: string, id: string, to: string): Promise<Result> {
+export async function setCampaignStatus(
+  slug: string,
+  id: string,
+  to: string,
+): Promise<Result<{ snapshot: CampaignSnapshot }>> {
   const { user, ws } = await requireWorkspace(slug);
   if (!canEdit(ws.role)) return NoEdit;
   const data = await getCampaign(ws.id, id);
@@ -167,9 +180,8 @@ export async function setCampaignStatus(slug: string, id: string, to: string): P
     { campaign_id: id, from_status: from, to_status: to },
   );
   await auditIn(ws, user.id, "campaign.status_changed", { type: "campaign", id }, { from, to });
-  revalidatePath(`/w/${slug}/creators/campaigns/${id}`);
   revalidatePath(`/w/${slug}/creators/campaigns`);
-  return { ok: true };
+  return { ok: true, snapshot: await fresh(ws.id, id) };
 }
 
 /** Adds every creator in a list to the campaign as "shortlisted". Creators already on it are left alone. */
@@ -177,7 +189,7 @@ export async function addListToCampaign(
   slug: string,
   id: string,
   listId: string,
-): Promise<Result<{ added: number; skipped: number }>> {
+): Promise<Result<{ added: number; skipped: number; snapshot: CampaignSnapshot }>> {
   const { user, ws } = await requireWorkspace(slug);
   if (!canEdit(ws.role)) return NoEdit;
   const data = await getCampaign(ws.id, id);
@@ -205,9 +217,13 @@ export async function addListToCampaign(
       { userId: user.id, workspaceId: ws.id },
       { campaign_id: id, creator_count: inserted.length, source: "list" },
     );
-  revalidatePath(`/w/${slug}/creators/campaigns/${id}`);
   revalidatePath(`/w/${slug}/creators/campaigns`);
-  return { ok: true, added: inserted.length, skipped: items.length - inserted.length };
+  return {
+    ok: true,
+    added: inserted.length,
+    skipped: items.length - inserted.length,
+    snapshot: await fresh(ws.id, id),
+  };
 }
 
 const MoveInput = z.object({
@@ -222,7 +238,7 @@ export async function updateCampaignCreator(
   campaignId: string,
   creatorId: number,
   input: z.input<typeof MoveInput>,
-): Promise<Result<{ warning?: string }>> {
+): Promise<Result<{ warning?: string; snapshot: CampaignSnapshot }>> {
   const { user, ws } = await requireWorkspace(slug);
   if (!canEdit(ws.role)) return NoEdit;
   const v = MoveInput.safeParse(input);
@@ -267,24 +283,25 @@ export async function updateCampaignCreator(
     );
   }
   // Budget is advisory: confirming over budget is allowed, but the person is told.
-  const after = await getCampaign(ws.id, campaignId);
-  const warning = after?.budget.over
-    ? `This puts the campaign $${Math.abs(after.budget.remaining).toLocaleString("en-US")} over its budget.`
+  const snapshot = await fresh(ws.id, campaignId);
+  const warning = snapshot.budget.over
+    ? `This puts the campaign $${Math.abs(snapshot.budget.remaining).toLocaleString("en-US")} over its budget.`
     : undefined;
-  revalidatePath(`/w/${slug}/creators/campaigns/${campaignId}`);
   revalidatePath(`/w/${slug}/creators/campaigns`);
-  return { ok: true, warning };
+  return { ok: true, warning, snapshot };
 }
 
 export async function removeCampaignCreator(
   slug: string,
   campaignId: string,
   creatorId: number,
-): Promise<Result> {
+): Promise<Result<{ snapshot: CampaignSnapshot }>> {
   const { user, ws } = await requireWorkspace(slug);
   if (!canEdit(ws.role)) return NoEdit;
-  if (!(await getCampaign(ws.id, campaignId)))
-    return { ok: false, error: "That campaign no longer exists." };
+  const data = await getCampaign(ws.id, campaignId);
+  if (!data) return { ok: false, error: "That campaign no longer exists." };
+  if (data.campaign.status !== "draft" && data.campaign.status !== "active")
+    return { ok: false, error: "Re-open the campaign before changing its creators." };
   const gone = await db
     .delete(campaignCreators)
     .where(
@@ -297,7 +314,6 @@ export async function removeCampaignCreator(
       { userId: user.id, workspaceId: ws.id },
       { campaign_id: campaignId, creator_id: creatorId },
     );
-  revalidatePath(`/w/${slug}/creators/campaigns/${campaignId}`);
   revalidatePath(`/w/${slug}/creators/campaigns`);
-  return { ok: true };
+  return { ok: true, snapshot: await fresh(ws.id, campaignId) };
 }

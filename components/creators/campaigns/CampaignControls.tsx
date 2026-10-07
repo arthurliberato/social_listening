@@ -14,6 +14,7 @@ import {
   OBJECTIVE_LABEL,
   type CampaignStatus,
 } from "@/lib/creators/campaign-flow";
+import type { CampaignSnapshot } from "@/lib/creators/campaigns";
 import { PLANS, type PlanTier } from "@/lib/entitlements/plans";
 import { useBusy } from "@/lib/use-busy";
 
@@ -32,11 +33,13 @@ export function StatusButtons({
   id,
   status,
   canEdit,
+  onSnapshot,
 }: {
   ws: string;
   id: string;
   status: CampaignStatus;
   canEdit: boolean;
+  onSnapshot: (s: CampaignSnapshot) => void;
 }) {
   const [error, setError] = useState("");
   const [paywall, setPaywall] = useState<{ reason: string; to: PlanTier } | null>(null);
@@ -59,6 +62,7 @@ export function StatusButtons({
                 if (r.upgradeTo) return setPaywall({ reason: r.error, to: r.upgradeTo });
                 return setError(r.error);
               }
+              onSnapshot(r.snapshot);
             })
           }
         >
@@ -90,7 +94,9 @@ export function EditDetails({
   id,
   initial,
   canEdit,
+  onSnapshot,
 }: {
+  onSnapshot: (s: CampaignSnapshot) => void;
   ws: string;
   id: string;
   initial: {
@@ -133,6 +139,7 @@ export function EditDetails({
             endsOn: String(f.get("ends") || "") || null,
           });
           if (!r.ok) return setError(r.error);
+          onSnapshot(r.snapshot);
           setOpen(false);
         });
       }}
@@ -239,7 +246,9 @@ export function AddFromList({
   id,
   lists,
   canEdit,
+  onSnapshot,
 }: {
+  onSnapshot: (s: CampaignSnapshot) => void;
   ws: string;
   id: string;
   lists: { id: string; name: string; size: number }[];
@@ -264,6 +273,7 @@ export function AddFromList({
           setMsg("");
           const r = await addListToCampaign(ws, id, listId);
           if (!r.ok) return setError(r.error);
+          onSnapshot(r.snapshot);
           setMsg(
             `Added ${r.added} creator${r.added === 1 ? "" : "s"}${r.skipped ? `; ${r.skipped} already on the campaign` : ""}.`,
           );

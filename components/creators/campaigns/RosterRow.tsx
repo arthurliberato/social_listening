@@ -1,5 +1,6 @@
 "use client";
 
+import type { CampaignSnapshot } from "@/lib/creators/campaigns";
 import { useState } from "react";
 import {
   removeCampaignCreator,
@@ -30,7 +31,9 @@ export function RosterRow({
   campaignId,
   row,
   editable,
+  onSnapshot,
 }: {
+  onSnapshot: (s: CampaignSnapshot) => void;
   ws: string;
   campaignId: string;
   row: {
@@ -60,6 +63,7 @@ export function RosterRow({
         ...extra,
       });
       if (!r.ok) return setError(r.error);
+      onSnapshot(r.snapshot);
       if (r.warning) setWarning(r.warning);
     });
 
@@ -113,6 +117,7 @@ export function RosterRow({
               run(async () => {
                 const r = await removeCampaignCreator(ws, campaignId, row.creatorId);
                 if (!r.ok) return setError(r.error);
+                onSnapshot(r.snapshot);
               })
             }
             data-testid="remove-creator"
