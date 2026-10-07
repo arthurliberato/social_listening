@@ -76,11 +76,15 @@ test("discovery filters live in the URL and survive a reload", async ({ page }) 
 
   // Paging keeps the filters and doesn't repeat creators.
   await page.goto(`/w/${slug}/creators?niche=food`);
-  const first = await page.getByTestId("creator-link").allInnerTexts();
-  await page.getByTestId("creator-next").click();
-  await page.waitForURL(/page=2/);
+  const ids = async () =>
+    page.getByTestId("creator-link").evaluateAll((els) => els.map((e) => e.getAttribute("href")));
+  const first = await ids();
+  const next = await page.getByTestId("creator-next").getAttribute("href");
+  expect(next).toMatch(/niche=food/);
+  expect(next).toMatch(/page=2/);
+  await page.goto(next!);
   expect(page.url()).toMatch(/niche=food/);
-  const second = await page.getByTestId("creator-link").allInnerTexts();
+  const second = await ids();
   expect(second.filter((n) => first.includes(n))).toEqual([]);
 });
 
