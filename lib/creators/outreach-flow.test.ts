@@ -8,6 +8,7 @@ import {
   inviteState,
   isToken,
   newToken,
+  reminderDue,
 } from "./outreach-flow";
 
 const NOW = new Date("2026-10-07T12:00:00Z");
@@ -76,5 +77,28 @@ describe("outreach rules", () => {
     expect(checkReview("approve", "")).toEqual({ ok: true, feedback: "" });
     expect(checkReview("changes", "  ")).toMatchObject({ ok: false });
     expect(checkReview("changes", "Please show the logo earlier")).toMatchObject({ ok: true });
+  });
+});
+
+describe("invitation reminders", () => {
+  const now = new Date("2026-03-01T12:00:00Z");
+  const day = 86_400_000;
+  const inv = (daysLeft: number, o: Partial<{ status: string; remindedAt: Date | null }> = {}) => ({
+    status: "sent",
+    offeredUsd: 500,
+    expiresAt: new Date(now.getTime() + daysLeft * day),
+    remindedAt: null,
+    ...o,
+  });
+  it("are due only inside the last three days of an unanswered invitation", () => {
+    expect(reminderDue(inv(10), now)).toBe(false);
+    expect(reminderDue(inv(3), now)).toBe(true);
+    expect(reminderDue(inv(0.5), now)).toBe(true);
+  });
+  it("are never sent twice, after expiry, or for an invitation already answered", () => {
+    expect(reminderDue(inv(2, { remindedAt: now }), now)).toBe(false);
+    expect(reminderDue(inv(-1), now)).toBe(false);
+    for (const status of ["accepted", "declined", "countered", "superseded", "revoked"])
+      expect(reminderDue(inv(2, { status }), now)).toBe(false);
   });
 });

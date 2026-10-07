@@ -155,6 +155,13 @@
       "when": 1791412607696,
       "tag": "0021_search_compare",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1791414882109,
+      "tag": "0022_invite_reminders",
+      "breakpoints": true
     }
   ]
 }

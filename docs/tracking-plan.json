@@ -2067,6 +2067,22 @@
   },
   {
    "area": "Influencers",
+   "name": "Creator Invitation Reminded",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "days_left"
+   ],
+   "description": "A creator who hadn't answered was reminded that the invitation closes soon (once per invitation). The actor is the system (actor_type: system).",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
    "name": "Creator Search Saved",
    "side": "server",
    "properties": [

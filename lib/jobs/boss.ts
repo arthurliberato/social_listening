@@ -8,6 +8,7 @@ export const QUEUES = {
   scoring: "scoring",
   sales: "sales",
   payouts: "payouts",
+  reminders: "reminders",
 } as const;
 
 const g = globalThis as unknown as { __boss?: Promise<PgBoss> };

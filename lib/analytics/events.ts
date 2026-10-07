@@ -1767,6 +1767,20 @@ export const EVENTS = {
     "ga4Name": null,
     "product": "influencers"
   },
+  "Creator Invitation Reminded": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "days_left"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
+  },
   "Creator Search Saved": {
     "side": "server",
     "properties": [

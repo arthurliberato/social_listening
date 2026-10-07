@@ -31,7 +31,7 @@ Creators don't have accounts. A brand invites a creator from the campaign roster
 
 **The brand's side** (on a creator's row in the campaign):
 1. *Send invitation*: an offer per post, and a message (pre-filled, editable). The creator gets an email (`type: outreach`, addressed to a creator address; it's stored in `emails` and delivered to Mailpit when `SMTP_URL` is set) with the link. The row also shows the link so it can be copied and sent another way.
-2. *Follow the answer*: invitation sent, opened, accepted, declined, countered, or expired. The brand gets an email for each answer.
+2. *Follow the answer*: invitation sent, opened, accepted, declined, countered, or expired. The brand gets an email for each answer.  A creator who has not answered is reminded once by email, three days before the invitation lapses (a job every 30 minutes; one reminder per invitation, none for answered, expired or archived-campaign invitations).
 3. *Settle a counter-offer*: accept it, send a revised offer (which replaces the old invitation and its link), or decline.
 4. *Review content*: approve, or request changes with feedback the creator can read.
 5. *Mark paid* (as before) tells the creator by email.
@@ -108,8 +108,8 @@ Roles: owners, admins and editors change lists; viewers can browse and export; c
 
 ## Analytics
 
-New events in `docs/tracking-plan.json` (138 total): `Product Hub Viewed`, `Product Opened` (`target_product` says which), `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events, the six outreach events the five tracking events the six contract and payout events, and the four search and comparison events above. Paywalls reuse `Paywall Viewed`.
+New events in `docs/tracking-plan.json` (139 total): `Product Hub Viewed`, `Product Opened` (`target_product` says which), `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events, the six outreach events the five tracking events the six contract and payout events, the four search and comparison events above, and `Creator Invitation Reminded` (sent by the system). Paywalls reuse `Paywall Viewed`.
 
 ## Not yet built
 
-Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery, and no reminder emails for an invitation about to expire. Content is a link to a post, not an uploaded file. Still to build: anything that estimates reach or earned media value (results are measured visits and conversions only), tax forms and withholding, and a real payment provider behind the payout rail. Creator data is a snapshot; there is no refresh job. Linking creators to the listening corpus (what people say about a creator's brand mentions) are natural follow-ups.
+Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery,. Content is a link to a post, not an uploaded file. Still to build: anything that estimates reach or earned media value (results are measured visits and conversions only), tax forms and withholding, and a real payment provider behind the payout rail. Creator data is a snapshot; there is no refresh job. Linking creators to the listening corpus (what people say about a creator's brand mentions) are natural follow-ups.

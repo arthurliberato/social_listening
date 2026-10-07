@@ -1,7 +1,7 @@
 // Creator outreach: the brand sends an invitation, the creator answers from their own page, content comes back for
 // review. Everything that changes state lives here so the brand's actions and the creator's portal follow one set of
 // rules (outreach-flow.ts) and write the same audit, analytics and email records.
-import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, isNull, lte, sql } from "drizzle-orm";
 import {
   campaignContent,
   campaignCreators,
@@ -34,11 +34,13 @@ import {
   inviteState,
   isToken,
   newToken,
+  REMINDER_DAYS_BEFORE,
+  reminderDue,
   type Response,
 } from "./outreach-flow";
 import { contractOutstanding } from "./contract-state";
 import { ensureLink, linkFor } from "./tracking";
-import { brandNotice, creatorNotice, invitationEmail } from "./outreach-emails";
+import { brandNotice, creatorNotice, invitationEmail, reminderEmail } from "./outreach-emails";
 
 export type Fail = { ok: false; error: string; upgradeTo?: PlanTier; upgradeLabel?: string };
 export const fail = (error: string): Fail => ({ ok: false, error });
@@ -833,4 +835,62 @@ export async function trackingLinkOf(p: Portal): Promise<string | null> {
 export async function portalViewFor(token: string): Promise<PortalView | null> {
   const p = await portalFor(token);
   return p ? portalView(p, await trackingLinkOf(p)) : null;
+}
+
+/**
+ * Reminds creators who haven't answered, once, shortly before their invitation lapses. Claiming the reminder is a
+ * conditional update, so overlapping runs send it once. Only campaigns that are still open send reminders.
+ */
+export async function sendInvitationReminders(now: Date = simNow()): Promise<number> {
+  const horizon = new Date(now.getTime() + REMINDER_DAYS_BEFORE * 86_400_000);
+  const candidates = await db
+    .select()
+    .from(campaignInvites)
+    .where(
+      and(
+        eq(campaignInvites.status, "sent"),
+        isNull(campaignInvites.remindedAt),
+        gt(campaignInvites.expiresAt, now),
+        lte(campaignInvites.expiresAt, horizon),
+      ),
+    );
+  let sent = 0;
+  for (const i of candidates) {
+    if (!reminderDue(i, now)) continue;
+    const w = await workspaceOf(i.campaignId);
+    const row = await rosterRow(i.campaignId, i.creatorId);
+    if (!w || !row || !isOpen(w.campaign.status)) continue;
+    const claimed = await db
+      .update(campaignInvites)
+      .set({ remindedAt: now })
+      .where(
+        and(
+          eq(campaignInvites.id, i.id),
+          eq(campaignInvites.status, "sent"),
+          isNull(campaignInvites.remindedAt),
+        ),
+      )
+      .returning({ id: campaignInvites.id });
+    if (!claimed.length) continue;
+    const daysLeft = Math.max(1, Math.ceil((i.expiresAt.getTime() - now.getTime()) / 86_400_000));
+    await sendEmail({
+      to: creatorAddress(row.handle),
+      type: "outreach",
+      ...reminderEmail({
+        brand: w.wsName,
+        campaign: w.campaign.name,
+        offeredUsd: i.offeredUsd,
+        token: i.token,
+        expiresOn: i.expiresAt.toISOString().slice(0, 10),
+        daysLeft,
+      }),
+    });
+    await trackServer(
+      "Creator Invitation Reminded",
+      { workspaceId: w.wsId, accountId: w.accountId, system: true },
+      { campaign_id: i.campaignId, creator_id: i.creatorId, days_left: daysLeft },
+    );
+    sent++;
+  }
+  return sent;
 }

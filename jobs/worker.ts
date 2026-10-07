@@ -6,6 +6,7 @@ import { runNightlyScoring } from "./pqa";
 import { runSalesDesk } from "@/lib/sales/desk";
 import { runReleaseAll } from "./release";
 import { settleDuePayouts } from "@/lib/creators/payouts";
+import { sendInvitationReminders } from "@/lib/creators/outreach";
 
 let started = false;
 
@@ -41,6 +42,11 @@ export async function startWorkers() {
   await boss.schedule(QUEUES.payouts, "*/5 * * * *");
   await boss.work(QUEUES.payouts, async () => {
     await settleDuePayouts();
+  });
+  // Creators who haven't answered are reminded once, three days before their invitation lapses.
+  await boss.schedule(QUEUES.reminders, "*/30 * * * *");
+  await boss.work(QUEUES.reminders, async () => {
+    await sendInvitationReminders();
   });
   // A simulated sales desk answers contact requests and follows up on demos.
   await boss.schedule(QUEUES.sales, "*/5 * * * *");
