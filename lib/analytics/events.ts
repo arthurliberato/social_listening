@@ -1342,6 +1342,71 @@ export const EVENTS = {
       "warehouse"
     ],
     "ga4Name": null
+  },
+  "Campaign Created": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "objective",
+      "budget_usd"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Campaign Status Changed": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "from_status",
+      "to_status"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Campaign Creators Added": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_count",
+      "source"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Campaign Creator Status Changed": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "from_status",
+      "to_status"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
+  },
+  "Campaign Creator Removed": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null
   }
 } as const;
 

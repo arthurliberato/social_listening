@@ -120,6 +120,13 @@
       "when": 1791353477401,
       "tag": "0016_influencers",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791371613301,
+      "tag": "0017_campaigns",
+      "breakpoints": true
     }
   ]
 }

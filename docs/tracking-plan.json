@@ -1594,6 +1594,81 @@
     "amplitude",
     "warehouse"
    ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Campaign Created",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "objective",
+    "budget_usd"
+   ],
+   "description": "An influencer campaign was created.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Campaign Status Changed",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "from_status",
+    "to_status"
+   ],
+   "description": "A campaign moved between draft, active, completed and archived.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Campaign Creators Added",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_count",
+    "source"
+   ],
+   "description": "Creators were added to a campaign. source: list.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Campaign Creator Status Changed",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "from_status",
+    "to_status"
+   ],
+   "description": "A creator moved along the campaign pipeline (invited, confirmed, content approved, paid...).",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Campaign Creator Removed",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id"
+   ],
+   "description": "A creator was removed from a campaign.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
   }
  ],
  "destinations": {

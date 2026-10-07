@@ -8,6 +8,7 @@ import {
   FileText,
   Home,
   ListChecks,
+  Megaphone,
   LayoutDashboard,
   MessageSquare,
   PanelLeftClose,
@@ -38,6 +39,7 @@ const ICONS: Record<string, typeof Home> = {
   tags: Tags,
   creators: Search,
   "creator-lists": ListChecks,
+  campaigns: Megaphone,
 };
 
 export function toggleSidebar(force?: boolean) {
