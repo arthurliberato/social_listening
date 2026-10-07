@@ -190,14 +190,9 @@ test("links that aren't live say so, and old posts keep working after a campaign
   expect((await get(new URL(link).origin + "/r/not-a-code")).status()).toBe(404);
 
   await page.goto(campaign);
-  await page
-    .getByTestId("campaign-to-completed")
-    .click()
-    .catch(async () => {
-      await page.getByTestId("campaign-to-active").click();
-      await expect(page.getByTestId("campaign-status")).toHaveText("Active");
-      await page.getByTestId("campaign-to-completed").click();
-    });
+  await page.getByTestId("campaign-to-active").click();
+  await expect(page.getByTestId("campaign-status")).toHaveText("Active");
+  await page.getByTestId("campaign-to-completed").click();
   await expect(page.getByTestId("campaign-status")).toHaveText("Completed");
   expect((await get(link)).status()).toBe(302); // a finished campaign's posts still lead somewhere
   await page.getByTestId("campaign-to-archived").click();

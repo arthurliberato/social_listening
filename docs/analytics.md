@@ -4,7 +4,7 @@ The product is instrumented the way a real B2B SaaS would be: one plan for what 
 
 ## 1. The plan is the source of truth
 
-`docs/tracking-plan.json` defines **123 events** (86 sent from the browser, 37 from the server) in 19 areas, plus the properties each one may carry. Typed code is generated from it, so an event or property that is not in the plan fails the build. Events are named "Object Action" in the past tense (`Alert Created`, `Quote Accepted`), and the plan states up front that this is B2B SaaS: there are no cart or purchase events. A plan change is a subscription event (`Plan Upgraded`, `Subscription Started`), not a "purchase".
+`docs/tracking-plan.json` defines **128 events** (86 sent from the browser, 42 from the server) in 19 areas, plus the properties each one may carry. Typed code is generated from it, so an event or property that is not in the plan fails the build. Events are named "Object Action" in the past tense (`Alert Created`, `Quote Accepted`), and the plan states up front that this is B2B SaaS: there are no cart or purchase events. A plan change is a subscription event (`Plan Upgraded`, `Subscription Started`), not a "purchase".
 
 Every event carries the same global properties: account, workspace, plan tier, trial day, user role, persona archetype, whether the user is synthetic, the agent run, app version, route and theme, plus two that exist for cross-product analysis: `product` and `actor_type` (below). They are filled in on the server from the database, so a screen cannot forget one.
 
@@ -24,7 +24,7 @@ The same user UUID identifies a person in Amplitude and GA4. Account and workspa
 
 **Creators are a second kind of actor.** A creator answering an invitation has no account, so their events (`Creator Portal Viewed`, `Creator Invitation Answered`, `Creator Content Submitted`) carry `actor_type: creator` and no member id. In Amplitude they appear as a stable synthetic user, `creator_<directory id>`, with a `user_type: creator` property, and they are attributed to the inviting brand's account and workspace groups. That gives the funnel invited, opened, answered, delivered, paid as one journey per creator, while a creator can never be counted as an active member of an account: the activity scores ignore events without a member id. The creator id is a synthetic directory number, not personal data.
 
-`actor_type` is `member` (a signed-in person), `creator`, or `anonymous` (marketing visitors and signed-out screens).
+`actor_type` is `member` (a signed-in person), `creator`, or `anonymous` (marketing visitors, signed-out screens, and the audience clicking a creator's tracking link or the brand's site reporting a conversion).
 
 ## 4. From a lead to behaviour in the product
 
