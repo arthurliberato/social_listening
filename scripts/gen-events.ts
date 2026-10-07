@@ -7,6 +7,7 @@ interface PlanEvent {
   properties: string[];
   destinations: string[];
   ga4_name?: string;
+  product: string;
 }
 const plan = JSON.parse(readFileSync("docs/tracking-plan.json", "utf8")) as {
   global_properties: string[];
@@ -21,6 +22,7 @@ const events = Object.fromEntries(
       properties: e.properties,
       destinations: e.destinations,
       ga4Name: e.ga4_name ?? null,
+      product: e.product,
     },
   ]),
 );

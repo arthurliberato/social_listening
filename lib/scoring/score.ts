@@ -21,6 +21,13 @@ export interface Signals {
   daysSinceActive: number | null;
   cancelAtPeriodEnd: boolean;
   openSalesRequest: boolean;
+  /** Influencers: creator lists, draft or running campaigns, and how much of this month's allowances are used. */
+  creatorLists: number;
+  activeCampaigns: number;
+  creatorProfilesPct: number;
+  invitationsPct: number;
+  /** Which products the account actually uses ("listening", "influencers"). */
+  productsUsed: string[];
 }
 
 export const PQA_THRESHOLD = 60;
@@ -50,6 +57,11 @@ export function pqa(s: Signals): Pqa {
   if (s.aiPct >= 50) add(5, "heavy AI use");
   if (s.paywallsViewed14d >= 2) add(10, "hit paywalls repeatedly");
   if (s.activeDays14d >= 7) add(10, `${s.activeDays14d} active days in two weeks`);
+  if (s.activeCampaigns >= 3) add(10, `${s.activeCampaigns} active campaigns`);
+  if (s.creatorProfilesPct >= 80)
+    add(10, `${s.creatorProfilesPct}% of monthly creator profiles used`);
+  if (s.invitationsPct >= 80) add(10, `${s.invitationsPct}% of monthly creator invitations used`);
+  if (s.productsUsed.length >= 2) add(10, "uses both products");
   const eligible =
     s.tier !== "enterprise" &&
     s.motion !== "sales_assisted" &&
@@ -82,10 +94,14 @@ export function health(s: Signals): Health {
   else if (s.daysSinceActive <= 14) add(8, "active in the last two weeks");
   else add(0, `quiet for ${s.daysSinceActive} days`);
   add(Math.min(15, s.activeDays14d * 2), `${s.activeDays14d} active days in two weeks`);
-  const breadth = [s.liveQueries > 0, s.alerts > 0, s.dashboards > 0, s.schedules > 0].filter(
-    Boolean,
-  ).length;
-  add(breadth * 7, `${breadth} of 4 core features in use`);
+  const breadth = [
+    s.liveQueries > 0,
+    s.alerts > 0,
+    s.dashboards > 0,
+    s.schedules > 0,
+    s.productsUsed.includes("influencers"),
+  ].filter(Boolean).length;
+  add(breadth * 7, `${breadth} of 5 core features in use`);
   if (s.activeUsers14d >= 3) add(22, `${s.activeUsers14d} people active`);
   else if (s.activeUsers14d === 2) add(14, "2 people active");
   else if (s.activeUsers14d === 1) add(6, "1 person active");

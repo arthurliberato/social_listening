@@ -27,6 +27,16 @@ test("after login a split screen leads to either product, and remembers the last
 
   await page.getByTestId("hub-influencers").click();
   await page.waitForURL(`**/w/${slug}/creators`);
+  // Product events are tagged with the product they belong to.
+  const tagged = async (name: string) =>
+    (
+      await pool.query(
+        `SELECT props FROM analytics_events e JOIN workspaces w ON w.id = e.workspace_id WHERE e.name = $1 AND w.slug = $2`,
+        [name, slug],
+      )
+    ).rows.map((r) => r.props.product);
+  await expect.poll(() => tagged("Product Opened")).toEqual(["hub"]);
+  await expect.poll(() => tagged("Creator Search Run")).toContain("influencers");
   await expect(page.getByRole("heading", { name: "Discover creators" })).toBeVisible();
   await expect(page.getByTestId("switch-influencers")).toHaveAttribute("aria-current", "page");
   // The sidebar shows the Influencers product, not the listening one.
