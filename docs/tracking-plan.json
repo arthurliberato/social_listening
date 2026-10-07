@@ -1669,6 +1669,99 @@
     "amplitude",
     "warehouse"
    ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Invitation Sent",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "offered_usd",
+    "round"
+   ],
+   "description": "A brand sent (or revised) an invitation to a creator. round counts offers to this creator on this campaign.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Portal Viewed",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "invite_state"
+   ],
+   "description": "A creator opened their invitation page for the first time.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Invitation Answered",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "response",
+    "counter_usd"
+   ],
+   "description": "A creator accepted, declined or countered from the portal. response: accepted | declined | countered.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Counter Resolved",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "decision"
+   ],
+   "description": "A brand answered a creator's counter-offer. decision: accepted | revised | declined.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Content Submitted",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "version"
+   ],
+   "description": "A creator submitted content from the portal. version is 1 for the first submission.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Content Reviewed",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "decision",
+    "version"
+   ],
+   "description": "A brand reviewed submitted content. decision: approved | changes_requested.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
   }
  ],
  "destinations": {

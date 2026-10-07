@@ -19,6 +19,7 @@ export const PAYWALLS = {
   creator_list_limit: "You've used all the creator lists on your plan",
   creator_profile_quota: "You've used this month's creator profiles",
   creator_audience: "Audience insights aren't on your plan",
+  outreach_quota: "You've used this month's creator invitations",
   campaign_limit: "You've used all the active campaigns on your plan",
   creator_export: "Creator list exports aren't on your plan",
 } as const;

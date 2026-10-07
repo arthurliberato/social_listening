@@ -19,9 +19,10 @@ import {
 import {
   accountActiveCampaigns,
   getCampaign,
-  snapshotOf,
+  freshSnapshot,
   type CampaignSnapshot,
 } from "@/lib/creators/campaigns";
+import { notifyPaid } from "@/lib/creators/outreach";
 import { PLANS, canCreateCampaign, type PlanTier } from "@/lib/entitlements/plans";
 import { accountPlan, canEdit } from "@/lib/queries";
 
@@ -30,7 +31,7 @@ export type Result<T = object> =
 
 /** The campaign as it is now, for the client to show without waiting on a page re-render. */
 async function fresh(workspaceId: string, id: string): Promise<CampaignSnapshot> {
-  return snapshotOf((await getCampaign(workspaceId, id))!);
+  return freshSnapshot(workspaceId, id);
 }
 
 const NoEdit = {
@@ -283,6 +284,12 @@ export async function updateCampaignCreator(
     );
   }
   // Budget is advisory: confirming over budget is allowed, but the person is told.
+  if (moving && to === "paid")
+    await notifyPaid({
+      ws: { id: ws.id, accountId: ws.accountId, name: ws.name },
+      campaignId,
+      creatorId,
+    });
   const snapshot = await fresh(ws.id, campaignId);
   const warning = snapshot.budget.over
     ? `This puts the campaign $${Math.abs(snapshot.budget.remaining).toLocaleString("en-US")} over its budget.`

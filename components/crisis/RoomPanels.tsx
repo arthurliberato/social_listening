@@ -62,6 +62,10 @@ export function TaskList({
   const [busy, setBusy] = useState(false);
   // Optimistic: the box flips at once and reverts if the server refuses.
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+  // Tasks added in this session show at once, without waiting for the page to refresh; the server's copy wins
+  // as soon as it arrives.
+  const [added, setAdded] = useState<Task[]>([]);
+  const shown = [...tasks, ...added.filter((a) => !tasks.some((t) => t.id === a.id))];
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +75,15 @@ export function TaskList({
     setBusy(false);
     if (!r.ok) return setError(r.error);
     track("Crisis Task Created", { crisis_id: crisisId });
+    setAdded((a) => [
+      ...a,
+      {
+        id: r.id,
+        title: title.trim(),
+        done: false,
+        assignee: members.find((m) => m.id === assignee)?.name ?? null,
+      },
+    ]);
     setTitle("");
     router.refresh();
   };
@@ -91,13 +104,13 @@ export function TaskList({
       <h2 id="tasks-h" className="text-lg font-semibold">
         Response plan
       </h2>
-      {tasks.length === 0 ? (
+      {shown.length === 0 ? (
         <p className="mt-2 text-sm text-[var(--text-muted)]" data-testid="tasks-empty">
           No tasks yet. Write down who is doing what so nothing falls through.
         </p>
       ) : (
         <ul className="mt-2 flex flex-col gap-1">
-          {tasks.map((raw) => {
+          {shown.map((raw) => {
             const t = { ...raw, done: flipped[raw.id] ?? raw.done };
             return (
               <li key={t.id} className="flex items-center gap-2 text-sm" data-testid="task">
