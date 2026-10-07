@@ -7,6 +7,8 @@ import { OBJECTIVE_LABEL, type Objective } from "@/lib/creators/campaign-flow";
 import type { PortalState, PortalView as View } from "@/lib/creators/outreach";
 import { useBusy } from "@/lib/use-busy";
 import { CopyField } from "@/components/creators/results/CopyField";
+import { ContractSection } from "./ContractSection";
+import { PayoutSection } from "./PayoutSection";
 
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 const day = (iso: string) =>
@@ -59,6 +61,14 @@ export function PortalView({ token, initial }: { token: string; initial: View })
 
   const latest = v.content[v.content.length - 1];
   const changes = latest?.status === "changes_requested" ? latest : null;
+  const accepted =
+    v.state === "confirmed" ||
+    v.state === "in_review" ||
+    v.state === "approved" ||
+    v.state === "paid";
+  // An agreement waiting on the creator (or on a revision) has to be dealt with before content goes in.
+  const contractBlocks =
+    !!v.contract && (v.contract.status === "sent" || v.contract.status === "changes_requested");
 
   return (
     <div data-testid="portal" data-state={v.state}>
@@ -240,10 +250,11 @@ export function PortalView({ token, initial }: { token: string; initial: View })
         </p>
       )}
 
-      {(v.state === "confirmed" ||
-        v.state === "in_review" ||
-        v.state === "approved" ||
-        v.state === "paid") && (
+      {accepted && v.contract && (
+        <ContractSection token={token} contract={v.contract} brand={v.brand} onView={setV} />
+      )}
+
+      {accepted && (
         <section aria-labelledby="content-h" className="mt-6">
           <h2 id="content-h" className="text-xl font-semibold">
             Your content
@@ -334,8 +345,18 @@ export function PortalView({ token, initial }: { token: string; initial: View })
                   data-testid="content-caption"
                 />
               </div>
+              {contractBlocks && (
+                <p className="text-sm text-[var(--text-muted)]" data-testid="content-blocked">
+                  Sign your agreement above before you submit content.
+                </p>
+              )}
               <div>
-                <Button type="submit" loading={busy} data-testid="content-submit">
+                <Button
+                  type="submit"
+                  loading={busy}
+                  disabled={contractBlocks}
+                  data-testid="content-submit"
+                >
                   {changes ? "Submit a new version" : "Submit for review"}
                 </Button>
               </div>
@@ -372,6 +393,10 @@ export function PortalView({ token, initial }: { token: string; initial: View })
             </ul>
           )}
         </section>
+      )}
+
+      {accepted && v.payout.enabled && (
+        <PayoutSection token={token} payout={v.payout} agreedUsd={v.agreedUsd} onView={setV} />
       )}
 
       {error && (

@@ -36,6 +36,8 @@ export interface Entitlements {
     creatorAudience: boolean; // audience demographics and authenticity on creator profiles
     creatorExport: boolean; // CSV export of creator lists
     campaignResults: boolean; // tracking links and the campaign results page
+    creatorContracts: boolean; // agreements the creator signs from their page
+    creatorPayouts: boolean; // paying creators from Ripplewise (simulated rail)
   };
 }
 
@@ -54,6 +56,8 @@ const none = {
   creatorAudience: false,
   creatorExport: false,
   campaignResults: false,
+  creatorContracts: false,
+  creatorPayouts: false,
 };
 
 export const PLANS: Record<PlanTier, Entitlements> = {
@@ -114,6 +118,7 @@ export const PLANS: Record<PlanTier, Entitlements> = {
       creatorAudience: true,
       creatorExport: true,
       campaignResults: true,
+      creatorContracts: true,
       shareOfVoice: true,
       emotionWidget: true,
       publicShareLinks: true,
@@ -142,6 +147,8 @@ export const PLANS: Record<PlanTier, Entitlements> = {
       creatorAudience: true,
       creatorExport: true,
       campaignResults: true,
+      creatorContracts: true,
+      creatorPayouts: true,
       shareOfVoice: true,
       emotionWidget: true,
       publicShareLinks: true,
@@ -178,6 +185,8 @@ export const PLANS: Record<PlanTier, Entitlements> = {
       creatorAudience: true,
       creatorExport: true,
       campaignResults: true,
+      creatorContracts: true,
+      creatorPayouts: true,
     },
   },
 };

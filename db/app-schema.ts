@@ -979,6 +979,76 @@ export const linkConversions = pgTable(
   (t) => [uniqueIndex("link_conversions_dedupe_uq").on(t.linkId, t.dedupeKey)],
 );
 
+/**
+ * The agreement between a brand and a creator for one campaign. The text the creator saw is stored word for word with
+ * a hash, so what was signed can't change afterwards. A revised contract supersedes the previous one.
+ */
+export const creatorContracts = pgTable(
+  "creator_contracts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => campaigns.id, { onDelete: "cascade" }),
+    creatorId: integer("creator_id").notNull(),
+    version: integer("version").notNull(),
+    /** sent | signed | changes_requested | superseded | withdrawn */
+    status: text("status").notNull().default("sent"),
+    terms: jsonb("terms").notNull(),
+    feeUsd: integer("fee_usd").notNull(),
+    bodyText: text("body_text").notNull(),
+    bodyHash: text("body_hash").notNull(),
+    sentBy: uuid("sent_by").references(() => users.id),
+    sentAt: ts("sent_at").notNull().defaultNow(),
+    signedName: text("signed_name"),
+    signedAt: ts("signed_at"),
+    /** What the creator asked to change, when they didn't sign. */
+    requestNote: text("request_note").notNull().default(""),
+    respondedAt: ts("responded_at"),
+  },
+  (t) => [index("creator_contracts_creator_idx").on(t.campaignId, t.creatorId, t.version)],
+);
+
+/** Where a creator wants to be paid for a campaign. Only what a receipt shows is kept: never the account number. */
+export const creatorPayoutDetails = pgTable(
+  "creator_payout_details",
+  {
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => campaigns.id, { onDelete: "cascade" }),
+    creatorId: integer("creator_id").notNull(),
+    holderName: text("holder_name").notNull(),
+    last4: text("last4").notNull(),
+    country: text("country").notNull(),
+    /** ok | fail_payout (a test account that rejects transfers) */
+    behavior: text("behavior").notNull().default("ok"),
+    savedAt: ts("saved_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.campaignId, t.creatorId] })],
+);
+
+export const creatorPayouts = pgTable(
+  "creator_payouts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => campaigns.id, { onDelete: "cascade" }),
+    creatorId: integer("creator_id").notNull(),
+    amountUsd: integer("amount_usd").notNull(),
+    /** processing | paid | failed | canceled */
+    status: text("status").notNull().default("processing"),
+    initiatedBy: uuid("initiated_by").references(() => users.id),
+    initiatedAt: ts("initiated_at").notNull().defaultNow(),
+    settleAt: ts("settle_at").notNull(),
+    settledAt: ts("settled_at"),
+    failureReason: text("failure_reason").notNull().default(""),
+    /** Shown on receipts and emails. */
+    reference: text("reference").notNull().unique(),
+  },
+  (t) => [index("creator_payouts_creator_idx").on(t.campaignId, t.creatorId, t.initiatedAt)],
+);
+
 /** Failed password logins per (hashed) email, for throttling guessing. Unknown emails are tracked too, so locking never reveals who has an account. */
 export const loginThrottle = pgTable("login_throttle", {
   keyHash: text("key_hash").primaryKey(),

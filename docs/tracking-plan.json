@@ -1966,6 +1966,104 @@
     "warehouse"
    ],
    "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Contract Sent",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "version",
+    "fee_usd"
+   ],
+   "description": "A brand sent (or revised) the agreement for a creator. version is 1 for the first.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Contract Signed",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "version"
+   ],
+   "description": "A creator signed their agreement from their page.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "creator_portal"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Contract Changes Requested",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "version"
+   ],
+   "description": "A creator asked for changes to their agreement instead of signing.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "creator_portal"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Payout Details Saved",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id"
+   ],
+   "description": "A creator saved where they want to be paid. The account itself is never sent to analytics.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "creator_portal"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Payout Initiated",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "amount_usd",
+    "attempt"
+   ],
+   "description": "A brand started a payout to a creator. attempt is 1, or higher when retrying after a failure.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Payout Settled",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "amount_usd",
+    "outcome"
+   ],
+   "description": "A payout reached its outcome. outcome: paid | failed. The actor is the system (actor_type: system), not a person.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "influencers"
   }
  ],
  "destinations": {

@@ -6,6 +6,8 @@ export interface AnalyticsContext {
   userId?: string | null;
   /** Set when the actor is a creator acting from their invitation page (they have no account). */
   creatorId?: number | null;
+  /** Set when no person acted: a settlement, a scheduled job. Such events belong to the system, not to whoever triggered the page. */
+  system?: boolean;
   workspaceId?: string | null;
   accountId?: string | null;
 }
@@ -21,7 +23,7 @@ export interface GlobalProps {
   agent_run_id: string | null;
   app_version: string;
   /** member: a signed-in person; creator: someone on an invitation page; anonymous: neither. */
-  actor_type: "member" | "creator" | "anonymous";
+  actor_type: "member" | "creator" | "anonymous" | "system";
 }
 
 const APP_VERSION = process.env.APP_VERSION ?? "0.1.0";
@@ -73,7 +75,13 @@ export async function globalProps(ctx: AnalyticsContext): Promise<{
       is_synthetic: user?.isSynthetic ?? true,
       agent_run_id: user?.agentRunId ?? null,
       app_version: APP_VERSION,
-      actor_type: ctx.userId ? "member" : ctx.creatorId ? "creator" : "anonymous",
+      actor_type: ctx.system
+        ? "system"
+        : ctx.userId
+          ? "member"
+          : ctx.creatorId
+            ? "creator"
+            : "anonymous",
     },
     accountId,
     workspaceId,

@@ -19,6 +19,8 @@ export const PAYWALLS = {
   creator_list_limit: "You've used all the creator lists on your plan",
   creator_profile_quota: "You've used this month's creator profiles",
   creator_audience: "Audience insights aren't on your plan",
+  creator_contracts: "Creator agreements aren't on your plan",
+  creator_payouts: "Paying creators isn't on your plan",
   campaign_results: "Tracking links and campaign results aren't on your plan",
   outreach_quota: "You've used this month's creator invitations",
   campaign_limit: "You've used all the active campaigns on your plan",

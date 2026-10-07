@@ -1680,6 +1680,92 @@ export const EVENTS = {
     ],
     "ga4Name": null,
     "product": "influencers"
+  },
+  "Creator Contract Sent": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "version",
+      "fee_usd"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
+  },
+  "Creator Contract Signed": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "version"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "creator_portal"
+  },
+  "Creator Contract Changes Requested": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "version"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "creator_portal"
+  },
+  "Creator Payout Details Saved": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "creator_portal"
+  },
+  "Creator Payout Initiated": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "amount_usd",
+      "attempt"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
+  },
+  "Creator Payout Settled": {
+    "side": "server",
+    "properties": [
+      "campaign_id",
+      "creator_id",
+      "amount_usd",
+      "outcome"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "influencers"
   }
 } as const;
 
