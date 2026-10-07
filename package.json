@@ -14,7 +14,7 @@
     "test:e2e": "playwright test",
     "datagen": "tsx datagen/seed.ts --out data/corpus",
     "db:generate": "drizzle-kit generate",
-    "db:load": "tsx db/load.ts",
+    "db:load": "tsx db/load.ts && tsx db/load-creators.ts",
     "db:migrate": "tsx db/migrate.ts",
     "gen:events": "tsx scripts/gen-events.ts",
     "gen:grammar": "tsx scripts/gen-grammar.ts",

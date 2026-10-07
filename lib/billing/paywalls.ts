@@ -16,6 +16,10 @@ export const PAYWALLS = {
   white_label: "White-label isn't on your plan",
   mention_quota: "You've used this month's mentions",
   ai_quota: "You've used this month's AI questions",
+  creator_list_limit: "You've used all the creator lists on your plan",
+  creator_profile_quota: "You've used this month's creator profiles",
+  creator_audience: "Audience insights aren't on your plan",
+  creator_export: "Creator list exports aren't on your plan",
 } as const;
 
 export type PaywallTrigger = keyof typeof PAYWALLS;

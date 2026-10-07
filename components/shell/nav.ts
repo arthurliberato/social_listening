@@ -1,4 +1,11 @@
-export type NavItem = { key: string; label: string; href: string; shortcut?: string };
+export type NavItem = {
+  key: string;
+  label: string;
+  href: string;
+  shortcut?: string;
+  /** Active only on this exact path, not on its sub-pages (Discover vs. Lists). */
+  exact?: boolean;
+};
 export type NavGroup = { label: string; items: NavItem[] };
 
 export const NAV_GROUPS: NavGroup[] = [
@@ -32,6 +39,16 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { key: "queries", label: "Queries", href: "queries" },
       { key: "tags", label: "Tags & Categories", href: "tags" },
+    ],
+  },
+];
+
+export const CREATOR_NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Find",
+    items: [
+      { key: "creators", label: "Discover", href: "creators", exact: true },
+      { key: "creator-lists", label: "Lists", href: "creators/lists" },
     ],
   },
 ];

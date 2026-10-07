@@ -1,5 +1,5 @@
 # social_listening
-A social listening platform made up of synthetic autonomous agents users and mention's authors.
+A social listening platform made up of synthetic autonomous agents users and mention's authors, plus an Influencers product (creator discovery, vetting and shortlists) that shares its login, plans and design system.
 
 ## What it is
 
@@ -24,7 +24,7 @@ Start with [docs/product.md](docs/product.md) for the product thinking: the prob
 
 All screens, in light and dark, are in [docs/screenshots](docs/screenshots). They are regenerated with `npm run screenshots`, which builds a demo account through the real interface (so it also checks that the flows still work).
 
-More detail: [AI](docs/ai.md) · [Auth](docs/auth.md) · [Billing](docs/billing.md) · [Teams and audit log](docs/teams.md) · [Reports](docs/reports.md) · [Authors and Topics](docs/insights.md) · [Sales and scoring](docs/sales.md) · [Analytics](docs/analytics.md) · [Query language](docs/query-language.md) · [Data generation](docs/datagen.md)
+More detail: [Influencers](docs/influencers.md) · [AI](docs/ai.md) · [Auth](docs/auth.md) · [Billing](docs/billing.md) · [Teams and audit log](docs/teams.md) · [Reports](docs/reports.md) · [Authors and Topics](docs/insights.md) · [Sales and scoring](docs/sales.md) · [Analytics](docs/analytics.md) · [Query language](docs/query-language.md) · [Data generation](docs/datagen.md)
 
 ## Development
 ```

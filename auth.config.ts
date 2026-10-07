@@ -1,7 +1,7 @@
 // Edge-safe config shared with middleware (no Node-only imports such as argon2 or pg).
 import type { NextAuthConfig } from "next-auth";
 
-const PROTECTED = [/^\/w(\/|$)/, /^\/onboarding/, /^\/settings/, /^\/inbox/];
+const PROTECTED = [/^\/w(\/|$)/, /^\/onboarding/, /^\/settings/, /^\/inbox/, /^\/hub/];
 
 export default {
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 },

@@ -134,3 +134,44 @@ export const mentions = pgTable(
     index("mentions_story_idx").on(t.storyId),
   ],
 );
+
+/**
+ * The shared synthetic creator directory for the Influencers product (see datagen/creators.ts).
+ * Like the mention corpus it is read-only reference data; workspaces only reference it from lists.
+ */
+export const creators = pgTable(
+  "creators",
+  {
+    id: integer("id").primaryKey(),
+    platform: text("platform").notNull(), // instagram|tiktok|youtube|x
+    handle: text("handle").notNull(),
+    displayName: text("display_name").notNull(),
+    bio: text("bio").notNull(),
+    niche: text("niche").notNull(),
+    tags: text("tags").array().notNull(),
+    country: text("country").notNull(),
+    language: text("language").notNull(),
+    followers: integer("followers").notNull(),
+    engagementRate: real("engagement_rate").notNull(),
+    avgViews: integer("avg_views").notNull(),
+    postsPerWeek: real("posts_per_week").notNull(),
+    growth30d: real("growth_30d").notNull(),
+    verified: boolean("verified").notNull(),
+    sponsoredPct: real("sponsored_pct").notNull(),
+    fakeFollowerPct: real("fake_follower_pct").notNull(),
+    authenticityScore: smallint("authenticity_score").notNull(),
+    brandSafety: text("brand_safety").notNull(), // safe|caution|risk
+    ratePerPostUsd: integer("rate_per_post_usd").notNull(),
+    avatarSeed: integer("avatar_seed").notNull(),
+    audience: jsonb("audience").notNull(),
+    tsv: tsvector("tsv").generatedAlwaysAs(
+      sql`to_tsvector('simple', display_name || ' ' || handle || ' ' || bio || ' ' || niche)`,
+    ),
+  },
+  (t) => [
+    index("creators_followers_idx").on(t.followers),
+    index("creators_niche_idx").on(t.niche, t.followers),
+    index("creators_platform_idx").on(t.platform, t.followers),
+    index("creators_tsv_idx").using("gin", t.tsv),
+  ],
+);

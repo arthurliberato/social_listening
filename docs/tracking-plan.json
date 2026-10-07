@@ -1473,6 +1473,127 @@
     "amplitude",
     "warehouse"
    ]
+  },
+  {
+   "area": "Hub",
+   "name": "Product Hub Viewed",
+   "side": "client",
+   "properties": [
+    "products_available",
+    "last_product"
+   ],
+   "description": "The post-login screen where a person chooses Social listening or Influencers.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Hub",
+   "name": "Product Opened",
+   "side": "client",
+   "properties": [
+    "product",
+    "source"
+   ],
+   "description": "A person chose a product from the hub or the product switcher. source: hub | switcher.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Search Run",
+   "side": "client",
+   "properties": [
+    "result_count",
+    "filter_count",
+    "sort",
+    "has_query",
+    "page"
+   ],
+   "description": "Discovery results were shown for a new combination of search, filters, sort or page (once per URL change).",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Profile Viewed",
+   "side": "server",
+   "properties": [
+    "creator_id",
+    "platform",
+    "niche",
+    "audience_locked",
+    "profile_views_used"
+   ],
+   "description": "A creator profile was opened. Counts against the monthly profile allowance once per creator per month.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator List Created",
+   "side": "server",
+   "properties": [
+    "list_id",
+    "source"
+   ],
+   "description": "A creator list was created. source: lists_page | add_menu.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Added To List",
+   "side": "server",
+   "properties": [
+    "list_id",
+    "creator_id",
+    "source"
+   ],
+   "description": "A creator was added to a list. source: discovery | profile.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Removed From List",
+   "side": "server",
+   "properties": [
+    "list_id",
+    "creator_id",
+    "source"
+   ],
+   "description": "A creator was removed from a list. source: list | discovery | profile.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator List Exported",
+   "side": "server",
+   "properties": [
+    "list_id",
+    "creator_count",
+    "format"
+   ],
+   "description": "A creator list was exported (CSV).",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ]
   }
  ],
  "destinations": {

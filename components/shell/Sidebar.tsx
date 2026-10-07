@@ -7,6 +7,7 @@ import {
   Download,
   FileText,
   Home,
+  ListChecks,
   LayoutDashboard,
   MessageSquare,
   PanelLeftClose,
@@ -19,7 +20,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { NAV_GROUPS } from "./nav";
+import { CREATOR_NAV_GROUPS, NAV_GROUPS } from "./nav";
+import { productOfPath } from "@/lib/products";
 
 const ICONS: Record<string, typeof Home> = {
   home: Home,
@@ -34,6 +36,8 @@ const ICONS: Record<string, typeof Home> = {
   exports: Download,
   queries: Search,
   tags: Tags,
+  creators: Search,
+  "creator-lists": ListChecks,
 };
 
 export function toggleSidebar(force?: boolean) {
@@ -50,13 +54,16 @@ export function toggleSidebar(force?: boolean) {
 }
 
 export function Sidebar({ ws, clientOnly = false }: { ws: string; clientOnly?: boolean }) {
-  const groups = clientOnly
-    ? NAV_GROUPS.map((g) => ({
-        ...g,
-        items: g.items.filter((i) => i.key === "dashboards" || i.key === "reports"),
-      })).filter((g) => g.items.length)
-    : NAV_GROUPS;
   const pathname = usePathname();
+  const influencers = !clientOnly && productOfPath(pathname) === "influencers";
+  const groups = influencers
+    ? CREATOR_NAV_GROUPS
+    : clientOnly
+      ? NAV_GROUPS.map((g) => ({
+          ...g,
+          items: g.items.filter((i) => i.key === "dashboards" || i.key === "reports"),
+        })).filter((g) => g.items.length)
+      : NAV_GROUPS;
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
     const sync = () => setCollapsed(document.documentElement.dataset.sidebar === "collapsed");
@@ -79,7 +86,9 @@ export function Sidebar({ ws, clientOnly = false }: { ws: string; clientOnly?: b
           <ul>
             {group.items.map((item) => {
               const href = `/w/${ws}/${item.href}`;
-              const active = pathname === href || pathname.startsWith(`${href}/`);
+              const active = item.exact
+                ? pathname === href
+                : pathname === href || pathname.startsWith(`${href}/`);
               const Icon = ICONS[item.key] ?? BarChart3;
               return (
                 <li key={item.key}>
