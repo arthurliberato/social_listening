@@ -5,6 +5,7 @@ import { addToList, removeFromList } from "@/app/w/[ws]/creators/actions";
 import { Button } from "@/components/ui/button";
 import { PaywallModal } from "@/components/listening/PaywallModal";
 import { PLANS, type PlanTier } from "@/lib/entitlements/plans";
+import { rememberList, useLists } from "@/lib/creators/known-lists";
 import { useBusy } from "@/lib/use-busy";
 
 export interface ListOption {
@@ -17,7 +18,7 @@ export function AddToListButton({
   ws,
   creatorId,
   creatorName,
-  lists,
+  lists: serverLists,
   inLists,
   canEdit,
   source,
@@ -30,6 +31,7 @@ export function AddToListButton({
   canEdit: boolean;
   source: "discovery" | "profile";
 }) {
+  const lists = useLists(serverLists);
   const dlg = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
   const [member, setMember] = useState<string[]>(inLists);
@@ -66,6 +68,7 @@ export function AddToListButton({
         }
         return setError(r.error);
       }
+      rememberList({ id: r.listId, name: r.listName });
       setMember((m) => (m.includes(r.listId) ? m : [...m, r.listId]));
       setStatus(
         r.added

@@ -101,7 +101,9 @@ export interface CampaignSnapshot {
   }[];
 }
 
-export function snapshotOf(data: NonNullable<Awaited<ReturnType<typeof getCampaign>>>): CampaignSnapshot {
+export function snapshotOf(
+  data: NonNullable<Awaited<ReturnType<typeof getCampaign>>>,
+): CampaignSnapshot {
   const c = data.campaign;
   return {
     campaign: {
