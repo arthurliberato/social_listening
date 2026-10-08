@@ -198,6 +198,45 @@ test("creators can be compared side by side, with the best marked, up to what th
   });
 });
 
+test("a whole comparison can be added to a list in one step", async ({ page }) => {
+  test.setTimeout(240_000);
+  const { slug, email } = await createUser(page, { prefix: "cmplist" });
+  await page.goto(`/w/${slug}/creators/compare?ids=1,2`);
+  await expect(page.getByTestId("compare-col")).toHaveCount(2);
+
+  // No list yet, so the form starts on "New list"; a name is required.
+  await page.getByTestId("compare-list-add").click();
+  await expect(page.getByTestId("compare-list-error")).toBeVisible();
+  await page.getByTestId("compare-list-name").fill("Spring shortlist");
+  await page.getByTestId("compare-list-add").click();
+  await expect(page.getByTestId("compare-list-status")).toContainText(
+    "Added 2 creators to Spring shortlist",
+  );
+
+  // Doing it again adds nobody, and says so.
+  await page.getByTestId("compare-list-add").click();
+  await expect(page.getByTestId("compare-list-status")).toContainText("All 2 were already in");
+
+  // The list really holds both creators.
+  const rows = await pool.query(
+    `SELECT count(*)::int AS n FROM creator_list_items i JOIN creator_lists l ON l.id = i.list_id WHERE l.name = 'Spring shortlist' AND l.workspace_id = (SELECT id FROM workspaces WHERE slug = $1)`,
+    [slug],
+  );
+  expect(rows.rows[0].n).toBe(2);
+  const added = await eventsOf(slug, "Creator Added To List");
+  expect(added).toHaveLength(2);
+  expect(added[0]!.props).toMatchObject({ source: "compare", product: "influencers" });
+
+  // A viewer sees why there is no form.
+  await pool.query(
+    `UPDATE memberships SET role = 'viewer' WHERE user_id IN (SELECT id FROM users WHERE lower(email) = $1)`,
+    [email.toLowerCase()],
+  );
+  await page.reload();
+  await expect(page.getByTestId("compare-list-add")).toHaveCount(0);
+  await expect(page.getByTestId("compare-add-to-list")).toContainText("can look at creators");
+});
+
 for (const theme of ["light", "dark"] as const) {
   test(`saved searches and comparison have no serious a11y violations (${theme})`, async ({
     page,
@@ -223,5 +262,9 @@ for (const theme of ["light", "dark"] as const) {
     await page.getByTestId("compare-go").click();
     await expect(page.getByTestId("compare-table")).toBeVisible();
     await scan("comparison");
+    await page.getByTestId("compare-list-name").fill("Scan list");
+    await page.getByTestId("compare-list-add").click();
+    await expect(page.getByTestId("compare-list-status")).toContainText("Added 2");
+    await scan("comparison after adding to a list");
   });
 }

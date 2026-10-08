@@ -1670,7 +1670,7 @@
     "creator_id",
     "source"
    ],
-   "description": "A creator was added to a list. source: discovery | profile.",
+   "description": "A creator was added to a list. source: discovery | profile | compare.",
    "destinations": [
     "amplitude",
     "warehouse"

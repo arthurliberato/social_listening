@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AddComparisonToList } from "@/components/creators/AddComparisonToList";
 import { Avatar } from "@/components/creators/Avatar";
 import { PaywallButton, type LockCopy } from "@/components/creators/Locked";
 import { trackServer } from "@/lib/analytics/server";
@@ -19,10 +20,10 @@ import {
   titleCase,
   usd,
 } from "@/lib/creators/labels";
-import { creatorsByIds, type CreatorSummary } from "@/lib/creators/service";
+import { creatorsByIds, workspaceLists, type CreatorSummary } from "@/lib/creators/service";
 import { PLANS } from "@/lib/entitlements/plans";
 import { compact } from "@/lib/format";
-import { accountPlan } from "@/lib/queries";
+import { accountPlan, canEdit } from "@/lib/queries";
 
 export const metadata = { title: "Compare creators · Ripplewise" };
 export const dynamic = "force-dynamic";
@@ -156,6 +157,7 @@ export default async function ComparePage({
       }
     : null;
   const ids = rows.map((r) => r.id);
+  const lists = (await workspaceLists(ws.id)).map((l) => ({ id: l.id, name: l.name }));
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -180,6 +182,8 @@ export default async function ComparePage({
           )}
         </p>
       )}
+
+      <AddComparisonToList ws={slug} creatorIds={ids} lists={lists} canEdit={canEdit(ws.role)} />
 
       <div className="mt-5 overflow-x-auto">
         <table
