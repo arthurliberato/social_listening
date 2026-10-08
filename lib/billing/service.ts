@@ -83,7 +83,7 @@ const invoiceNumber = (seq: number) => `RW-${String(seq).padStart(6, "0")}`;
 
 export async function recordInvoice(o: {
   accountId: string;
-  kind: "subscription" | "upgrade" | "renewal" | "retry";
+  kind: "subscription" | "upgrade" | "renewal" | "retry" | "addon";
   description: string;
   amountCents: number;
   discountCents?: number;

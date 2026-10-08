@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gt, inArray, isNull } from "drizzle-orm";
 import { authTokens, db } from "@/db/client";
+import { simNow } from "@/lib/simclock";
 
 const sha = (t: string) => createHash("sha256").update(t).digest("hex");
 
@@ -9,7 +10,7 @@ export async function issueToken(userId: string, type: string, ttlMs: number): P
   const raw = randomBytes(24).toString("base64url");
   await db
     .insert(authTokens)
-    .values({ userId, type, tokenHash: sha(raw), expiresAt: new Date(Date.now() + ttlMs) });
+    .values({ userId, type, tokenHash: sha(raw), expiresAt: new Date(simNow().getTime() + ttlMs) });
   return raw;
 }
 
@@ -17,13 +18,13 @@ export async function issueToken(userId: string, type: string, ttlMs: number): P
 export async function consumeToken(raw: string, type: string): Promise<string | null> {
   const rows = await db
     .update(authTokens)
-    .set({ usedAt: new Date() })
+    .set({ usedAt: simNow() })
     .where(
       and(
         eq(authTokens.tokenHash, sha(raw)),
         eq(authTokens.type, type),
         isNull(authTokens.usedAt),
-        gt(authTokens.expiresAt, new Date()),
+        gt(authTokens.expiresAt, simNow()),
       ),
     )
     .returning({ userId: authTokens.userId });
@@ -42,7 +43,7 @@ export async function peekToken(raw: string, type: string): Promise<boolean> {
         eq(authTokens.tokenHash, sha(raw)),
         eq(authTokens.type, type),
         isNull(authTokens.usedAt),
-        gt(authTokens.expiresAt, new Date()),
+        gt(authTokens.expiresAt, simNow()),
       ),
     );
   return rows.length > 0;
@@ -52,7 +53,7 @@ export async function peekToken(raw: string, type: string): Promise<boolean> {
 export async function revokeTokens(userId: string, types: string[]) {
   await db
     .update(authTokens)
-    .set({ usedAt: new Date() })
+    .set({ usedAt: simNow() })
     .where(
       and(
         eq(authTokens.userId, userId),

@@ -314,6 +314,32 @@ export const EVENTS = {
     "ga4Name": null,
     "product": "listening"
   },
+  "Query Copied": {
+    "side": "server",
+    "properties": [
+      "across_workspaces"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "listening"
+  },
+  "History Pack Completed": {
+    "side": "server",
+    "properties": [
+      "query_id",
+      "matched_count",
+      "duration_ms"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "listening"
+  },
   "Mentions Feed Viewed": {
     "side": "client",
     "properties": [
@@ -410,6 +436,28 @@ export const EVENTS = {
     "properties": [
       "filter_count"
     ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "listening"
+  },
+  "Category Created": {
+    "side": "server",
+    "properties": [
+      "term_count"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "listening"
+  },
+  "Category Deleted": {
+    "side": "server",
+    "properties": [],
     "destinations": [
       "amplitude",
       "warehouse"
@@ -1086,6 +1134,19 @@ export const EVENTS = {
     "ga4Name": null,
     "product": "platform"
   },
+  "Add-on Purchased": {
+    "side": "server",
+    "properties": [
+      "addon",
+      "price_cents"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "listening"
+  },
   "Sales Contact Requested": {
     "side": "client",
     "properties": [
@@ -1261,7 +1322,9 @@ export const EVENTS = {
   },
   "Help Opened": {
     "side": "client",
-    "properties": [],
+    "properties": [
+      "topic"
+    ],
     "destinations": [
       "amplitude",
       "warehouse"
@@ -1321,6 +1384,18 @@ export const EVENTS = {
     "side": "server",
     "properties": [
       "email_type"
+    ],
+    "destinations": [
+      "amplitude",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "platform"
+  },
+  "Support Contacted": {
+    "side": "server",
+    "properties": [
+      "category"
     ],
     "destinations": [
       "amplitude",

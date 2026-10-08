@@ -1,4 +1,5 @@
 import { analyticsEvents, db } from "@/db/client";
+import { simNow } from "@/lib/simclock";
 import { globalProps, type AnalyticsContext } from "./context";
 import { productFor } from "./product";
 import { EVENTS, type EventName, type EventProps, type Prop } from "./events";
@@ -34,7 +35,10 @@ export async function trackServer<N extends EventName>(
       product: productFor(name, { route: extras.route, props: props as Record<string, unknown> }),
       actor_type: g.props.actor_type,
     };
+    // The agent's own clock when it has one (cookie `rw_sim`, see lib/simclock.ts), else the app's simulated now.
+    const at = simNow();
     await db.insert(analyticsEvents).values({
+      ts: at,
       name,
       side: extras.side ?? def.side,
       userId: ctx.userId ?? null,
@@ -45,7 +49,7 @@ export async function trackServer<N extends EventName>(
     });
     const dest = def.destinations as readonly string[];
     if (dest.includes("amplitude") && !extras.forwarded)
-      await sendAmplitude(name, amplitudeUserId(ctx), extras.device_id, all, g);
+      await sendAmplitude(name, amplitudeUserId(ctx), extras.device_id, all, g, at);
     if (dest.includes("ga4") && def.ga4Name) await sendGa4(def.ga4Name, ctx.userId ?? null, all);
   } catch (err) {
     console.error("[analytics] failed to record", name, err);
@@ -67,6 +71,7 @@ async function sendAmplitude(
   deviceId: string | undefined,
   props: Record<string, Prop>,
   g: Awaited<ReturnType<typeof globalProps>>,
+  at?: Date,
 ) {
   const key = process.env.AMPLITUDE_API_KEY;
   if (!key) return;
@@ -84,6 +89,7 @@ async function sendAmplitude(
       groups,
       // Lets cohorts separate creators from members without a join.
       ...(userId?.startsWith("creator_") ? { user_properties: { user_type: "creator" } } : {}),
+      ...(at ? { time: at.getTime() } : {}),
     } as never,
   );
 }

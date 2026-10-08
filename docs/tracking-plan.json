@@ -387,6 +387,36 @@
    "product": "listening"
   },
   {
+   "area": "Query",
+   "name": "Query Copied",
+   "side": "server",
+   "properties": [
+    "across_workspaces"
+   ],
+   "description": "A query copied to another workspace of the account, or duplicated in place.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "listening"
+  },
+  {
+   "area": "Query",
+   "name": "History Pack Completed",
+   "side": "server",
+   "properties": [
+    "query_id",
+    "matched_count",
+    "duration_ms"
+   ],
+   "description": "Older history collected for a query that has a history pack.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "listening"
+  },
+  {
    "area": "Mentions",
    "name": "Mentions Feed Viewed",
    "side": "client",
@@ -498,6 +528,32 @@
    "properties": [
     "filter_count"
    ],
+   "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "listening"
+  },
+  {
+   "area": "Mentions",
+   "name": "Category Created",
+   "side": "server",
+   "properties": [
+    "term_count"
+   ],
+   "description": "A named Boolean search saved as a category.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "listening"
+  },
+  {
+   "area": "Mentions",
+   "name": "Category Deleted",
+   "side": "server",
+   "properties": [],
    "description": "",
    "destinations": [
     "amplitude",
@@ -1280,6 +1336,21 @@
    "product": "platform"
   },
   {
+   "area": "Plan",
+   "name": "Add-on Purchased",
+   "side": "server",
+   "properties": [
+    "addon",
+    "price_cents"
+   ],
+   "description": "A one-time add-on bought, such as a history pack.",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "listening"
+  },
+  {
    "area": "Sales",
    "name": "Sales Contact Requested",
    "side": "client",
@@ -1487,8 +1558,10 @@
    "area": "Engagement",
    "name": "Help Opened",
    "side": "client",
-   "properties": [],
-   "description": "",
+   "properties": [
+    "topic"
+   ],
+   "description": "Opened the shortcut dialog (no topic) or a Help center topic.",
    "destinations": [
     "amplitude",
     "warehouse"
@@ -1559,6 +1632,20 @@
     "email_type"
    ],
    "description": "",
+   "destinations": [
+    "amplitude",
+    "warehouse"
+   ],
+   "product": "platform"
+  },
+  {
+   "area": "Engagement",
+   "name": "Support Contacted",
+   "side": "server",
+   "properties": [
+    "category"
+   ],
+   "description": "A question sent from the Help center.",
    "destinations": [
     "amplitude",
     "warehouse"

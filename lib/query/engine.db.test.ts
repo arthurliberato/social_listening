@@ -173,6 +173,42 @@ describe.runIf(process.env.DATABASE_URL !== "skip")("query engine against the co
     for (const r of rows) expect(ids.has(r.author_id)).toBe(true);
   });
 
+  it("replyto: finds the replies to one post by its URL, and to a handle's posts", async () => {
+    need();
+    const t = await db.execute(sql`
+      SELECT p.id, p.url, a.handle, count(*)::int AS n
+      FROM mentions p JOIN mentions c ON c.parent_id = p.id AND c.content_type = 'comment'
+      JOIN authors a ON a.id = p.author_id
+      GROUP BY p.id, p.url, a.handle ORDER BY n DESC, p.id LIMIT 1`);
+    const { id, url, handle, n } = t.rows[0] as {
+      id: number;
+      url: string;
+      handle: string;
+      n: number;
+    };
+    expect(n).toBeGreaterThan(0);
+
+    const byUrl = await run(`replyto:"${url}"`);
+    const truth = await db.execute(
+      sql`SELECT id FROM mentions WHERE parent_id = ${id} AND content_type = 'comment'`,
+    );
+    expect(byUrl.map((r) => r.id).sort()).toEqual(
+      (truth.rows as { id: number }[]).map((r) => r.id).sort(),
+    );
+
+    const byHandle = await run(`replyto:@${handle}`);
+    expect(byHandle.length).toBeGreaterThanOrEqual(n);
+    const where = compile(analyze(`replyto:@${handle}`).ast!);
+    const parents = await db.execute(sql`
+      SELECT DISTINCT lower(a.handle) AS h FROM authors a WHERE a.id IN (
+        SELECT p.author_id FROM mentions p WHERE p.id IN (SELECT parent_id FROM mentions WHERE ${where}))`);
+    expect((parents.rows as { h: string }[]).map((r) => r.h)).toEqual([handle.toLowerCase()]);
+
+    // Combines with the rest of the language, and a URL nobody posted matches nothing.
+    expect(await count(`replyto:"${url}" NOT lang:zz`)).toBe(n);
+    expect(await count('replyto:"https://nowhere.example/@nobody/1"')).toBe(0);
+  });
+
   it("is injection-safe", async () => {
     need();
     const r = await run(`author:"x'; DROP TABLE mentions;--"`);

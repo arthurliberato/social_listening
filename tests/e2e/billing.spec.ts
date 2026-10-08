@@ -330,6 +330,20 @@ test("the clock runs a trial to its end: grace, then read-only, then a plan brin
 }) => {
   // A busy brand, so a small CI corpus still has mentions to read once the account is read-only.
   const { email, slug } = await createUser(page, { brand: "Juniper Roast" });
+  // Let the first query finish collecting before the clock runs: a locked account stops collecting, and a slower
+  // machine would otherwise lock it mid-backfill and have nothing to read.
+  await expect
+    .poll(
+      async () =>
+        (
+          await pool.query(
+            `SELECT q.backfill_status AS s FROM queries q JOIN workspaces w ON w.id = q.workspace_id WHERE w.slug = $1`,
+            [slug],
+          )
+        ).rows[0]?.s,
+      { timeout: 60_000 },
+    )
+    .toMatch(/done|quota_exhausted/);
   const a = await accountOf(email);
   const T = new Date(a.trial_end_at).getTime();
 

@@ -7,6 +7,7 @@ import { trackServer } from "@/lib/analytics/server";
 import { consumeToken } from "@/lib/auth/tokens";
 import { requireUser } from "@/lib/auth/session";
 import { ResendButton } from "./ResendButton";
+import { simNow } from "@/lib/simclock";
 
 export const metadata = { title: "Verify your email · Ripplewise" };
 
@@ -22,11 +23,11 @@ export default async function VerifyPage({
     if (userId) {
       const user = (await db.select().from(users).where(eq(users.id, userId)).limit(1))[0]!;
       if (!user.emailVerifiedAt) {
-        await db.update(users).set({ emailVerifiedAt: new Date() }).where(eq(users.id, userId));
+        await db.update(users).set({ emailVerifiedAt: simNow() }).where(eq(users.id, userId));
         await trackServer(
           "Email Verified",
           { userId },
-          { time_to_verify_ms: Date.now() - user.createdAt.getTime() },
+          { time_to_verify_ms: simNow().getTime() - user.createdAt.getTime() },
         );
       }
       const session = await auth();

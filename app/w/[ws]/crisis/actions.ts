@@ -113,7 +113,7 @@ export async function toggleTask(
   if (r.fail) return r.fail;
   await db
     .update(crisisTasks)
-    .set({ doneAt: done ? new Date() : null })
+    .set({ doneAt: done ? simNow() : null })
     .where(and(eq(crisisTasks.id, taskId), eq(crisisTasks.crisisId, crisisId)));
   revalidatePath(`/w/${slug}/crisis/${crisisId}`);
   return { ok: true };
@@ -176,7 +176,7 @@ export async function setResolved(
 ): Promise<{ ok: true; durationMs: number } | Fail> {
   const r = await editableCrisis(slug, crisisId);
   if (r.fail) return r.fail;
-  const now = new Date();
+  const now = simNow();
   await db
     .update(crises)
     .set(

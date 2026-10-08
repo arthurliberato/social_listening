@@ -10,6 +10,7 @@ import { inviteEmail, sendEmail } from "@/lib/email/service";
 import { can, PLANS, type PlanTier } from "@/lib/entitlements/plans";
 import { assignableRoles, ROLE_LABEL, usesSeat, type Role } from "@/lib/permissions";
 import { seatUsage } from "./seats";
+import { simNow } from "@/lib/simclock";
 
 const WEEK = 7 * 86_400_000;
 const Email = z.string().email().max(200);
@@ -104,7 +105,7 @@ export async function inviteMembers(o: {
           eq(invitations.workspaceId, o.workspaceId),
           sql`lower(${invitations.email}) = ${email}`,
           isNull(invitations.acceptedAt),
-          gt(invitations.expiresAt, new Date()),
+          gt(invitations.expiresAt, simNow()),
         ),
       );
     if (pending) {
@@ -147,7 +148,7 @@ export async function inviteMembers(o: {
       tokenHash: hashToken(raw),
       invitedBy: o.actor.id,
       source: o.source,
-      expiresAt: new Date(Date.now() + WEEK),
+      expiresAt: new Date(simNow().getTime() + WEEK),
     });
     const m = inviteEmail({ inviter: o.actor.name, workspace: ws!.name, token: raw, role: o.role });
     await sendEmail({ to: email, type: "invite", subject: m.subject, text: m.text });
@@ -201,7 +202,7 @@ export async function resendInvite(o: {
   const raw = randomBytes(24).toString("base64url");
   await db
     .update(invitations)
-    .set({ tokenHash: hashToken(raw), expiresAt: new Date(Date.now() + WEEK) })
+    .set({ tokenHash: hashToken(raw), expiresAt: new Date(simNow().getTime() + WEEK) })
     .where(eq(invitations.id, inv.id));
   const m = inviteEmail({ inviter: o.actor.name, workspace: ws!.name, token: raw, role: inv.role });
   await sendEmail({ to: inv.email, type: "invite", subject: m.subject, text: m.text });
@@ -252,7 +253,7 @@ export async function afterJoin(o: {
   newMember: boolean;
   now?: Date;
 }) {
-  const now = o.now ?? new Date();
+  const now = o.now ?? simNow();
   const ctx = { userId: o.userId, accountId: o.accountId, workspaceId: o.workspaceId };
   await audit({
     accountId: o.accountId,
@@ -286,7 +287,7 @@ export async function acceptInvite(o: { token: string; userId: string }): Promis
       and(
         eq(invitations.tokenHash, hashToken(o.token)),
         isNull(invitations.acceptedAt),
-        gt(invitations.expiresAt, new Date()),
+        gt(invitations.expiresAt, simNow()),
       ),
     );
   if (!inv) return { ok: false, error: "invalid" };
@@ -298,7 +299,7 @@ export async function acceptInvite(o: { token: string; userId: string }): Promis
     .select({ role: memberships.role })
     .from(memberships)
     .where(and(eq(memberships.userId, o.userId), eq(memberships.workspaceId, inv.workspaceId)));
-  await db.update(invitations).set({ acceptedAt: new Date() }).where(eq(invitations.id, inv.id));
+  await db.update(invitations).set({ acceptedAt: simNow() }).where(eq(invitations.id, inv.id));
   if (have)
     return {
       ok: true,
