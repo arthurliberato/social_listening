@@ -11,7 +11,7 @@ type Obj = Record<string, Scalar | Scalar[]>;
 export const SERVER_ANONYMOUS_ID = "server";
 
 const writeKey = () => process.env.RUDDERSTACK_WRITE_KEY;
-const dataPlane = () => process.env.RUDDERSTACK_DATA_PLANE_URL;
+const dataPlane = () => process.env.RUDDERSTACK_DATA_PLANE_URL || process.env.RUDDERSTACK_DATA_PLANE;
 export const rudderConfigured = () => !!writeKey() && !!dataPlane();
 
 let client: Analytics | null = null;
