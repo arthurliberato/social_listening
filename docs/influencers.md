@@ -124,3 +124,16 @@ A creator can send their content as a file instead of a link to a post: on their
 - **Same rules as a link:** only while confirmed and not under review, only after any agreement is signed, one at a time, a caption is optional, and review works the same (approve, or ask for changes with feedback).
 - **Analytics:** `Creator Content Submitted` carries `content_kind` (`link` or `file`). No new events.
 - **Not done:** virus scanning, per-plan storage limits, thumbnails, and video playback in the review panel (the file opens in a new tab).
+
+## Screenshots
+
+Captured with `npm run screenshots -- influencers` on a demo workspace built through the real screens (all names and data are synthetic). Each is in light and dark.
+
+- The product hub after sign-in: [light](screenshots/14-product-hub-light.jpg), [dark](screenshots/14-product-hub-dark.jpg)
+- Discovery with a saved search and two creators ticked for comparison: [light](screenshots/15-creator-discovery-light.jpg), [dark](screenshots/15-creator-discovery-dark.jpg)
+- A creator's profile: authenticity, brand safety and audience: [light](screenshots/16-creator-profile-light.jpg), [dark](screenshots/16-creator-profile-dark.jpg)
+- Comparing three creators, with the best on each measure marked: [light](screenshots/17-creator-compare-light.jpg), [dark](screenshots/17-creator-compare-dark.jpg)
+- A campaign: one creator's file waiting for review, one invitation out, one shortlisted: [light](screenshots/18-campaign-roster-light.jpg), [dark](screenshots/18-campaign-roster-dark.jpg)
+- Tracking results: visits, conversions, cost and return: [light](screenshots/19-campaign-results-light.jpg), [dark](screenshots/19-campaign-results-dark.jpg)
+- What the creator sees on their own page, with no account: [light](screenshots/20-creator-page-light.jpg), [dark](screenshots/20-creator-page-dark.jpg)
+
