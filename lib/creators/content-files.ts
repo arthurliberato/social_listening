@@ -51,9 +51,7 @@ export function sniffKind(b: Uint8Array): FileKind | null {
 
 /** A name that is safe to show and to put in a header: no path, no control characters, not too long, right extension. */
 export function safeFileName(raw: string, kind: FileKind): string {
-  const base = (raw.split(/[\\/]/).pop() ?? "")
-    .replace(/[\u0000-\u001f\u007f"<>:|?*]/g, "")
-    .trim();
+  const base = (raw.split(/[\\/]/).pop() ?? "").replace(/[\u0000-\u001f\u007f"<>:|?*]/g, "").trim();
   const stem = base.replace(/\.[^.]*$/, "").trim() || "content";
   return `${stem.slice(0, 80).trim()}.${kind.ext}`;
 }
