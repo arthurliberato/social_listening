@@ -112,4 +112,4 @@ New events in `docs/tracking-plan.json` (139 total): `Product Hub Viewed`, `Prod
 
 ## Not yet built
 
-Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery,. Content is a link to a post, not an uploaded file. Still to build: anything that estimates reach or earned media value (results are measured visits and conversions only), tax forms and withholding, and a real payment provider behind the payout rail. Creator data is a snapshot; there is no refresh job. Linking creators to the listening corpus (what people say about a creator's brand mentions) are natural follow-ups.
+Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery. Content is a link to a post, not an uploaded file. Still to build: anything that estimates reach or earned media value (results are measured visits and conversions only), tax forms and withholding, and a real payment provider behind the payout rail. Creator data is a snapshot; there is no refresh job. The two products share a login, workspaces, plans and billing but not data: Influencers does not read the listening corpus, by design.
