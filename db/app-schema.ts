@@ -939,7 +939,10 @@ export const creatorLists = pgTable(
     name: text("name").notNull(),
     description: text("description").notNull().default(""),
     createdBy: uuid("created_by").references(() => users.id),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("creator_lists_ws_idx").on(t.workspaceId)],
 );
@@ -953,7 +956,10 @@ export const creatorListItems = pgTable(
     creatorId: integer("creator_id").notNull(),
     note: text("note").notNull().default(""),
     addedBy: uuid("added_by").references(() => users.id),
-    addedAt: ts("added_at").notNull().defaultNow(),
+    addedAt: ts("added_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [primaryKey({ columns: [t.listId, t.creatorId] })],
 );
@@ -967,7 +973,10 @@ export const creatorProfileViews = pgTable(
       .references(() => accounts.id, { onDelete: "cascade" }),
     creatorId: integer("creator_id").notNull(),
     period: text("period").notNull(), // YYYY-MM
-    firstViewedAt: ts("first_viewed_at").notNull().defaultNow(),
+    firstViewedAt: ts("first_viewed_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [primaryKey({ columns: [t.accountId, t.creatorId, t.period] })],
 );
@@ -992,7 +1001,10 @@ export const campaigns = pgTable(
     endsOn: date("ends_on"),
     status: text("status").notNull().default("draft"), // draft|active|completed|archived
     createdBy: uuid("created_by").references(() => users.id),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("campaigns_ws_idx").on(t.workspaceId, t.status)],
 );
@@ -1009,8 +1021,14 @@ export const campaignCreators = pgTable(
     feeUsd: integer("fee_usd"),
     note: text("note").notNull().default(""),
     addedBy: uuid("added_by").references(() => users.id),
-    addedAt: ts("added_at").notNull().defaultNow(),
-    statusChangedAt: ts("status_changed_at").notNull().defaultNow(),
+    addedAt: ts("added_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
+    statusChangedAt: ts("status_changed_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [primaryKey({ columns: [t.campaignId, t.creatorId] })],
 );
@@ -1035,7 +1053,10 @@ export const campaignInvites = pgTable(
     counterUsd: integer("counter_usd"),
     creatorNote: text("creator_note").notNull().default(""),
     sentBy: uuid("sent_by").references(() => users.id),
-    sentAt: ts("sent_at").notNull().defaultNow(),
+    sentAt: ts("sent_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
     expiresAt: ts("expires_at").notNull(),
     viewedAt: ts("viewed_at"),
     respondedAt: ts("responded_at"),
@@ -1060,7 +1081,10 @@ export const campaignContent = pgTable(
     /** submitted | approved | changes_requested */
     status: text("status").notNull().default("submitted"),
     feedback: text("feedback").notNull().default(""),
-    submittedAt: ts("submitted_at").notNull().defaultNow(),
+    submittedAt: ts("submitted_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
     reviewedAt: ts("reviewed_at"),
     reviewedBy: uuid("reviewed_by").references(() => users.id),
     /** Set when the creator uploaded a file instead of linking to a post (then `url` is empty). The bytes live in campaign_content_files. */
@@ -1090,7 +1114,10 @@ export const trackingLinks = pgTable(
       .references(() => campaigns.id, { onDelete: "cascade" }),
     creatorId: integer("creator_id").notNull(),
     code: text("code").notNull().unique(),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [uniqueIndex("tracking_links_creator_uq").on(t.campaignId, t.creatorId)],
 );
@@ -1105,7 +1132,10 @@ export const linkClicks = pgTable(
       .references(() => trackingLinks.id, { onDelete: "cascade" }),
     /** Passed to the destination as rw_cid; the brand's site sends it back with a conversion. */
     clickId: text("click_id").notNull().unique(),
-    ts: ts("ts").notNull().defaultNow(),
+    ts: ts("ts")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
     visitorHash: text("visitor_hash").notNull(),
     isBot: boolean("is_bot").notNull().default(false),
     isUnique: boolean("is_unique").notNull().default(false),
@@ -1121,7 +1151,10 @@ export const linkConversions = pgTable(
       .notNull()
       .references(() => trackingLinks.id, { onDelete: "cascade" }),
     clickId: text("click_id").notNull(),
-    ts: ts("ts").notNull().defaultNow(),
+    ts: ts("ts")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
     valueUsd: integer("value_usd").notNull().default(0),
     /** The brand's order reference, or the click id when none was sent: one conversion per key. */
     dedupeKey: text("dedupe_key").notNull(),
@@ -1149,7 +1182,10 @@ export const creatorContracts = pgTable(
     bodyText: text("body_text").notNull(),
     bodyHash: text("body_hash").notNull(),
     sentBy: uuid("sent_by").references(() => users.id),
-    sentAt: ts("sent_at").notNull().defaultNow(),
+    sentAt: ts("sent_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
     signedName: text("signed_name"),
     signedAt: ts("signed_at"),
     /** What the creator asked to change, when they didn't sign. */
@@ -1172,7 +1208,10 @@ export const creatorPayoutDetails = pgTable(
     country: text("country").notNull(),
     /** ok | fail_payout (a test account that rejects transfers) */
     behavior: text("behavior").notNull().default("ok"),
-    savedAt: ts("saved_at").notNull().defaultNow(),
+    savedAt: ts("saved_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [primaryKey({ columns: [t.campaignId, t.creatorId] })],
 );
@@ -1189,7 +1228,10 @@ export const creatorPayouts = pgTable(
     /** processing | paid | failed | canceled */
     status: text("status").notNull().default("processing"),
     initiatedBy: uuid("initiated_by").references(() => users.id),
-    initiatedAt: ts("initiated_at").notNull().defaultNow(),
+    initiatedAt: ts("initiated_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
     settleAt: ts("settle_at").notNull(),
     settledAt: ts("settled_at"),
     failureReason: text("failure_reason").notNull().default(""),
@@ -1211,7 +1253,10 @@ export const creatorSavedSearches = pgTable(
     /** Canonical query string, rebuilt from the parsed filters so nothing but valid filters is ever stored. */
     query: text("query").notNull(),
     createdBy: uuid("created_by").references(() => users.id),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [uniqueIndex("creator_saved_searches_ws_name_uq").on(t.workspaceId, t.name)],
 );

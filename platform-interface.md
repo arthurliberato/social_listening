@@ -24,7 +24,7 @@ Routes under `app/`. "Role" is the minimum role (matrix in section 3). Every `/w
 | `/` , `/pricing`, `/contact-sales` | Read marketing, toggle plan compare, request sales contact | `submitSalesRequest(input)` (`app/(marketing)/contact-sales/actions.ts`) |
 | `/signup` | Create account + workspace | `app/(auth)/signup/actions.ts` (name, email, company, password; `data-testid` `signup-*`) |
 | `/verify` | Resend / confirm email (link arrives in `/inbox`) | `app/(auth)/verify/actions.ts` |
-| `/login`, `/login/magic`, `/oauth/northstar/*` | Password login, magic link, simulated OAuth ("Northstar") | `app/(auth)/login/**/actions.ts`, `app/oauth/northstar/**`; Auth.js route `/api/auth/[...nextauth]` |
+| `/login`, `/login/magic`, `/oauth/northstar/*` | Password login, magic link, simulated OAuth ("Northstar"). After signing in, members land on `/hub` and choose Social listening or Influencers (agents click `hub-listening`) | `app/(auth)/login/**/actions.ts`, `app/oauth/northstar/**`; Auth.js route `/api/auth/[...nextauth]` |
 | `/forgot`, `/reset` | Password reset by emailed link | `app/(auth)/forgot|reset/actions.ts` |
 | `/invite/[token]` | Accept a team invite | `acceptInviteAction` (`app/settings/team/actions.ts`) |
 | `/inbox` | Simulated mailbox for the signed-in user (all emails the app "sends") | page only |

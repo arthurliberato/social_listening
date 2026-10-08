@@ -580,7 +580,8 @@ test("the audit log records what happened, filters, and is a paywall below Enter
       async () =>
         (
           await pool.query(
-            `SELECT m.role FROM memberships m JOIN users u ON u.id = m.user_id WHERE u.name = 'Eddie Editor' ORDER BY m.role LIMIT 1`,
+            `SELECT m.role FROM memberships m JOIN users u ON u.id = m.user_id WHERE u.name = 'Eddie Editor' AND m.account_id IN (SELECT mo.account_id FROM memberships mo JOIN users uo ON uo.id = mo.user_id WHERE lower(uo.email) = $1) ORDER BY m.role LIMIT 1`,
+            [owner.email.toLowerCase()],
           )
         ).rows[0]?.role,
     )

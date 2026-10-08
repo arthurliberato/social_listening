@@ -27,7 +27,13 @@ export class Workspace {
     await this.page.getByTestId("login-email").fill(email);
     await this.page.getByTestId("login-password").fill(password);
     await this.page.getByTestId("login-submit").click();
-    await this.page.waitForURL(/\/w\/[^/]+\//, { timeout: 30_000 });
+    // After sign-in people choose a product on the hub; the analyst works in social listening.
+    await this.page.waitForURL(/\/(hub|w\/[^/]+\/)/, { timeout: 30_000 });
+    if (new URL(this.page.url()).pathname === "/hub") {
+      await this.page.waitForLoadState("networkidle");
+      await this.page.getByTestId("hub-listening").click();
+      await this.page.waitForURL(/\/w\/[^/]+\//, { timeout: 30_000 });
+    }
     this.slug = new URL(this.page.url()).pathname.split("/")[2]!;
     await this.page.waitForLoadState("networkidle");
     return { slug: this.slug };
