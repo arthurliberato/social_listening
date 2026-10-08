@@ -357,6 +357,17 @@ test("a creator can upload a file instead of a link, and only the right people c
   await cp.getByTestId("content-submit").click();
   await expect(cp.getByTestId("portal-error")).toContainText("kind of file");
 
+  // The upload form has no serious accessibility problems, in either theme.
+  for (const theme of ["light", "dark"]) {
+    await cp.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
+    await cp.waitForTimeout(500); // let colour transitions finish before measuring contrast
+    const { violations } = await new AxeBuilder({ page: cp })
+      .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
+      .analyze();
+    const serious = violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(serious, `upload form (${theme}): ${JSON.stringify(serious, null, 1)}`).toEqual([]);
+  }
+
   // A real image goes through.
   await cp.getByTestId("content-file").setInputFiles({
     name: "../../My Reel.png",
