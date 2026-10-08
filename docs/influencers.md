@@ -42,7 +42,7 @@ Creators don't have accounts. A brand invites a creator from the campaign roster
 
 **Plan allowance**: invitations per month (each new or revised offer counts): 5 on Trial, 10 Starter, 200 Growth, 1,000 Agency, 10,000 Enterprise. Past it, the brand sees a paywall (`outreach_quota`) and nothing is sent.
 
-**Events**: `Creator Invitation Sent`, `Creator Portal Viewed` (first open only), `Creator Invitation Answered`, `Creator Counter Resolved`, `Creator Content Submitted`, `Creator Content Reviewed`. Creator-side events carry the workspace and account but no member id, since creators aren't users: they have `actor_type: creator` and appear in Amplitude as `creator_<id>`. Every event also carries `product`. See `docs/analytics.md`.
+**Events**: `Creator Invitation Sent`, `Creator Portal Viewed` (first open only), `Creator Invitation Answered`, `Creator Counter Resolved`, `Creator Content Submitted`, `Creator Content Reviewed`. Creator-side events carry the workspace and account but no member id, since creators aren't users: they have `actor_type: creator` and appear in RudderStack and BigQuery as `creator_<id>`. Every event also carries `product`. See `docs/analytics.md`.
 
 ## Tracking links and results (I4)
 
