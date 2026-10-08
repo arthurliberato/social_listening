@@ -102,7 +102,7 @@ test("empty state → build an alert with a live backtest → it appears in the 
   expect(created.props).toMatchObject({
     alert_type: "volume_spike",
     threshold: 2,
-    channel: "in_app+email",
+    delivery_channel: "in_app+email",
   });
   expect(typeof created.props.backtest_fire_count).toBe("number");
 

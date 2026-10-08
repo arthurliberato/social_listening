@@ -211,7 +211,7 @@ test("scheduling is a paywall on trial; on Growth it saves, and a copy lands in 
   await polled(email, "Email Opened").toBe(1);
   // (Report Opened also fires for in-app views; count only the email channel here.)
   const emailOpens = async () =>
-    (await events(email, "Report Opened")).filter((e) => e.props.channel === "email");
+    (await events(email, "Report Opened")).filter((e) => e.props.delivery_channel === "email");
   await expect.poll(async () => (await emailOpens()).length).toBe(1);
   expect((await emailOpens())[0]!.props).toMatchObject({ report_id: id });
   await page.reload();
@@ -257,7 +257,8 @@ test("a scheduled run that is due sends to the inbox once", async ({ page }) => 
   await expect
     .poll(
       async () =>
-        (await events(email, "Report Opened")).filter((e) => e.props.channel === "email").length,
+        (await events(email, "Report Opened")).filter((e) => e.props.delivery_channel === "email")
+          .length,
     )
     .toBe(1);
 });
