@@ -9,7 +9,7 @@ export class Workspace {
   constructor(
     readonly page: Page,
     readonly baseUrl: string,
-    private slug = "",
+    public slug = "",
   ) {}
 
   static async open(context: BrowserContext, baseUrl: string) {

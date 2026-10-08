@@ -30,7 +30,8 @@ export async function recordOpen(emailId: string): Promise<void> {
       .where(and(eq(reportDeliveries.id, d.id), isNull(reportDeliveries.openedAt)));
   const ctx = { userId: m.userId, workspaceId: d?.workspaceId ?? null };
   await trackServer("Email Opened", ctx, { email_type: m.type });
-  if (d) await trackServer("Report Opened", ctx, { report_id: d.reportId, channel: "email" });
+  if (d)
+    await trackServer("Report Opened", ctx, { report_id: d.reportId, delivery_channel: "email" });
 }
 
 /** Records the click; returns the in-app path to send the reader to (or null if it can't be resolved). */

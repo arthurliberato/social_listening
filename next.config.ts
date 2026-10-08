@@ -7,7 +7,7 @@ const config: NextConfig = {
     "pg",
     "pg-boss",
     "@node-rs/argon2",
-    "@amplitude/analytics-node",
+    "@rudderstack/rudder-sdk-node",
     "nodemailer",
     "pdfkit",
   ],

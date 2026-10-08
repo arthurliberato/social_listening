@@ -42,7 +42,7 @@ Creators don't have accounts. A brand invites a creator from the campaign roster
 
 **Plan allowance**: invitations per month (each new or revised offer counts): 5 on Trial, 10 Starter, 200 Growth, 1,000 Agency, 10,000 Enterprise. Past it, the brand sees a paywall (`outreach_quota`) and nothing is sent.
 
-**Events**: `Creator Invitation Sent`, `Creator Portal Viewed` (first open only), `Creator Invitation Answered`, `Creator Counter Resolved`, `Creator Content Submitted`, `Creator Content Reviewed`. Creator-side events carry the workspace and account but no member id, since creators aren't users: they have `actor_type: creator` and appear in Amplitude as `creator_<id>`. Every event also carries `product`. See `docs/analytics.md`.
+**Events**: `Creator Invitation Sent`, `Creator Portal Viewed` (first open only), `Creator Invitation Answered`, `Creator Counter Resolved`, `Creator Content Submitted`, `Creator Content Reviewed`. Creator-side events carry the workspace and account but no member id, since creators aren't users: they have `actor_type: creator` and appear in RudderStack and BigQuery as `creator_<id>`. Every event also carries `product`. See `docs/analytics.md`.
 
 ## Tracking links and results (I4)
 
@@ -108,7 +108,7 @@ Roles: owners, admins and editors change lists; viewers can browse and export; c
 
 ## Analytics
 
-New events in `docs/tracking-plan.json` (139 total): `Product Hub Viewed`, `Product Opened` (`target_product` says which), `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events, the six outreach events the five tracking events the six contract and payout events, the four search and comparison events above, and `Creator Invitation Reminded` (sent by the system). Paywalls reuse `Paywall Viewed`.
+New events in `docs/tracking-plan.json` (145 in the plan, six of them from the agent line): `Product Hub Viewed`, `Product Opened` (`target_product` says which), `Creator Search Run`, `Creator Profile Viewed`, `Creator List Created`, `Creator Added To List`, `Creator Removed From List`, `Creator List Exported`, the five campaign events, the six outreach events the five tracking events the six contract and payout events, the four search and comparison events above, and `Creator Invitation Reminded` (sent by the system). Paywalls reuse `Paywall Viewed`.
 
 ## Not yet built
 

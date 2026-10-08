@@ -15,7 +15,8 @@ No agent-only shortcuts or hidden endpoints. Stable `data-testid` + accessible n
 - Auth.js (credentials, magic link, simulated OAuth); Argon2
 - Stripe TEST MODE only (or internal BillingService behind the same interface)
 - Mailpit for SMTP in dev; EmailService writes to `emails` table
-- Amplitude Browser SDK 2 (@amplitude/analytics-browser) + Node SDK (@amplitude/analytics-node)
+- RudderStack (Node SDK, @rudderstack/rudder-sdk-node) collects every event; BigQuery is its first destination, and
+  Amplitude or Mixpanel can be added later in RudderStack without code changes
 - Vitest (unit), Playwright (e2e), axe-core (a11y), ESLint, Prettier
 - Docker Compose: app, postgres, mailpit
 
@@ -45,11 +46,12 @@ No agent-only shortcuts or hidden endpoints. Stable `data-testid` + accessible n
 
 ## Analytics architecture
 - One `track()` wrapper fans out per `destinations` in /docs/tracking-plan.json:
-  - Amplitude: all events.
+  - RudderStack: all events, sent by the server (browser events pass through /api/track first, so every event
+    carries the global properties). RudderStack delivers to BigQuery and any later destination.
   - GA4: lead/funnel events only, renamed via each event's `ga4_name`. Use a separate GA4 property
-    for synthetic traffic; set GA4 `user_id` to the same UUID as Amplitude. Never send email/names.
-  - Warehouse (BigQuery): Postgres `analytics_events` mirror batch-loaded, plus Amplitude Export API
-    pulls and GA4 native BigQuery export. Account-level analysis happens here.
+    for synthetic traffic; set GA4 `user_id` to the same UUID as RudderStack's `userId`. Never send email/names.
+  - Warehouse (BigQuery): fed by RudderStack, plus GA4 native BigQuery export. The Postgres `analytics_events`
+    mirror stays for reconciliation. Account-level analysis happens here (see docs/rudderstack-bigquery.md).
 - On sign-up, persist `signup_attribution_fields` (ga_client_id, ga_session_id, UTMs, gclid, referrer)
   on the user row so leads join to product behavior.
 
@@ -59,8 +61,8 @@ No agent-only shortcuts or hidden endpoints. Stable `data-testid` + accessible n
    via track(); events are typed; unknown events fail typecheck.
 3. Global props on every event: account_id, workspace_id, plan_tier, trial_day, user_role,
    persona_archetype, is_synthetic, agent_run_id, app_version, route, ui_theme.
-4. setUserId(uuid) on auth; setGroup('account', id); setGroup('workspace', id) on switch; reset() on logout.
-   Never send email or names to Amplitude.
+4. The server introduces each person to RudderStack (identify, ids and kinds only) and their account and
+   workspace (group) the first time it sees them, and again on a workspace switch. Never send email or names.
 5. WCAG 2.2 AA: 24px min targets, visible focus not obscured, drag alternatives, no cognitive
    auth tests, consistent help location, chart table alternatives, reduced-motion support.
 6. No dark patterns: cancel reachable from Billing in ≤3 steps; save offer max once; no pre-checked upsells.
@@ -96,5 +98,5 @@ M11 Sales-assist & analytics jobs: contact sales, demo, quotes, contracts; night
    AC: PQA≥60 shows in-app card + SDR email; health_band visible to admin.
 
 ## Definition of done (every PR)
-Typecheck, lint, unit, e2e for touched flow, axe pass, events verified in Amplitude debugger,
+Typecheck, lint, unit, e2e for touched flow, axe pass, events verified at RudderStack and in BigQuery (`npm run audit:warehouse`),
 screenshots light+dark, no console errors.
