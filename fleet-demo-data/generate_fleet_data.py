@@ -1,5 +1,7 @@
-"""Synthetic fleet data for a fictitious delivery operation (Northgate Logistics, demo only).
-All names, places and numbers are made up. Re-run with: python3 generate_fleet_data.py
+"""Synthetic fleet data for a fictitious Santo Domingo-based delivery operation (demo only).
+Company, drivers and customers are invented. Coordinates are approximate town/area centers; distances are
+modeled, not measured on roads. Fuel is in US gallons, money in DOP (illustrative prices).
+Re-run with: python3 generate_fleet_data.py   (seeded: identical output every run)
 """
 import csv, math, random, os
 from datetime import datetime, timedelta, date
@@ -7,8 +9,9 @@ from datetime import datetime, timedelta, date
 random.seed(42)
 OUT = os.path.dirname(os.path.abspath(__file__))
 START, END = date(2026, 4, 1), date(2026, 9, 30)
-CENTER = (40.0000, -4.0000)  # placeholder depot coordinates; edit to taste
-STORM_WEEK = (date(2026, 7, 13), date(2026, 7, 19))
+DEPOT = (18.4960, -69.9600)                 # fictitious "Central Depot", Greater Santo Domingo
+STORM_WEEK = (date(2026, 8, 17), date(2026, 8, 23))   # tropical-storm week (hurricane season)
+GAL = 3.785
 
 def clip(x, lo, hi): return max(lo, min(hi, x))
 def poisson(lam):
@@ -19,30 +22,49 @@ def poisson(lam):
         k += 1
 def fmt(dt): return dt.strftime("%Y-%m-%d %H:%M:%S")
 def write(name, rows, fields):
-    with open(os.path.join(OUT, name), "w", newline="") as f:
+    with open(os.path.join(OUT, name), "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=fields); w.writeheader(); w.writerows(rows)
     print(f"{name}: {len(rows)} rows")
 
-# ---------- routes (master) ----------
-ZONES = ["Harbor Row","Maple Heights","Old Mill","Riverside","Northgate","Elm Park","Cedar Point",
-         "Brookfield","Stonebridge","Lakeview","Foundry District","Westfield","Granite Hill"]
-ROUTES = []  # route_id, type, zone, base_stops, base_km
-for i in range(6):  ROUTES.append((f"BK-{i+1:02d}", "motorbike", ZONES[i], random.randint(20, 28), random.randint(38, 65)))
-for i in range(4):  ROUTES.append((f"VN-{i+1:02d}", "van", ZONES[6+i], random.randint(16, 22), random.randint(70, 115)))
-for i in range(3):  ROUTES.append((f"TR-{i+1:02d}", "truck", ZONES[10+i], random.randint(7, 11), random.randint(160, 290)))
-ZONE_OFFSET = {z: (random.uniform(-.06, .06), random.uniform(-.08, .08)) for z in ZONES}
-INTERVAL = {"motorbike": 11, "van": 17, "truck": 45}      # planned minutes between stops
+# ---------- zones & routes ----------
+ZONE_LL = {  # approximate area centers (lat, lon)
+    "Distrito Nacional": (18.4780, -69.9350), "Zona Colonial": (18.4733, -69.8830),
+    "Santo Domingo Este": (18.4850, -69.8570), "Santo Domingo Oeste": (18.4980, -70.0000),
+    "Santo Domingo Norte": (18.5600, -69.9150), "Los Alcarrizos": (18.5130, -70.0250),
+    "Boca Chica": (18.4540, -69.6070), "San Cristóbal": (18.4180, -70.1090),
+    "Villa Altagracia": (18.6736, -70.1608), "Haina": (18.4167, -70.0333),
+    "Punta Cana-Bávaro": (18.6500, -68.4200), "Santiago": (19.4517, -70.6970), "La Romana": (18.4273, -68.9728)}
+def R(rid, vt, zone, s, km): return (rid, vt, zone, random.randint(*s), random.randint(*km))
+ROUTES = [R("BK-01","motorbike","Distrito Nacional",(20,28),(35,60)), R("BK-02","motorbike","Zona Colonial",(20,28),(35,60)),
+          R("BK-03","motorbike","Santo Domingo Este",(20,28),(40,65)), R("BK-04","motorbike","Santo Domingo Oeste",(20,28),(40,65)),
+          R("BK-05","motorbike","Santo Domingo Norte",(20,28),(40,65)), R("BK-06","motorbike","Los Alcarrizos",(20,28),(40,65)),
+          R("VN-01","van","Boca Chica",(16,22),(85,110)), R("VN-02","van","San Cristóbal",(16,22),(95,120)),
+          R("VN-03","van","Villa Altagracia",(16,22),(100,130)), R("VN-04","van","Haina",(16,22),(60,85)),
+          R("TR-01","truck","Punta Cana-Bávaro",(7,10),(390,430)), R("TR-02","truck","Santiago",(7,10),(320,350)),
+          R("TR-03","truck","La Romana",(7,10),(250,270))]
+INTERVAL = {"motorbike": 11, "van": 17, "truck": 70}      # planned minutes between stops
 VEH = {"motorbike": dict(n=14, rated=38, tank=12, fuel="petrol", idle=0.3, brake=2.0, accel=1.5, speed=2.5, shift=None),
        "van":       dict(n=6,  rated=11, tank=60, fuel="diesel", idle=1.0, brake=2.0, accel=1.2, speed=2.0, shift="07:30"),
        "truck":     dict(n=4,  rated=3.6, tank=300, fuel="diesel", idle=2.5, brake=1.0, accel=0.6, speed=1.5, shift="06:00")}
 write("routes_master.csv", [dict(route_id=r, vehicle_type=t, zone=z, typical_stops=s, typical_km=k) for r,t,z,s,k in ROUTES],
       ["route_id","vehicle_type","zone","typical_stops","typical_km"])
 
+def geo(zone, vt, frac, wander=False):
+    zl = ZONE_LL[zone]
+    if vt == "truck":            # out-and-back along the corridor depot -> destination
+        s = 1 - abs(2 * frac - 1)
+        return dict(lat=round(DEPOT[0] + (zl[0] - DEPOT[0]) * s + random.gauss(0, .004), 5),
+                    lon=round(DEPOT[1] + (zl[1] - DEPOT[1]) * s + random.gauss(0, .004), 5))
+    if wander:
+        return dict(lat=round(zl[0] + .02 * math.sin(frac * 19) + random.gauss(0, .001), 5),
+                    lon=round(zl[1] + .02 * math.cos(frac * 13) + random.gauss(0, .001), 5))
+    return dict(lat=round(zl[0] + random.gauss(0, .012), 5), lon=round(zl[1] + random.gauss(0, .012), 5))
+
 # ---------- drivers & vehicles ----------
-FIRST = ["Alex","Sam","Jordan","Maya","Luca","Nina","Omar","Elena","Tomas","Priya","Marco","Ines","Kofi","Lena","Diego",
-         "Hana","Ravi","Sofia","Mateo","Aisha","Viktor","Clara","Jon","Mei"]
-LAST = ["Alder","Brook","Castell","Dunmore","Ellery","Farrow","Garner","Holt","Ivers","Jarrow","Kestrel","Lowell",
-        "Marsh","Norwood","Oakes","Pryce","Quill","Rowan","Sterling","Thorne","Underhill","Vance","Wren","Yarrow"]
+FIRST = ["Juan","Luis","Carlos","Miguel","Yohanna","Rafael","Altagracia","Pedro","Wilson","Yudelka","Franklin","Ramón",
+         "Anyelo","Dariel","Mercedes","Starling","Joel","Kelvin","Rosanna","Eddy","Yeison","Amaury","Jhoan","Massiel"]
+LAST = ["Peña","Rodríguez","Martínez","Santana","Báez","Cabrera","De la Cruz","Pérez","Reyes","Mejía","Rosario","Féliz",
+        "Almonte","Tavárez","Ureña","Jiménez","Núñez","Polanco","Vásquez","Guzmán","Batista","Castillo","Mora","Disla"]
 random.shuffle(LAST)
 drivers, vehicles = [], []
 d_idx = v_idx = 0
@@ -50,42 +72,38 @@ for vt, spec in VEH.items():
     for _ in range(spec["n"]):
         d_idx += 1; v_idx += 1
         did, vid = f"D{d_idx:02d}", f"V{v_idx:02d}"
-        shift = spec["shift"] or random.choice(["07:30", "12:30"])
-        drv = dict(driver_id=did, name=f"{FIRST[d_idx-1]} {LAST[d_idx-1]}", vehicle_type=vt,
-                   license_class={"motorbike":"A2","van":"B","truck":"C"}[vt],
+        drivers.append(dict(driver_id=did, name=f"{FIRST[d_idx-1]} {LAST[d_idx-1]}", vehicle_type=vt,
+                   license_class={"motorbike":"Motorcycle","van":"Light vehicle","truck":"Heavy truck"}[vt],
                    hire_date=(date(2026,4,1) - timedelta(days=random.randint(120, 2600))).isoformat(),
-                   shift_start=shift, home_depot="Central Depot", assigned_vehicle=vid,
-                   # hidden behavior params
+                   shift_start=spec["shift"] or random.choice(["07:30", "12:30"]), home_depot="Central Depot", assigned_vehicle=vid,
                    step=clip(random.gauss(0.7, 0.12), 0.45, 0.95), fuelf=random.gauss(1.0, 0.025),
                    evm=clip(random.gauss(1.0, 0.25), 0.5, 1.5), idlem=clip(random.gauss(1.0, 0.2), .6, 1.4),
-                   detour=clip(random.gauss(0.03, 0.01), 0.01, 0.05))
-        drivers.append(drv)
+                   detour=clip(random.gauss(0.03, 0.01), 0.01, 0.05)))
         rated = spec["rated"] * random.gauss(1, 0.04)
-        vehicles.append(dict(vehicle_id=vid, vehicle_type=vt, fuel_type=spec["fuel"], tank_liters=spec["tank"],
-                             rated_km_per_l=round(rated, 1), model_year=random.randint(2016, 2025),
+        vehicles.append(dict(vehicle_id=vid, vehicle_type=vt, fuel_type=spec["fuel"], tank_gallons=round(spec["tank"] / GAL, 1),
+                             rated_km_per_gal=round(rated * GAL, 1), model_year=random.randint(2016, 2025),
                              odometer_start=random.randint(*{"motorbike":(8000,40000),"van":(30000,120000),"truck":(90000,350000)}[vt]),
-                             maintenance_due=(date(2026,10,1)+timedelta(days=random.randint(5,120))).isoformat(),
-                             _rated=rated))
+                             maintenance_due=(date(2026,10,1)+timedelta(days=random.randint(5,120))).isoformat(), _rated=rated))
 D = {d["driver_id"]: d for d in drivers}
-# planted patterns
-for did, ch in {"D03": dict(step=1.35), "D09": dict(step=1.15, evm=1.8),     # weak punctuality (bikes)
+for did, ch in {"D03": dict(step=1.35), "D09": dict(step=1.15, evm=1.8),                       # weak punctuality (bikes)
                 "D05": dict(step=0.15, evm=0.4, fuelf=1.05), "D17": dict(step=0.2, evm=0.5, fuelf=1.04),  # top performers
-                "D12": dict(fuelf=0.88, evm=3.0, detour=0.10),                  # wasteful, risky
-                "D21": dict(idlem=2.6)}.items():                                # truck idling
+                "D12": dict(fuelf=0.88, evm=3.0, detour=0.10),                                  # wasteful, risky
+                "D21": dict(idlem=2.6)}.items():                                                # truck idling
     D[did].update(ch)
 write("drivers.csv", [{k: v for k, v in d.items() if k in ("driver_id","name","vehicle_type","license_class","hire_date","shift_start","home_depot","assigned_vehicle")} for d in drivers],
       ["driver_id","name","vehicle_type","license_class","hire_date","shift_start","home_depot","assigned_vehicle"])
 write("vehicles.csv", [{k: v for k, v in x.items() if not k.startswith("_")} for x in vehicles],
-      ["vehicle_id","vehicle_type","fuel_type","tank_liters","rated_km_per_l","model_year","odometer_start","maintenance_due"])
+      ["vehicle_id","vehicle_type","fuel_type","tank_gallons","rated_km_per_gal","model_year","odometer_start","maintenance_due"])
 V = {v["vehicle_id"]: v for v in vehicles}
 
-# ---------- price & weather ----------
+# ---------- price (DOP per gallon, illustrative) & weather ----------
 def price(d, fuel):
-    base = 1.72 if fuel == "petrol" else 1.58
-    return base * (1 + 0.04 * math.sin((d - START).days / 28)) + random.gauss(0, 0.01)
+    base = 290 if fuel == "petrol" else 245
+    return base * (1 + 0.04 * math.sin((d - START).days / 28)) + random.gauss(0, 1.0)
 def weather(d):
     if STORM_WEEK[0] <= d <= STORM_WEEK[1]: return "Storm" if d.weekday() in (1, 3) else "Rain"
-    r = random.random(); return "Clear" if r < .72 else "Rain" if r < .97 else "Storm"
+    pr = .20 if d.month == 4 else .35                       # drier April, wetter May-Sep
+    r = random.random(); return "Storm" if r < .02 else "Rain" if r < .02 + pr else "Clear"
 W_STEP = {"Clear": 0, "Rain": 0.3, "Storm": 0.8}; W_FUEL = {"Clear": 1, "Rain": .96, "Storm": .92}
 W_FAIL = {"Clear": .04, "Rain": .06, "Storm": .10}; W_EV = {"Clear": 1, "Rain": 1.2, "Storm": 1.4}
 FAIL_REASONS = ["Customer absent", "Address not found", "Access blocked", "Refused delivery"]
@@ -100,13 +118,13 @@ while d <= END:
         if d.weekday() == 5 and di % 2: continue          # half the fleet works Saturdays
         if random.random() < 0.04: continue               # absence
         vt, vid = drv["vehicle_type"], drv["assigned_vehicle"]
-        route = random.choice([r for r in ROUTES if r[1] == vt]); rid, _, zone, bstops, bkm = route
+        rid, _, zone, bstops, bkm = random.choice([r for r in ROUTES if r[1] == vt])
         spec, veh = VEH[vt], V[vid]
         run_n += 1; run_id = f"R{run_n:05d}"
         n = clip(bstops + random.randint(-2, 2), 4, 40)
         sh, sm = map(int, drv["shift_start"].split(":"))
         start = datetime(d.year, d.month, d.day, sh, sm) + timedelta(minutes=random.randint(0, 10))
-        step_extra = {"motorbike": 0, "van": 0.35, "truck": 1.6}[vt] + W_STEP[wx] * (3 if rid == "BK-02" else 1) + (0.4 if rid == "BK-05" else 0)  # BK-02 rain-sensitive, BK-05 chronically late
+        step_extra = {"motorbike": 0, "van": 0.35, "truck": 1.6}[vt] + W_STEP[wx] * (3 if rid == "BK-02" else 1) + (0.4 if rid == "BK-05" else 0)
         cum, on_time, failed, last = 0.0, 0, 0, start
         for i in range(1, n + 1):
             planned = start + timedelta(minutes=i * INTERVAL[vt])
@@ -124,16 +142,14 @@ while d <= END:
         end = last + timedelta(minutes=INTERVAL[vt])
         pkm = round(bkm * n / bstops, 1)
         akm = round(pkm * (1 + drv["detour"] + (0.03 if wx != "Clear" else 0) + random.gauss(0, 0.015)), 1)
-        # telematics events
         k100 = akm / 100; evm = drv["evm"] * W_EV[wx]; idle_min = 0
         lo, hi = (8, 30) if vt == "truck" else (5, 18)
         spans = (end - start).total_seconds()
         def ev(etype, val, unit):
             global ev_n; ev_n += 1
-            zo = ZONE_OFFSET[zone]
             events.append(dict(event_id=f"EV{ev_n:06d}", run_id=run_id, driver_id=drv["driver_id"], vehicle_id=vid,
                 event_time=fmt(start + timedelta(seconds=random.uniform(0, spans))), event_type=etype, value=val, unit=unit,
-                lat=round(CENTER[0] + zo[0] + random.gauss(0, .01), 5), lon=round(CENTER[1] + zo[1] + random.gauss(0, .01), 5)))
+                **geo(zone, vt, random.random())))
         for _ in range(poisson(spec["brake"] * k100 * evm)): ev("harsh_braking", round(random.uniform(.35, .7), 2), "g")
         for _ in range(poisson(spec["accel"] * k100 * evm)): ev("harsh_acceleration", round(random.uniform(.3, .6), 2), "g")
         for _ in range(poisson(spec["speed"] * k100 * evm)): ev("speeding", random.randint(5, 30), "km/h over limit")
@@ -141,13 +157,13 @@ while d <= END:
             m = random.randint(lo, hi); idle_min += m; ev("excessive_idling", m, "min")
         rated = veh["_rated"] * (0.78 if (vid == "V07" and d >= date(2026, 8, 1)) else 1)   # V07 develops an engine issue
         kml = rated * drv["fuelf"] * W_FUEL[wx] * random.gauss(1, .025)
-        fuel = akm / kml + idle_min / 60 * spec["idle"]
+        gal = (akm / kml + idle_min / 60 * spec["idle"]) / GAL
         runs.append(dict(run_id=run_id, date=d.isoformat(), weekday=d.strftime("%a"), route_id=rid, zone=zone, driver_id=drv["driver_id"],
             vehicle_id=vid, vehicle_type=vt, weather=wx, start_time=fmt(start), end_time=fmt(end), planned_stops=n,
             completed_stops=n - failed, failed_stops=failed, on_time_stops=on_time,
             on_time_pct=round(100 * on_time / max(1, n - failed), 1), planned_km=pkm, actual_km=akm,
-            km_deviation_pct=round(100 * (akm - pkm) / pkm, 1), idle_minutes=idle_min, fuel_used_l=round(fuel, 2),
-            km_per_l=round(akm / fuel, 2), fuel_cost_est=round(fuel * price(d, spec["fuel"]), 2)))
+            km_deviation_pct=round(100 * (akm - pkm) / pkm, 1), idle_minutes=idle_min, fuel_used_gal=round(gal, 2),
+            km_per_gal=round(akm / gal, 1), fuel_cost_dop=round(gal * price(d, spec["fuel"]), 2)))
     d += timedelta(days=1)
 
 write("route_runs.csv", runs, list(runs[0].keys()))
@@ -155,18 +171,18 @@ write("deliveries.csv", deliveries, list(deliveries[0].keys()))
 write("telematics_events.csv", events, list(events[0].keys()))
 
 # ---------- fuel logs (refills reconstructed from consumption; V18 gets a planted mismatch) ----------
-STATIONS = ["Northgate Fuel", "Riverside Pump", "Highway 9 Services", "Central Depot Tank"]
+STATIONS = ["Estación Norte", "Gasolinera Ribera", "Autopista Services", "Central Depot Tank"]
 logs, fl = [], 0
 for v in vehicles:
     acc, odo = 0.0, v["odometer_start"]
     for r in sorted((r for r in runs if r["vehicle_id"] == v["vehicle_id"]), key=lambda r: r["run_id"]):
-        acc += r["fuel_used_l"]; odo += r["actual_km"]
-        if acc >= 0.7 * v["tank_liters"]:
-            dd = date.fromisoformat(r["date"]); liters = acc * random.gauss(1, .01)
-            if v["vehicle_id"] == "V18" and dd >= date(2026, 8, 1): liters *= 1.28
+        acc += r["fuel_used_gal"]; odo += r["actual_km"]
+        if acc >= 0.7 * v["tank_gallons"]:
+            dd = date.fromisoformat(r["date"]); gals = acc * random.gauss(1, .01)
+            if v["vehicle_id"] == "V18" and dd >= date(2026, 8, 1): gals *= 1.28
             p = price(dd, v["fuel_type"]); fl += 1
             logs.append(dict(fuel_log_id=f"FL{fl:05d}", date=dd.isoformat(), vehicle_id=v["vehicle_id"], station=random.choice(STATIONS),
-                             liters=round(liters, 1), price_per_l=round(p, 3), total_cost=round(liters * p, 2), odometer_km=int(odo)))
+                             gallons=round(gals, 1), price_per_gal_dop=round(p, 2), total_cost_dop=round(gals * p, 2), odometer_km=int(odo)))
             acc = 0.0
 write("fuel_logs.csv", logs, list(logs[0].keys()))
 
@@ -192,15 +208,12 @@ pings = []
 for vt in ("motorbike", "van", "truck"):
     for r in [x for x in runs if x["vehicle_type"] == vt and x["date"] >= "2026-09-15"][:4]:
         st, en = datetime.fromisoformat(r["start_time"]), datetime.fromisoformat(r["end_time"])
-        zo = ZONE_OFFSET[r["zone"]]; tank = VEH[vt]["tank"]; lvl = random.uniform(70, 95); t = st; i = 0
+        tank = VEH[vt]["tank"] / GAL; lvl = random.uniform(70, 95); t = st; i = 0
         total = max(1, (en - st).total_seconds() / 120)
         while t <= en:
-            frac = i / total; wob = math.sin(frac * math.pi * 6) * .01
-            lat = CENTER[0] + zo[0] * math.sin(min(1, frac * 2) * math.pi / 2 if frac < .5 else (1 - frac) * math.pi) + wob + random.gauss(0, .001)
-            lon = CENTER[1] + zo[1] * math.sin(min(1, frac * 2) * math.pi / 2 if frac < .5 else (1 - frac) * math.pi) + wob + random.gauss(0, .001)
-            stopped = random.random() < .18
-            pings.append(dict(run_id=r["run_id"], vehicle_id=r["vehicle_id"], ping_time=fmt(t), lat=round(lat, 5), lon=round(lon, 5),
-                              speed_kmh=0 if stopped else round(random.uniform(12, 55 if vt != "truck" else 80), 0), ignition="on",
-                              fuel_level_pct=round(lvl - frac * 100 * float(r["fuel_used_l"]) / tank, 1)))
+            frac = min(1, i / total); stopped = random.random() < .18
+            pings.append(dict(run_id=r["run_id"], vehicle_id=r["vehicle_id"], ping_time=fmt(t), **geo(r["zone"], vt, frac, wander=True),
+                              speed_kmh=0 if stopped else round(random.uniform(12, 55 if vt != "truck" else 95), 0), ignition="on",
+                              fuel_level_pct=round(lvl - frac * 100 * float(r["fuel_used_gal"]) / tank, 1)))
             t += timedelta(minutes=2); i += 1
 write("gps_pings_sample.csv", pings, list(pings[0].keys()))

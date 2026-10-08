@@ -1,14 +1,14 @@
 route_id,vehicle_type,zone,typical_stops,typical_km
-BK-01,motorbike,Harbor Row,21,38
-BK-02,motorbike,Maple Heights,24,45
-BK-03,motorbike,Old Mill,23,42
-BK-04,motorbike,Riverside,21,59
-BK-05,motorbike,Northgate,28,40
-BK-06,motorbike,Elm Park,26,39
-VN-01,van,Cedar Point,16,75
-VN-02,van,Brookfield,17,84
-VN-03,van,Stonebridge,20,108
-VN-04,van,Lakeview,16,105
-TR-01,truck,Foundry District,8,267
-TR-02,truck,Westfield,8,274
-TR-03,truck,Granite Hill,11,231
+BK-01,motorbike,Distrito Nacional,21,35
+BK-02,motorbike,Zona Colonial,24,42
+BK-03,motorbike,Santo Domingo Este,23,44
+BK-04,motorbike,Santo Domingo Oeste,21,61
+BK-05,motorbike,Santo Domingo Norte,28,42
+BK-06,motorbike,Los Alcarrizos,26,41
+VN-01,van,Boca Chica,16,87
+VN-02,van,San Cristóbal,17,102
+VN-03,van,Villa Altagracia,20,119
+VN-04,van,Haina,16,77
+TR-01,truck,Punta Cana-Bávaro,8,424
+TR-02,truck,Santiago,10,327
+TR-03,truck,La Romana,10,268

@@ -1,25 +1,25 @@
 driver_id,name,vehicle_type,license_class,hire_date,shift_start,home_depot,assigned_vehicle
-D01,Alex Garner,motorbike,A2,2025-04-17,12:30,Central Depot,V01
-D02,Sam Alder,motorbike,A2,2021-06-26,12:30,Central Depot,V02
-D03,Jordan Pryce,motorbike,A2,2021-11-11,12:30,Central Depot,V03
-D04,Maya Thorne,motorbike,A2,2019-03-27,12:30,Central Depot,V04
-D05,Luca Sterling,motorbike,A2,2019-11-25,07:30,Central Depot,V05
-D06,Nina Wren,motorbike,A2,2020-03-24,07:30,Central Depot,V06
-D07,Omar Jarrow,motorbike,A2,2019-03-16,07:30,Central Depot,V07
-D08,Elena Norwood,motorbike,A2,2024-12-17,07:30,Central Depot,V08
-D09,Tomas Yarrow,motorbike,A2,2023-07-19,12:30,Central Depot,V09
-D10,Priya Brook,motorbike,A2,2024-07-25,12:30,Central Depot,V10
-D11,Marco Underhill,motorbike,A2,2022-03-20,07:30,Central Depot,V11
-D12,Ines Ellery,motorbike,A2,2020-08-13,07:30,Central Depot,V12
-D13,Kofi Kestrel,motorbike,A2,2025-03-29,07:30,Central Depot,V13
-D14,Lena Vance,motorbike,A2,2023-02-13,12:30,Central Depot,V14
-D15,Diego Quill,van,B,2024-11-15,07:30,Central Depot,V15
-D16,Hana Rowan,van,B,2025-11-24,07:30,Central Depot,V16
-D17,Ravi Farrow,van,B,2020-06-18,07:30,Central Depot,V17
-D18,Sofia Lowell,van,B,2020-07-29,07:30,Central Depot,V18
-D19,Mateo Oakes,van,B,2023-04-14,07:30,Central Depot,V19
-D20,Aisha Ivers,van,B,2022-05-17,07:30,Central Depot,V20
-D21,Viktor Marsh,truck,C,2025-02-08,06:00,Central Depot,V21
-D22,Clara Dunmore,truck,C,2025-02-24,06:00,Central Depot,V22
-D23,Jon Holt,truck,C,2019-09-14,06:00,Central Depot,V23
-D24,Mei Castell,truck,C,2022-10-05,06:00,Central Depot,V24
+D01,Juan Martínez,motorbike,Motorcycle,2019-09-24,12:30,Central Depot,V01
+D02,Luis Almonte,motorbike,Motorcycle,2025-01-10,07:30,Central Depot,V02
+D03,Carlos Féliz,motorbike,Motorcycle,2025-02-13,07:30,Central Depot,V03
+D04,Miguel Pérez,motorbike,Motorcycle,2025-04-17,07:30,Central Depot,V04
+D05,Yohanna Vásquez,motorbike,Motorcycle,2020-04-28,12:30,Central Depot,V05
+D06,Rafael Santana,motorbike,Motorcycle,2019-05-18,12:30,Central Depot,V06
+D07,Altagracia Mejía,motorbike,Motorcycle,2021-03-09,07:30,Central Depot,V07
+D08,Pedro Mora,motorbike,Motorcycle,2019-11-25,12:30,Central Depot,V08
+D09,Wilson Polanco,motorbike,Motorcycle,2023-12-02,07:30,Central Depot,V09
+D10,Yudelka Jiménez,motorbike,Motorcycle,2019-12-22,07:30,Central Depot,V10
+D11,Franklin Castillo,motorbike,Motorcycle,2019-07-24,07:30,Central Depot,V11
+D12,Ramón Batista,motorbike,Motorcycle,2024-01-26,12:30,Central Depot,V12
+D13,Anyelo Núñez,motorbike,Motorcycle,2021-09-25,12:30,Central Depot,V13
+D14,Dariel Ureña,motorbike,Motorcycle,2025-02-15,07:30,Central Depot,V14
+D15,Mercedes Rodríguez,van,Light vehicle,2019-07-09,07:30,Central Depot,V15
+D16,Starling Guzmán,van,Light vehicle,2020-09-07,07:30,Central Depot,V16
+D17,Joel De la Cruz,van,Light vehicle,2023-10-15,07:30,Central Depot,V17
+D18,Kelvin Báez,van,Light vehicle,2019-11-10,07:30,Central Depot,V18
+D19,Rosanna Disla,van,Light vehicle,2025-04-06,07:30,Central Depot,V19
+D20,Eddy Rosario,van,Light vehicle,2020-06-18,07:30,Central Depot,V20
+D21,Yeison Tavárez,truck,Heavy truck,2020-07-29,06:00,Central Depot,V21
+D22,Amaury Cabrera,truck,Heavy truck,2023-04-14,06:00,Central Depot,V22
+D23,Jhoan Peña,truck,Heavy truck,2022-05-17,06:00,Central Depot,V23
+D24,Massiel Reyes,truck,Heavy truck,2025-02-08,06:00,Central Depot,V24
