@@ -91,7 +91,7 @@ const AddInput = z.object({
   listId: z.string().uuid().nullable(),
   newListName: z.string().optional(),
   creatorIds: z.array(z.number().int().positive()).min(1).max(100),
-  source: z.enum(["discovery", "profile"]),
+  source: z.enum(["discovery", "profile", "compare"]),
 });
 
 /** Adds creators to an existing list, or to a new one created in the same step. */
@@ -144,7 +144,7 @@ export async function removeFromList(
   slug: string,
   listId: string,
   creatorId: number,
-  source: "list" | "discovery" | "profile" = "list",
+  source: "list" | "discovery" | "profile" | "compare" = "list",
 ): Promise<ActionResult> {
   const { user, ws } = await requireWorkspace(slug);
   if (!canEdit(ws.role)) return NoEdit;
