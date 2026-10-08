@@ -193,6 +193,7 @@ export interface CampaignSnapshot {
     content: {
       version: number;
       url: string;
+      file: { name: string; size: number; mime: string } | null;
       caption: string;
       status: string;
       feedback: string;
@@ -275,6 +276,9 @@ export function snapshotOf(
           ? {
               version: c.version,
               url: c.url,
+              file: c.fileName
+                ? { name: c.fileName, size: c.fileSize ?? 0, mime: c.fileMime ?? "" }
+                : null,
               caption: c.caption,
               status: c.status,
               feedback: c.feedback,

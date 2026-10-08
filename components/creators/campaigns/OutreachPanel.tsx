@@ -9,6 +9,7 @@ import {
 } from "@/app/w/[ws]/creators/campaigns/outreach-actions";
 import { PaywallModal } from "@/components/listening/PaywallModal";
 import { Button } from "@/components/ui/button";
+import { prettySize } from "@/lib/creators/content-files";
 import type { CampaignSnapshot } from "@/lib/creators/campaigns";
 import { defaultMessage } from "@/lib/creators/outreach-flow";
 import { PLANS, type PlanTier } from "@/lib/entitlements/plans";
@@ -250,15 +251,27 @@ export function OutreachPanel({
           data-testid="review-panel"
         >
           <p className="font-medium">Content to review (version {row.content.version})</p>
-          <a
-            href={row.content.url}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            className="break-all text-[var(--primary)] underline"
-            data-testid="review-url"
-          >
-            {row.content.url}
-          </a>
+          {row.content.file ? (
+            <a
+              href={`/w/${ws}/creators/campaigns/${campaignId}/content/${row.creatorId}/${row.content.version}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="break-all text-[var(--primary)] underline"
+              data-testid="review-file"
+            >
+              {row.content.file.name} ({prettySize(row.content.file.size)})
+            </a>
+          ) : (
+            <a
+              href={row.content.url}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="break-all text-[var(--primary)] underline"
+              data-testid="review-url"
+            >
+              {row.content.url}
+            </a>
+          )}
           {row.content.caption && (
             <p className="mt-1 whitespace-pre-line text-[var(--text-muted)]">
               {row.content.caption}

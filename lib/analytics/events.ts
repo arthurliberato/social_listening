@@ -1588,7 +1588,8 @@ export const EVENTS = {
     "properties": [
       "campaign_id",
       "creator_id",
-      "version"
+      "version",
+      "content_kind"
     ],
     "destinations": [
       "amplitude",

@@ -1862,9 +1862,10 @@
    "properties": [
     "campaign_id",
     "creator_id",
-    "version"
+    "version",
+    "content_kind"
    ],
-   "description": "A creator submitted content from the portal. version is 1 for the first submission.",
+   "description": "A creator submitted content from the portal. version is 1 for the first submission. content_kind: link | file.",
    "destinations": [
     "amplitude",
     "warehouse"

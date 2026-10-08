@@ -107,6 +107,15 @@ export function checkSubmission(
   return { ok: true, url: parsed.toString(), caption: caption.trim() };
 }
 
+/** An upload carries no link, only an optional caption. */
+export function checkCaption(
+  caption: string,
+): { ok: true; caption: string } | { ok: false; reason: string } {
+  if (caption.length > 2000)
+    return { ok: false, reason: "Keep the caption under 2,000 characters." };
+  return { ok: true, caption: caption.trim() };
+}
+
 export function checkReview(
   decision: "approve" | "changes",
   feedback: string,
