@@ -160,8 +160,12 @@ test("influencers tour", async ({ page, browser }) => {
     `/w/${slug}/creators?niche=food&platform=instagram`,
     async (p) => {
       await expect(p.getByTestId("saved-item")).toHaveCount(1);
-      await p.getByTestId("compare-check").nth(0).check();
-      await p.getByTestId("compare-check").nth(1).check();
+      await settled(p);
+      // The ticks are kept for the tab, so the second pass finds them already made.
+      if (!(await p.getByTestId("compare-bar").isVisible())) {
+        await p.getByTestId("compare-check").nth(0).check();
+        await p.getByTestId("compare-check").nth(1).check();
+      }
       await expect(p.getByTestId("compare-bar")).toBeVisible();
       await settled(p);
     },
