@@ -904,6 +904,8 @@ export const campaignInvites = pgTable(
     expiresAt: ts("expires_at").notNull(),
     viewedAt: ts("viewed_at"),
     respondedAt: ts("responded_at"),
+    /** When the "closing soon" reminder went out; at most one per invitation. */
+    remindedAt: ts("reminded_at"),
   },
   (t) => [index("campaign_invites_creator_idx").on(t.campaignId, t.creatorId)],
 );

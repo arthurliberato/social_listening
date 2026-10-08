@@ -1,0 +1,1 @@
+ALTER TABLE "campaign_invites" ADD COLUMN "reminded_at" timestamp with time zone;
