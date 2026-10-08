@@ -16,6 +16,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { simNow } from "../lib/simclock";
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
 const ts = (name: string) => timestamp(name, { withTimezone: true });
@@ -45,13 +46,18 @@ export const accounts = pgTable("accounts", {
   /** Save-offer discount: percent off the next N renewals. */
   discountPct: integer("discount_pct").notNull().default(0),
   discountCyclesLeft: integer("discount_cycles_left").notNull().default(0),
+  /** Extra days of history readable on top of the plan's window, once a history pack has been bought. */
+  historyExtraDays: integer("history_extra_days").notNull().default(0),
   /** Set when the save offer is first shown, so it is never offered twice. */
   saveOfferShownAt: ts("save_offer_shown_at"),
   dunningAttempts: integer("dunning_attempts").notNull().default(0),
   nextRetryAt: ts("next_retry_at"),
   /** Which lifecycle emails have gone out (reminder3d, reminder1d, ended, locked...). */
   lifecycle: jsonb("lifecycle").notNull().default({}),
-  createdAt: ts("created_at").notNull().defaultNow(),
+  createdAt: ts("created_at")
+    .notNull()
+    .defaultNow()
+    .$defaultFn(() => simNow()),
 });
 
 /** Cards on file. Only what a receipt shows is kept; the card number itself is never stored. */
@@ -70,7 +76,10 @@ export const paymentMethods = pgTable(
     /** How the (simulated) provider treats charges: ok | fail_renewal. */
     behavior: text("behavior").notNull().default("ok"),
     isDefault: boolean("is_default").notNull().default(true),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("payment_methods_account_idx").on(t.accountId)],
 );
@@ -95,7 +104,10 @@ export const invoices = pgTable(
     paymentMethodId: uuid("payment_method_id").references(() => paymentMethods.id, {
       onDelete: "set null",
     }),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("invoices_account_idx").on(t.accountId, t.createdAt)],
 );
@@ -109,7 +121,10 @@ export const workspaces = pgTable("workspaces", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   workspaceType: text("workspace_type").notNull().default("own_brand"),
-  createdAt: ts("created_at").notNull().defaultNow(),
+  createdAt: ts("created_at")
+    .notNull()
+    .defaultNow()
+    .$defaultFn(() => simNow()),
   archivedAt: ts("archived_at"),
 });
 
@@ -140,7 +155,10 @@ export const users = pgTable(
     agentModel: text("agent_model"),
     /** ga_client_id, ga_session_id, utm_*, gclid, referrer captured at sign-up. */
     attribution: jsonb("attribution").notNull().default({}),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
     lastLoginAt: ts("last_login_at"),
   },
   (t) => [uniqueIndex("users_email_idx").on(sql`lower(${t.email})`)],
@@ -163,7 +181,10 @@ export const memberships = pgTable(
     feedSeenAt: ts("feed_seen_at"),
     /** Start of the current visit: mentions published after this are "unread". Stable within a visit. */
     feedSinceAt: ts("feed_since_at"),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [primaryKey({ columns: [t.userId, t.workspaceId] })],
 );
@@ -178,7 +199,10 @@ export const authTokens = pgTable("auth_tokens", {
   tokenHash: text("token_hash").notNull().unique(),
   expiresAt: ts("expires_at").notNull(),
   usedAt: ts("used_at"),
-  createdAt: ts("created_at").notNull().defaultNow(),
+  createdAt: ts("created_at")
+    .notNull()
+    .defaultNow()
+    .$defaultFn(() => simNow()),
 });
 
 /** Every outbound email, readable per user at /inbox (and mirrored to Mailpit in dev). */
@@ -194,7 +218,10 @@ export const emails = pgTable(
     openedAt: ts("opened_at"),
     /** First click on a tracked link in the body. */
     clickedAt: ts("clicked_at"),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("emails_user_idx").on(t.toUserId, t.createdAt)],
 );
@@ -230,9 +257,15 @@ export const queries = pgTable(
     backfilledAt: ts("backfilled_at"),
     /** The release job matches mentions published after this instant (set when backfill finishes). */
     releasedThrough: ts("released_through"),
-    updatedAt: ts("updated_at").notNull().defaultNow(),
+    updatedAt: ts("updated_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
     createdBy: uuid("created_by").references(() => users.id),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("queries_workspace_idx").on(t.workspaceId)],
 );
@@ -242,7 +275,10 @@ export const analyticsEvents = pgTable(
   "analytics_events",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    ts: ts("ts").notNull().defaultNow(),
+    ts: ts("ts")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
     name: text("name").notNull(),
     side: text("side").notNull(), // client|server
     userId: uuid("user_id"),
@@ -277,7 +313,10 @@ export const invitations = pgTable(
     source: text("source").notNull().default("settings"), // onboarding|settings
     expiresAt: ts("expires_at").notNull(),
     acceptedAt: ts("accepted_at"),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("invitations_workspace_idx").on(t.workspaceId)],
 );
@@ -292,7 +331,10 @@ export const queryMatches = pgTable(
     mentionId: bigint("mention_id", { mode: "number" }).notNull(),
     /** Denormalised so feeds can sort and page without joining the 4M-row corpus first. */
     publishedAt: ts("published_at").notNull(),
-    matchedAt: ts("matched_at").notNull().defaultNow(),
+    matchedAt: ts("matched_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [
     primaryKey({ columns: [t.queryId, t.mentionId] }),
@@ -350,7 +392,10 @@ export const mentionOverrides = pgTable(
       .default(sql`'{}'`),
     flagged: boolean("flagged").notNull().default(false),
     updatedBy: uuid("updated_by").references(() => users.id),
-    updatedAt: ts("updated_at").notNull().defaultNow(),
+    updatedAt: ts("updated_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [
     primaryKey({ columns: [t.workspaceId, t.mentionId] }),
@@ -369,9 +414,31 @@ export const savedViews = pgTable(
     name: text("name").notNull(),
     params: text("params").notNull(),
     createdBy: uuid("created_by").references(() => users.id),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("saved_views_workspace_idx").on(t.workspaceId)],
+);
+
+/** A named Boolean search over a workspace's mentions: a way to slice what the queries collect into themes. */
+export const categories = pgTable(
+  "categories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    booleanText: text("boolean_text").notNull(),
+    createdBy: uuid("created_by").references(() => users.id),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
+  },
+  (t) => [uniqueIndex("categories_workspace_name_idx").on(t.workspaceId, sql`lower(${t.name})`)],
 );
 
 /** A workspace dashboard: a 12-column grid of widgets. */
@@ -388,8 +455,14 @@ export const dashboards = pgTable(
     createdBy: uuid("created_by").references(() => users.id),
     /** Non-null = a public read-only link is enabled (/share/<token>). */
     publicToken: text("public_token").unique(),
-    createdAt: ts("created_at").notNull().defaultNow(),
-    updatedAt: ts("updated_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
+    updatedAt: ts("updated_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("dashboards_workspace_idx").on(t.workspaceId)],
 );
@@ -422,7 +495,10 @@ export const dashboardViews = pgTable(
       .notNull()
       .references(() => dashboards.id, { onDelete: "cascade" }),
     userId: uuid("user_id").references(() => users.id),
-    viewedAt: ts("viewed_at").notNull().defaultNow(),
+    viewedAt: ts("viewed_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("dashboard_views_idx").on(t.dashboardId, t.viewedAt)],
 );
@@ -452,8 +528,14 @@ export const alertRules = pgTable(
     cooldownMin: integer("cooldown_min").notNull().default(60),
     status: text("status").notNull().default("active"), // active|muted
     createdBy: uuid("created_by").references(() => users.id),
-    createdAt: ts("created_at").notNull().defaultNow(),
-    updatedAt: ts("updated_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
+    updatedAt: ts("updated_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [
     index("alert_rules_workspace_idx").on(t.workspaceId),
@@ -482,7 +564,10 @@ export const alertEvents = pgTable(
     openedAt: ts("opened_at"),
     acknowledgedAt: ts("acknowledged_at"),
     acknowledgedBy: uuid("acknowledged_by").references(() => users.id),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [
     index("alert_events_workspace_idx").on(t.workspaceId, t.firedAt),
@@ -506,7 +591,10 @@ export const crises = pgTable(
     status: text("status").notNull().default("open"), // open|resolved
     /** The window the room analyses: starts a little before the spike, open-ended while the room is open. */
     windowStart: ts("window_start").notNull(),
-    openedAt: ts("opened_at").notNull().defaultNow(),
+    openedAt: ts("opened_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
     openedBy: uuid("opened_by").references(() => users.id),
     resolvedAt: ts("resolved_at"),
     resolvedBy: uuid("resolved_by").references(() => users.id),
@@ -525,7 +613,10 @@ export const crisisTasks = pgTable(
     assigneeId: uuid("assignee_id").references(() => users.id),
     doneAt: ts("done_at"),
     createdBy: uuid("created_by").references(() => users.id),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("crisis_tasks_idx").on(t.crisisId)],
 );
@@ -542,7 +633,10 @@ export const crisisUpdates = pgTable(
     body: text("body").notNull(),
     recipientsCount: integer("recipients_count").notNull(),
     sentBy: uuid("sent_by").references(() => users.id),
-    sentAt: ts("sent_at").notNull().defaultNow(),
+    sentAt: ts("sent_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("crisis_updates_idx").on(t.crisisId, t.sentAt)],
 );
@@ -563,8 +657,14 @@ export const reports = pgTable(
     /** [{ id, type, title, config }] */
     sections: jsonb("sections").notNull().default([]),
     createdBy: uuid("created_by").references(() => users.id),
-    createdAt: ts("created_at").notNull().defaultNow(),
-    updatedAt: ts("updated_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
+    updatedAt: ts("updated_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("reports_workspace_idx").on(t.workspaceId)],
 );
@@ -597,7 +697,10 @@ export const reportSchedules = pgTable(
     nextRunAt: ts("next_run_at").notNull(),
     lastRunAt: ts("last_run_at"),
     createdBy: uuid("created_by").references(() => users.id),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("report_schedules_due_idx").on(t.active, t.nextRunAt)],
 );
@@ -618,7 +721,10 @@ export const reportDeliveries = pgTable(
     userId: uuid("user_id").references(() => users.id),
     /** schedule | manual (a "send me a copy now") */
     trigger: text("trigger").notNull().default("schedule"),
-    deliveredAt: ts("delivered_at").notNull().defaultNow(),
+    deliveredAt: ts("delivered_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
     openedAt: ts("opened_at"),
     clickedAt: ts("clicked_at"),
   },
@@ -638,7 +744,10 @@ export const exportsLog = pgTable(
     format: text("format").notNull(), // csv|pdf
     label: text("label").notNull(),
     rowCount: integer("row_count"),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("exports_log_workspace_idx").on(t.workspaceId, t.createdAt)],
 );
@@ -661,7 +770,10 @@ export const auditLog = pgTable(
     targetId: text("target_id"),
     /** Human-readable context (names and roles, never secrets). */
     meta: jsonb("meta").notNull().default({}),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("audit_log_account_idx").on(t.accountId, t.seq)],
 );
@@ -676,7 +788,10 @@ export const workspaceBranding = pgTable("workspace_branding", {
   accent: text("accent").notNull().default(""),
   footerText: text("footer_text").notNull().default(""),
   hidePoweredBy: boolean("hide_powered_by").notNull().default(false),
-  updatedAt: ts("updated_at").notNull().defaultNow(),
+  updatedAt: ts("updated_at")
+    .notNull()
+    .defaultNow()
+    .$defaultFn(() => simNow()),
 });
 
 /** Everything the AI features produced for a workspace: answers to questions, summaries, peak explanations. */
@@ -695,7 +810,10 @@ export const aiAnswers = pgTable(
     citations: jsonb("citations").notNull().default([]),
     provider: text("provider").notNull(),
     latencyMs: integer("latency_ms").notNull().default(0),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("ai_answers_ws_idx").on(t.workspaceId, t.kind, t.createdAt)],
 );
@@ -716,7 +834,10 @@ export const salesRequests = pgTable(
     entryPoint: text("entry_point").notNull(),
     demoAt: ts("demo_at"),
     status: text("status").notNull().default("new"), // new|demo_booked|quoted
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("sales_requests_status_idx").on(t.status, t.createdAt)],
 );
@@ -738,7 +859,10 @@ export const quotes = pgTable(
     expiresAt: ts("expires_at").notNull(),
     viewedAt: ts("viewed_at"),
     acceptedAt: ts("accepted_at"),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [index("quotes_request_idx").on(t.requestId)],
 );
@@ -761,7 +885,10 @@ export const contracts = pgTable("contracts", {
   valueCents: bigint("value_cents", { mode: "number" }).notNull(),
   startsAt: ts("starts_at").notNull(),
   endsAt: ts("ends_at").notNull(),
-  signedAt: ts("signed_at").notNull().defaultNow(),
+  signedAt: ts("signed_at")
+    .notNull()
+    .defaultNow()
+    .$defaultFn(() => simNow()),
 });
 
 /** One row per account per day from the nightly scoring job: the warehouse's account-health time series. */
@@ -776,7 +903,10 @@ export const accountScores = pgTable(
     health: integer("health").notNull(),
     healthBand: text("health_band").notNull(), // healthy|watch|at_risk
     signals: jsonb("signals").notNull().default({}),
-    computedAt: ts("computed_at").notNull().defaultNow(),
+    computedAt: ts("computed_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [primaryKey({ columns: [t.accountId, t.day] })],
 );
@@ -790,7 +920,10 @@ export const authorWatchlist = pgTable(
       .references(() => workspaces.id, { onDelete: "cascade" }),
     authorId: integer("author_id").notNull(),
     addedBy: uuid("added_by").references(() => users.id),
-    createdAt: ts("created_at").notNull().defaultNow(),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
   },
   (t) => [primaryKey({ columns: [t.workspaceId, t.authorId] })],
 );
@@ -1090,3 +1223,54 @@ export const loginThrottle = pgTable("login_throttle", {
   windowStart: ts("window_start").notNull(),
   lockedUntil: ts("locked_until"),
 });
+
+/** A question sent from the Help center. A simulated desk acknowledges it by email; there is no staff console. */
+export const supportRequests = pgTable(
+  "support_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id").references(() => accounts.id, { onDelete: "set null" }),
+    workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "set null" }),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    category: text("category").notNull(), // how_to|query|billing|bug|other
+    subject: text("subject").notNull(),
+    message: text("message").notNull(),
+    status: text("status").notNull().default("open"),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
+  },
+  (t) => [index("support_requests_user_idx").on(t.userId, t.createdAt)],
+);
+
+/**
+ * A one-time add-on: another year of history for one query, collected beyond the plan's window. Bought from the
+ * Queries page, charged like any other payment, and not counted against the monthly mentions allowance.
+ */
+export const historyPacks = pgTable(
+  "history_packs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    queryId: uuid("query_id")
+      .notNull()
+      .references(() => queries.id, { onDelete: "cascade" }),
+    purchasedBy: uuid("purchased_by").references(() => users.id, { onDelete: "set null" }),
+    priceCents: integer("price_cents").notNull(),
+    extraDays: integer("extra_days").notNull(),
+    status: text("status").notNull().default("pending"), // pending|running|done|failed
+    matched: integer("matched").notNull().default(0),
+    /** The older stretch that was collected (set when the job finishes). */
+    fromAt: ts("from_at"),
+    toAt: ts("to_at"),
+    createdAt: ts("created_at")
+      .notNull()
+      .defaultNow()
+      .$defaultFn(() => simNow()),
+    completedAt: ts("completed_at"),
+  },
+  (t) => [uniqueIndex("history_packs_query_idx").on(t.queryId)],
+);

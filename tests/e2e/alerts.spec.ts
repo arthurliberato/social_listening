@@ -240,6 +240,7 @@ test("crisis room: tasks, a stakeholder update that lands in the inbox, and reso
   await expect(page.getByTestId("open-crisis")).toHaveAttribute("href", new RegExp(crisisId));
   void rule;
   await page.goto(`/w/${slug}/crisis/${crisisId}`);
+  await page.waitForLoadState("networkidle"); // a production build paints the form before React attaches
 
   await expect(page.getByTestId("tasks-empty")).toBeVisible();
   await page.getByTestId("task-title").fill("Draft holding statement");

@@ -15,7 +15,16 @@ export type Node =
   | ({ t: "not"; arg: Node } & Span)
   | ({ t: "near"; left: Node; right: Node; distance: number; ordered: boolean } & Span);
 
-export const FIELDS = ["author", "site", "source", "lang", "country", "hashtag", "logo"] as const;
+export const FIELDS = [
+  "author",
+  "site",
+  "source",
+  "lang",
+  "country",
+  "hashtag",
+  "logo",
+  "replyto",
+] as const;
 export type FieldName = (typeof FIELDS)[number];
 export const MAX_NEAR = 20;
 

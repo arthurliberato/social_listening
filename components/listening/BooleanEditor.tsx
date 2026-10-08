@@ -97,6 +97,7 @@ const OPERATORS = [
   { label: "country:", detail: "country code, e.g. US" },
   { label: "hashtag:", detail: "exact #hashtag" },
   { label: "logo:", detail: "brand logo in an image (Enterprise)" },
+  { label: "replyto:", detail: 'replies to a post URL ("https://…") or a @handle' },
   { label: "<<<note>>>", detail: "comment, ignored by search" },
 ].map((o) => ({ ...o, type: o.label.endsWith(":") ? "property" : "keyword" }));
 

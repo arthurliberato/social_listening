@@ -264,19 +264,33 @@ test("drill-down: clicking a chart lands on the Mentions feed with the same numb
   const source = (await first.locator("th").innerText()).trim();
   const count = Number((await first.locator("td").first().innerText()).replace(/,/g, ""));
   await bar.getByTestId("widget-table-toggle").click();
-  // Click the first (largest) bar.
+  // Click the largest bar (the widest; with few categories the bars are thick, so the height bound is generous).
   const path = bar
     .getByTestId("chart-bar")
     .locator("path[fill]:not([fill='none'])")
     .filter({ hasNot: page.locator("text") });
-  const bars = await path.evaluateAll((els) =>
-    els
-      .map((e) => {
-        const r = e.getBoundingClientRect();
-        return { x: r.x, y: r.y, w: r.width, h: r.height, fill: e.getAttribute("fill") };
-      })
-      .filter((r) => r.w > 20 && r.h > 4 && r.h < 40),
-  );
+  const readBars = () =>
+    path.evaluateAll((els) =>
+      els
+        .map((e) => {
+          const r = e.getBoundingClientRect();
+          return { x: r.x, y: r.y, w: r.width, h: r.height, fill: e.getAttribute("fill") };
+        })
+        .filter((r) => r.w > 20 && r.h > 4 && r.h < 120)
+        .sort((a, b) => b.w - a.w),
+    );
+  // Bars grow in with an animation; on a slower machine they are still thin when the chart first reports ready.
+  await expect.poll(async () => (await readBars()).length, { timeout: 15_000 }).toBeGreaterThan(0);
+  let last = -1;
+  await expect
+    .poll(async () => {
+      const w = (await readBars())[0]?.w ?? 0;
+      const still = w === last;
+      last = w;
+      return still;
+    })
+    .toBe(true); // the widest bar has stopped growing
+  const bars = await readBars();
   expect(bars.length).toBeGreaterThan(0);
   await page.mouse.click(bars[0]!.x + bars[0]!.w / 2, bars[0]!.y + bars[0]!.h / 2);
   await page.waitForURL(new RegExp(`/mentions\\?.*source=${source}`));

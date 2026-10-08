@@ -5,6 +5,7 @@ services:
     environment:
       DATABASE_URL: postgres://ripplewise:ripplewise@postgres:5432/ripplewise
       SMTP_URL: smtp://mailpit:1025
+      ALLOW_SIM_CLOCK: "true" # lets the agent harness give each agent its own clock (cookie rw_sim); leave off in production
     depends_on: [postgres, mailpit]
   postgres:
     image: postgres:16

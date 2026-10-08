@@ -208,6 +208,19 @@ describe("compile to SQL", () => {
     expect(r.sql).not.toContain("DROP");
     expect(r.params).toContain("x'; drop table mentions;--");
   });
+  it("compiles replyto: for a URL and for a handle, with bound parameters", () => {
+    const u = q('replyto:"https://reddit-sim.ripplewise.test/@jane/12"');
+    expect(u.sql).toContain("content_type = 'comment'");
+    expect(u.params).toEqual(["jane", "https://reddit-sim.ripplewise.test/@jane/12"]);
+    const h = q("replyto:@Jane");
+    expect(h.params).toEqual(["jane"]);
+    expect(q('replyto:"https://x.test/\'; DROP TABLE mentions;--"').sql).not.toContain("DROP");
+  });
+  it("lints replyto: values", () => {
+    expect(analyze('replyto:"https://a.test/@j/1"').issues).toEqual([]);
+    expect(analyze("replyto:@jane").issues).toEqual([]);
+    expect(analyze('replyto:"not a url"').issues.map((i) => i.code)).toContain("bad_replyto");
+  });
   it("builds filter predicates", () => {
     expect(dialect.sqlToQuery(compileFilters({})).sql).toBe("TRUE");
     const r = dialect.sqlToQuery(compileFilters({ languages: ["en", "pt"], countries: ["us"] }));

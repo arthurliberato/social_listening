@@ -225,7 +225,7 @@ export async function loadFeed(opts: {
     .from(memberships)
     .where(and(eq(memberships.userId, userId), eq(memberships.workspaceId, workspaceId)));
   // A new visit begins after VISIT_GAP_MS of inactivity; "unread" is measured from the previous visit's last activity.
-  const now = Date.now();
+  const now = simNow().getTime();
   const newVisit = !mem?.seen || now - mem.seen.getTime() > VISIT_GAP_MS;
   const since = newVisit ? (mem?.seen ?? null) : (mem?.since ?? null);
   const base = await buildFeedWhere({
@@ -308,7 +308,7 @@ export async function loadFeed(opts: {
   if (opts.markSeen) {
     await db
       .update(memberships)
-      .set({ feedSeenAt: new Date(), feedSinceAt: since })
+      .set({ feedSeenAt: simNow(), feedSinceAt: since })
       .where(and(eq(memberships.userId, userId), eq(memberships.workspaceId, workspaceId)));
   }
   const n = (countRes.rows[0] as { n: number }).n;
@@ -325,7 +325,7 @@ export async function loadFeed(opts: {
     ),
     since: since?.toISOString() ?? null,
     searchError: base.searchError,
-    loadedAt: new Date().toISOString(),
+    loadedAt: simNow().toISOString(),
     window: { from: base.win.from.toISOString(), to: base.win.to.toISOString() },
   };
 }

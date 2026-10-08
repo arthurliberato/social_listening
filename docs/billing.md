@@ -73,3 +73,19 @@ Billing → Cancel plan (1) → reason (2) → confirm (3). Access continues to 
 Server: `Subscription Started`, `Plan Upgraded`, `Plan Downgraded`, `Payment Failed`, `Trial Ended`,
 `Subscription Canceled`. Client: `Pricing Page Viewed`, `Plan Compare Toggled`, `Upgrade Started`,
 `Cancellation Started`, `Cancellation Reason Submitted`, plus the existing `Paywall *` events.
+
+## Add-on: history pack
+
+A one-time purchase that collects another year of history for one query, before the start of the plan's window.
+
+- **Who and when:** paid, active plans (Starter and up); owner or admin only; a card must be on file; the query must have
+  finished its first collection. One pack per query. Trials, lapsed and cancelled accounts see the offer explained and a
+  link to plans.
+- **What it costs and gives:** $49 once, up to 50,000 older mentions, collected newest first by a background job. They are
+  not counted against the monthly mentions allowance.
+- **Reading it:** the account's readable window grows by 365 days (`accounts.history_extra_days`, applied where plans are
+  read), so date ranges and dashboards can reach it. Only queries with a pack have data in the extra year.
+- **Records:** an invoice with kind `addon` and a receipt email, an audit entry (`plan.addon_purchased`), and events
+  `Add-on Purchased` and `History Pack Completed`.
+- **Rebuilding:** editing a query rebuilds its matches; the pack's older stretch is collected again afterwards.
+- **Not built:** overage pricing for going past the monthly allowance, other add-ons, refunds.

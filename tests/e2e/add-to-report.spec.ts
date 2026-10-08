@@ -163,7 +163,20 @@ test("add widgets from a dashboard, Topics and Authors to a new and an existing 
 });
 
 test("people who can't edit don't see Add to report", async ({ page }) => {
-  const { email, slug } = await createUser(page, { brand: "Latte Lane", prefix: "atrv" });
+  // A busy brand, and wait for its history: Topics shows an empty state, not a table, until there is data to rank.
+  const { email, slug } = await createUser(page, { brand: "Juniper Roast", prefix: "atrv" });
+  await expect
+    .poll(
+      async () =>
+        (
+          await pool.query(
+            `SELECT q.backfill_status AS s FROM queries q JOIN workspaces w ON w.id = q.workspace_id WHERE w.slug = $1`,
+            [slug],
+          )
+        ).rows[0]?.s,
+      { timeout: 45_000 },
+    )
+    .toMatch(/done|quota_exhausted/);
   await page.goto(`/w/${slug}/dashboards`);
   await page.getByTestId("new-dashboard").click();
   await page.getByTestId("template-brand_health").click();
