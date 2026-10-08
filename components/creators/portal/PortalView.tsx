@@ -4,6 +4,12 @@ import { useState } from "react";
 import { respondAction, submitContentAction } from "@/app/creator/[token]/actions";
 import { Button } from "@/components/ui/button";
 import { OBJECTIVE_LABEL, type Objective } from "@/lib/creators/campaign-flow";
+import {
+  ACCEPT_ATTR,
+  ACCEPTED_LABEL,
+  MAX_FILE_BYTES,
+  prettySize,
+} from "@/lib/creators/content-files";
 import type { PortalState, PortalView as View } from "@/lib/creators/outreach";
 import { useBusy } from "@/lib/use-busy";
 import { CopyField } from "@/components/creators/results/CopyField";
@@ -48,6 +54,9 @@ export function PortalView({ token, initial }: { token: string; initial: View })
   const [note, setNote] = useState("");
   const [url, setUrl] = useState("");
   const [caption, setCaption] = useState("");
+  const [mode, setMode] = useState<"link" | "file">("link");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileKey, setFileKey] = useState(0);
 
   const respond = (kind: "accept" | "decline" | "counter") =>
     run(async () => {
@@ -306,6 +315,34 @@ export function PortalView({ token, initial }: { token: string; initial: View })
                 e.preventDefault();
                 run(async () => {
                   setError("");
+                  if (mode === "file") {
+                    if (!file) return setError("Choose a file to upload.");
+                    if (file.size > MAX_FILE_BYTES)
+                      return setError(
+                        `That file is too large. The limit is ${prettySize(MAX_FILE_BYTES)}.`,
+                      );
+                    const body = new FormData();
+                    body.set("file", file);
+                    body.set("caption", caption);
+                    let r: { ok: true; view: View } | { ok: false; error: string };
+                    try {
+                      const res = await fetch(`/api/creator/${token}/content`, {
+                        method: "POST",
+                        body,
+                      });
+                      r = await res.json();
+                    } catch {
+                      return setError(
+                        "The upload didn't go through. Check your connection and try again.",
+                      );
+                    }
+                    if (!r.ok) return setError(r.error);
+                    setV(r.view);
+                    setFile(null);
+                    setFileKey((k) => k + 1);
+                    setCaption("");
+                    return;
+                  }
                   const r = await submitContentAction(token, url, caption);
                   if (!r.ok) return setError(r.error);
                   setV(r.view);
@@ -317,20 +354,64 @@ export function PortalView({ token, initial }: { token: string; initial: View })
               className="mt-3 grid max-w-xl gap-3"
               aria-label="Submit content"
             >
-              <div className="flex flex-col gap-1">
-                <label htmlFor="content-url" className="text-sm font-medium">
-                  Link to your post
-                </label>
-                <input
-                  id="content-url"
-                  type="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://"
-                  className={box}
-                  data-testid="content-url"
-                />
-              </div>
+              <fieldset className="flex flex-wrap gap-4">
+                <legend className="text-sm font-medium">How are you sharing it?</legend>
+                {(
+                  [
+                    ["link", "A link to my post"],
+                    ["file", "Upload a file"],
+                  ] as const
+                ).map(([m, label]) => (
+                  <label key={m} className="flex min-h-6 items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="content-mode"
+                      checked={mode === m}
+                      onChange={() => {
+                        setMode(m);
+                        setError("");
+                      }}
+                      data-testid={`content-mode-${m}`}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </fieldset>
+              {mode === "link" ? (
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="content-url" className="text-sm font-medium">
+                    Link to your post
+                  </label>
+                  <input
+                    id="content-url"
+                    type="url"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://"
+                    className={box}
+                    data-testid="content-url"
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="content-file" className="text-sm font-medium">
+                    File
+                  </label>
+                  <input
+                    key={fileKey}
+                    id="content-file"
+                    type="file"
+                    accept={ACCEPT_ATTR}
+                    aria-describedby="content-file-hint"
+                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                    className="min-h-9 text-sm"
+                    data-testid="content-file"
+                  />
+                  <p id="content-file-hint" className="text-xs text-[var(--text-muted)]">
+                    {ACCEPTED_LABEL}.
+                  </p>
+                </div>
+              )}
               <div className="flex flex-col gap-1">
                 <label htmlFor="content-caption" className="text-sm font-medium">
                   Caption (optional)
@@ -377,14 +458,29 @@ export function PortalView({ token, initial }: { token: string; initial: View })
                         ? "Changes requested"
                         : "Waiting for review"}
                   </p>
-                  <a
-                    href={c.url}
-                    rel="noopener noreferrer nofollow"
-                    target="_blank"
-                    className="break-all text-[var(--primary)] underline"
-                  >
-                    {c.url}
-                  </a>
+                  {c.file ? (
+                    <a
+                      href={`/api/creator/${token}/content/${c.version}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-all text-[var(--primary)] underline"
+                      data-testid="portal-file"
+                    >
+                      {c.file.name}{" "}
+                      <span className="text-[var(--text-muted)] no-underline">
+                        ({prettySize(c.file.size)})
+                      </span>
+                    </a>
+                  ) : (
+                    <a
+                      href={c.url}
+                      rel="noopener noreferrer nofollow"
+                      target="_blank"
+                      className="break-all text-[var(--primary)] underline"
+                    >
+                      {c.url}
+                    </a>
+                  )}
                   {c.caption && (
                     <p className="mt-1 whitespace-pre-line text-[var(--text-muted)]">{c.caption}</p>
                   )}

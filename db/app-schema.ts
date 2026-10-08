@@ -4,6 +4,7 @@ import {
   bigint,
   bigserial,
   boolean,
+  customType,
   date,
   index,
   integer,
@@ -16,6 +17,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
 const ts = (name: string) => timestamp(name, { withTimezone: true });
 
 /** Billing entity (Amplitude group "account"). */
@@ -928,9 +930,22 @@ export const campaignContent = pgTable(
     submittedAt: ts("submitted_at").notNull().defaultNow(),
     reviewedAt: ts("reviewed_at"),
     reviewedBy: uuid("reviewed_by").references(() => users.id),
+    /** Set when the creator uploaded a file instead of linking to a post (then `url` is empty). The bytes live in campaign_content_files. */
+    fileName: text("file_name"),
+    fileMime: text("file_mime"),
+    fileSize: integer("file_size"),
   },
   (t) => [index("campaign_content_creator_idx").on(t.campaignId, t.creatorId, t.version)],
 );
+
+/** The bytes of an uploaded file, kept apart so listing content never reads them. */
+export const campaignContentFiles = pgTable("campaign_content_files", {
+  contentId: uuid("content_id")
+    .primaryKey()
+    .references(() => campaignContent.id, { onDelete: "cascade" }),
+  sha256: text("sha256").notNull(),
+  data: bytea("data").notNull(),
+});
 
 /** One tracking link per creator per campaign: a short code that redirects to the campaign's destination. */
 export const trackingLinks = pgTable(

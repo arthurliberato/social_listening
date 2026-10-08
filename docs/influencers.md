@@ -112,4 +112,15 @@ New events in `docs/tracking-plan.json` (139 total): `Product Hub Viewed`, `Prod
 
 ## Not yet built
 
-Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery. Content is a link to a post, not an uploaded file. Still to build: anything that estimates reach or earned media value (results are measured visits and conversions only), tax forms and withholding, and a real payment provider behind the payout rail. Creator data is a snapshot; there is no refresh job. The two products share a login, workspaces, plans and billing but not data: Influencers does not read the listening corpus, by design.
+Creator emails are simulated (stored, and sent to Mailpit when configured); there's no real delivery.  Still to build: anything that estimates reach or earned media value (results are measured visits and conversions only), tax forms and withholding, and a real payment provider behind the payout rail. Creator data is a snapshot; there is no refresh job. The two products share a login, workspaces, plans and billing but not data: Influencers does not read the listening corpus, by design.
+
+## Content as a file (I7)
+
+A creator can send their content as a file instead of a link to a post: on their page they choose *Upload a file* (the link stays the default). Each version is one or the other.
+
+- **Accepted:** JPG, PNG, GIF, WebP, MP4, MOV and PDF, up to 25 MB. The type is decided from the file's first bytes, never from its name or the type the browser claims, so a web page renamed `holiday.png` is refused. SVG is refused on purpose (it can carry scripts). The stored name is tidied (no path, no odd characters, the right extension).
+- **Stored in Postgres** in `campaign_content_files`, apart from the content rows, so listing content never reads the bytes; it carries a SHA-256. It is deleted with its campaign. This suits the simulated product; a real deployment would put files in object storage behind the same two routes.
+- **Opening a file:** the brand opens it from the review panel (members of that workspace only; the route checks the campaign belongs to the workspace). The creator opens their own uploads from their page by the same private link they use for everything else. Anyone else gets a plain 404. Files are served with their real type, `X-Content-Type-Options: nosniff`, a `sandbox` content-security-policy, `no-store` and `noindex`; images and MP4 open in the browser, PDF and MOV download.
+- **Same rules as a link:** only while confirmed and not under review, only after any agreement is signed, one at a time, a caption is optional, and review works the same (approve, or ask for changes with feedback).
+- **Analytics:** `Creator Content Submitted` carries `content_kind` (`link` or `file`). No new events.
+- **Not done:** virus scanning, per-plan storage limits, thumbnails, and video playback in the review panel (the file opens in a new tab).

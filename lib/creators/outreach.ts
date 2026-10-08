@@ -1,9 +1,11 @@
 // Creator outreach: the brand sends an invitation, the creator answers from their own page, content comes back for
 // review. Everything that changes state lives here so the brand's actions and the creator's portal follow one set of
 // rules (outreach-flow.ts) and write the same audit, analytics and email records.
+import { createHash } from "node:crypto";
 import { and, count, desc, eq, gt, inArray, isNull, lte, sql } from "drizzle-orm";
 import {
   campaignContent,
+  campaignContentFiles,
   campaignCreators,
   campaignInvites,
   campaigns,
@@ -25,6 +27,7 @@ import {
   SUBMITTABLE_FROM,
   STATUS_AFTER_RESPONSE,
   checkOffer,
+  checkCaption,
   checkResponse,
   checkReview,
   checkSubmission,
@@ -690,10 +693,18 @@ export async function respondToInvitation(
   return { ok: true };
 }
 
+/** A file the creator uploaded in place of a link; already checked by checkFile. */
+export interface UploadedFile {
+  name: string;
+  mime: string;
+  bytes: Buffer;
+}
+
 export async function submitContent(
   token: string,
   url: string,
   caption: string,
+  file?: UploadedFile,
 ): Promise<{ ok: true; version: number } | Fail> {
   const p = await portalFor(token);
   if (!p) return fail("We couldn't find that page.");
@@ -708,8 +719,14 @@ export async function submitContent(
   // An agreement the brand sent has to be dealt with first: signed, or revised after the creator asked for changes.
   if (await contractOutstanding(p.campaign.id, p.creator.id))
     return fail("Sign your agreement before submitting content. It's on this page.");
-  const check = checkSubmission(url, caption);
+  const check = checkCaption(caption);
   if (!check.ok) return fail(check.reason);
+  let link = "";
+  if (!file) {
+    const l = checkSubmission(url, caption);
+    if (!l.ok) return fail(l.reason);
+    link = l.url;
+  }
   const version = (p.content[0]?.version ?? 0) + 1;
   const now = simNow();
   // Only the move out of "confirmed" counts, so two quick submissions can't both go through.
@@ -725,19 +742,36 @@ export async function submitContent(
     )
     .returning({ id: campaignCreators.creatorId });
   if (!moved.length) return fail("Your content is already with the brand for review.");
-  await db.insert(campaignContent).values({
-    campaignId: p.campaign.id,
-    creatorId: p.creator.id,
-    version,
-    url: check.url,
-    caption: check.caption,
-    submittedAt: now,
-  });
+  const [saved] = await db
+    .insert(campaignContent)
+    .values({
+      campaignId: p.campaign.id,
+      creatorId: p.creator.id,
+      version,
+      url: link,
+      caption: check.caption,
+      submittedAt: now,
+      fileName: file?.name ?? null,
+      fileMime: file?.mime ?? null,
+      fileSize: file?.bytes.length ?? null,
+    })
+    .returning({ id: campaignContent.id });
+  if (file && saved)
+    await db.insert(campaignContentFiles).values({
+      contentId: saved.id,
+      sha256: createHash("sha256").update(file.bytes).digest("hex"),
+      data: file.bytes,
+    });
   await notifyBrand(p, "content", {});
   await trackServer(
     "Creator Content Submitted",
     { workspaceId: p.workspaceId, accountId: p.accountId, creatorId: p.creator.id },
-    { campaign_id: p.campaign.id, creator_id: p.creator.id, version },
+    {
+      campaign_id: p.campaign.id,
+      creator_id: p.creator.id,
+      version,
+      content_kind: file ? "file" : "link",
+    },
   );
   return { ok: true, version };
 }
@@ -786,6 +820,8 @@ export interface PortalView {
   content: {
     version: number;
     url: string;
+    /** The uploaded file, when the creator sent one instead of a link. */
+    file: { name: string; size: number; mime: string } | null;
     caption: string;
     status: string;
     feedback: string;
@@ -817,6 +853,7 @@ export function portalView(p: Portal, trackingLink: string | null = null): Porta
     content: p.content.map((c) => ({
       version: c.version,
       url: c.url,
+      file: c.fileName ? { name: c.fileName, size: c.fileSize ?? 0, mime: c.fileMime ?? "" } : null,
       caption: c.caption,
       status: c.status,
       feedback: c.feedback,
