@@ -67,6 +67,10 @@ export function sampleProfile(
       sentiment_override: known(0.5),
       url_operator_replies: syntax >= 0.8 ? "aware" : "unknown",
       api_access: "unknown",
+      // Influencer marketing: whether this person looks at audience authenticity and brand safety, and whether they
+      // keep a running total against the budget.
+      creator_authenticity: known(0.45),
+      creator_budget_tracking: known(0.5),
     },
     state: {
       fatigue: clamp(0.1 + Math.abs(n(0.05))),

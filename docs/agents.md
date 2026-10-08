@@ -75,3 +75,39 @@ On the CI-sized corpus, with the scripted brain, case CS-001:
   disagree with what the jobs collected. The orchestrator (M3) is meant to drive both.
 - **Deliverables** are files, not platform objects; M2 can submit them as reports in the platform.
 - **Attention limits and misreads** are not injected yet (spec 6). By default the agent reads page text; vision is opt-in (below).
+
+## Influencer agents (case `CI-001`)
+
+The second product has its own agent track. A partnerships manager (the `strategist` role) is given a campaign brief
+in a person's words and works it through the real Influencers screens: it reads the brief and works out which platform
+and niche it means, filters the directory, reads as many pages of creators as its habits allow, picks, shortlists,
+builds a campaign inside the budget and invites. Same rules as the listening agent: no database reads, no hidden
+endpoints, a private ledger, labelled analytics events (`product: influencers`).
+
+| Part | Where |
+|---|---|
+| Case: public brief and hidden truth | `agents/cases/CI-001.json`, `CI-001.truth.json` (a case file with `kind: "influencers"`) |
+| Screens an agent can use | `agents/influencer/creators-ui.ts` (filter, read the table, page, shortlist, create campaign, invite) |
+| Policy | `agents/influencer/partnerships.ts` |
+| Decisions | `agents/influencer/brain.ts` (scripted; the interface is `PartnershipsBrain`) and the pure rules in `parse.ts` |
+| Scoring | `agents/influencer/evaluate.ts`: fit to the brief, audience quality, brand safety, invitations made, offers against the budget |
+| Runner | `agents/influencer/run.ts`; `npm run agent:case -- ... --case CI-001` picks it by the case's `kind` |
+
+What a profile changes (new awareness keys in `profile.ts`):
+
+- `creator_authenticity`: whether the person uses the authenticity and brand-safety filters and reads the authenticity
+  column. Without it the scripted brain sees no trust signal and ranks on audience size, and the ledger records
+  `latent_need: authenticity`.
+- `creator_budget_tracking`: whether they keep a running total. Without it they offer each creator's asking rate, and
+  when that adds up to more than the budget the ledger records an injected `overspend` error.
+
+On the sample directory, a senior strategist ends with three fitting, authentic creators and about $3,800 of offers
+against $6,000; a junior (same case, same platform) picks the biggest accounts and commits about $10,250.
+
+Limits: scripted brain only (no Claude brain for this case yet); the creator's side of the invitation (accepting,
+countering, submitting content) is not played by an agent; no comparison or saved searches; one case.
+
+**Known issue found while building this:** in a headless production build, clicking the discovery page's *Next* link
+starts the router's request and then cancels it, so the page does not change, while loading the link's address works in
+about 100 ms. Other links (for example *Lists*) navigate normally, and nothing is logged on the client or the server. The
+agent opens the link's address instead, as the browser tests already do. The cause is not known.

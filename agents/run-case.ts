@@ -8,7 +8,8 @@ import { pool } from "@/db/client";
 import { runAnalystCase } from "./analyst";
 import { ClaudeBrain, type CallRecord } from "./brain/claude";
 import { ScriptedBrain } from "./brain/scripted";
-import { loadCase, loadTruth } from "./cases";
+import { caseKind, loadCase, loadTruth } from "./cases";
+import { runInfluencerCase } from "./influencer/run";
 import { evaluate } from "./evaluate";
 import { Ledger } from "./ledger";
 import { sampleProfile } from "./profile";
@@ -142,9 +143,24 @@ async function main() {
     manifest.agents.find((a) => a.agent_id === id) ??
     manifest.agents.find((a) => a.role === "analyst");
   if (!agent) throw new Error("no such agent in the manifest");
+  const caseId = arg("case", "CS-001")!;
+  if (caseKind(caseId) === "influencers") {
+    const out = await runInfluencerCase({
+      agent,
+      caseId,
+      runId: arg("run", manifest.run)!,
+      baseUrl: arg("base", "http://localhost:3000")!,
+      outDir: arg("out", "agents/out")!,
+      clock: arg("clock"),
+      headed: process.argv.includes("--headed"),
+    });
+    console.log(JSON.stringify(out.evaluation, null, 2));
+    console.log(`\nledger, campaign plan and evaluation in ${out.dir}`);
+    return;
+  }
   const out = await runCase({
     agent,
-    caseId: arg("case", "CS-001")!,
+    caseId,
     runId: arg("run", manifest.run)!,
     baseUrl: arg("base", "http://localhost:3000")!,
     outDir: arg("out", "agents/out")!,
