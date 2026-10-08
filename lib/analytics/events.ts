@@ -12,7 +12,7 @@ export const EVENTS = {
       "utm_campaign"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse",
       "ga4"
     ],
@@ -26,7 +26,7 @@ export const EVENTS = {
       "entry_point"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse",
       "ga4"
     ],
@@ -39,7 +39,7 @@ export const EVENTS = {
       "billing_interval"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -49,7 +49,7 @@ export const EVENTS = {
     "side": "client",
     "properties": [],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -62,7 +62,7 @@ export const EVENTS = {
       "signup_source"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse",
       "ga4"
     ],
@@ -75,7 +75,7 @@ export const EVENTS = {
       "time_to_verify_ms"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -87,7 +87,7 @@ export const EVENTS = {
       "method"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse",
       "ga4"
     ],
@@ -100,7 +100,7 @@ export const EVENTS = {
       "error_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -110,7 +110,7 @@ export const EVENTS = {
     "side": "client",
     "properties": [],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -123,7 +123,7 @@ export const EVENTS = {
       "step_index"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -138,7 +138,7 @@ export const EVENTS = {
       "competitors_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -150,7 +150,7 @@ export const EVENTS = {
       "step_name"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -162,7 +162,7 @@ export const EVENTS = {
       "duration_ms"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse",
       "ga4"
     ],
@@ -176,7 +176,7 @@ export const EVENTS = {
       "completed_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -190,7 +190,7 @@ export const EVENTS = {
       "entry_point"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -208,7 +208,7 @@ export const EVENTS = {
       "exclusion_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -221,7 +221,7 @@ export const EVENTS = {
       "error_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -241,7 +241,7 @@ export const EVENTS = {
       "is_from_template"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse",
       "ga4"
     ],
@@ -255,7 +255,7 @@ export const EVENTS = {
       "builder_mode"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -267,7 +267,7 @@ export const EVENTS = {
       "query_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -279,7 +279,7 @@ export const EVENTS = {
       "query_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -294,7 +294,7 @@ export const EVENTS = {
       "duration_ms"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -308,7 +308,7 @@ export const EVENTS = {
       "ai_quota_remaining"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -320,7 +320,7 @@ export const EVENTS = {
       "across_workspaces"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -334,7 +334,7 @@ export const EVENTS = {
       "duration_ms"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -348,7 +348,7 @@ export const EVENTS = {
       "view_mode"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -362,7 +362,7 @@ export const EVENTS = {
       "result_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -375,7 +375,7 @@ export const EVENTS = {
       "entry_point"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -387,7 +387,7 @@ export const EVENTS = {
       "source_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -402,7 +402,7 @@ export const EVENTS = {
       "lang"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -412,7 +412,7 @@ export const EVENTS = {
     "side": "client",
     "properties": [],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -425,7 +425,7 @@ export const EVENTS = {
       "bulk_size"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -437,7 +437,7 @@ export const EVENTS = {
       "filter_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -449,7 +449,7 @@ export const EVENTS = {
       "term_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -459,7 +459,7 @@ export const EVENTS = {
     "side": "server",
     "properties": [],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -473,7 +473,7 @@ export const EVENTS = {
       "driver_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -487,7 +487,7 @@ export const EVENTS = {
       "ai_quota_remaining"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -501,7 +501,7 @@ export const EVENTS = {
       "latency_ms"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -513,7 +513,7 @@ export const EVENTS = {
       "citation_index"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -526,7 +526,7 @@ export const EVENTS = {
       "insight_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -538,7 +538,7 @@ export const EVENTS = {
       "author_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -548,7 +548,7 @@ export const EVENTS = {
     "side": "client",
     "properties": [],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -560,7 +560,7 @@ export const EVENTS = {
       "topic_growth_pct"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -572,7 +572,7 @@ export const EVENTS = {
       "template_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -585,7 +585,7 @@ export const EVENTS = {
       "is_gated"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -598,7 +598,7 @@ export const EVENTS = {
       "chart_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -611,7 +611,7 @@ export const EVENTS = {
       "move_method"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -623,7 +623,7 @@ export const EVENTS = {
       "widgets_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -637,7 +637,7 @@ export const EVENTS = {
       "widgets_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -650,7 +650,7 @@ export const EVENTS = {
       "recipients_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -662,7 +662,7 @@ export const EVENTS = {
       "widget_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -673,11 +673,11 @@ export const EVENTS = {
     "properties": [
       "alert_type",
       "threshold",
-      "channel",
+      "delivery_channel",
       "backtest_fire_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -691,7 +691,7 @@ export const EVENTS = {
       "severity"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -701,10 +701,10 @@ export const EVENTS = {
     "side": "server",
     "properties": [
       "alert_id",
-      "channel"
+      "delivery_channel"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -717,7 +717,7 @@ export const EVENTS = {
       "time_to_open_ms"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -730,7 +730,7 @@ export const EVENTS = {
       "time_to_ack_ms"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -742,7 +742,7 @@ export const EVENTS = {
       "alert_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -754,7 +754,7 @@ export const EVENTS = {
       "alert_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -768,7 +768,7 @@ export const EVENTS = {
       "negative_share"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -780,7 +780,7 @@ export const EVENTS = {
       "crisis_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -794,7 +794,7 @@ export const EVENTS = {
       "is_ai_drafted"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -807,7 +807,7 @@ export const EVENTS = {
       "duration_ms"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -819,7 +819,7 @@ export const EVENTS = {
       "template_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -833,7 +833,7 @@ export const EVENTS = {
       "is_new_report"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -846,7 +846,7 @@ export const EVENTS = {
       "template_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -860,7 +860,7 @@ export const EVENTS = {
       "has_external_recipient"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -873,7 +873,7 @@ export const EVENTS = {
       "recipients_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -883,10 +883,10 @@ export const EVENTS = {
     "side": "server",
     "properties": [
       "report_id",
-      "channel"
+      "delivery_channel"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -899,7 +899,7 @@ export const EVENTS = {
       "row_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -912,7 +912,7 @@ export const EVENTS = {
       "invite_source"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -924,7 +924,7 @@ export const EVENTS = {
       "days_to_accept"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -936,7 +936,7 @@ export const EVENTS = {
       "target_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -946,7 +946,7 @@ export const EVENTS = {
     "side": "client",
     "properties": [],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -959,7 +959,7 @@ export const EVENTS = {
       "copied_from_template"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -971,7 +971,7 @@ export const EVENTS = {
       "from_workspace_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -981,7 +981,7 @@ export const EVENTS = {
     "side": "client",
     "properties": [],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -991,7 +991,7 @@ export const EVENTS = {
     "side": "client",
     "properties": [],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1004,7 +1004,7 @@ export const EVENTS = {
       "required_plan"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1016,7 +1016,7 @@ export const EVENTS = {
       "paywall_trigger"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1031,7 +1031,7 @@ export const EVENTS = {
       "billing_interval"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1046,7 +1046,7 @@ export const EVENTS = {
       "mrr"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse",
       "ga4"
     ],
@@ -1062,7 +1062,7 @@ export const EVENTS = {
       "mrr_delta"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1076,7 +1076,7 @@ export const EVENTS = {
       "mrr_delta"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1089,7 +1089,7 @@ export const EVENTS = {
       "mrr_delta"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1101,7 +1101,7 @@ export const EVENTS = {
       "attempt_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1115,7 +1115,7 @@ export const EVENTS = {
       "trial_day_reached"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1128,7 +1128,7 @@ export const EVENTS = {
       "threshold_pct"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1141,7 +1141,7 @@ export const EVENTS = {
       "price_cents"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1154,7 +1154,7 @@ export const EVENTS = {
       "seats_requested"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse",
       "ga4"
     ],
@@ -1167,7 +1167,7 @@ export const EVENTS = {
       "seats_requested"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse",
       "ga4"
     ],
@@ -1180,7 +1180,7 @@ export const EVENTS = {
       "quote_value"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1192,7 +1192,7 @@ export const EVENTS = {
       "quote_value"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1205,7 +1205,7 @@ export const EVENTS = {
       "contract_months"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse",
       "ga4"
     ],
@@ -1218,7 +1218,7 @@ export const EVENTS = {
       "tenure_days"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1230,7 +1230,7 @@ export const EVENTS = {
       "reason"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1242,7 +1242,7 @@ export const EVENTS = {
       "offer_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1254,7 +1254,7 @@ export const EVENTS = {
       "offer_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1267,7 +1267,7 @@ export const EVENTS = {
       "tenure_days"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1279,7 +1279,7 @@ export const EVENTS = {
       "days_since_cancel"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1289,7 +1289,7 @@ export const EVENTS = {
     "side": "client",
     "properties": [],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1302,7 +1302,7 @@ export const EVENTS = {
       "context"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1314,7 +1314,7 @@ export const EVENTS = {
       "ui_theme"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1326,7 +1326,7 @@ export const EVENTS = {
       "topic"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1338,7 +1338,7 @@ export const EVENTS = {
       "error_code"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1350,7 +1350,7 @@ export const EVENTS = {
       "empty_state_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1362,7 +1362,7 @@ export const EVENTS = {
       "notification_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1374,7 +1374,7 @@ export const EVENTS = {
       "email_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1386,7 +1386,7 @@ export const EVENTS = {
       "email_type"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1398,7 +1398,7 @@ export const EVENTS = {
       "category"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1411,7 +1411,7 @@ export const EVENTS = {
       "variant"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1424,7 +1424,7 @@ export const EVENTS = {
       "last_product"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1437,7 +1437,7 @@ export const EVENTS = {
       "source"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1453,7 +1453,7 @@ export const EVENTS = {
       "page"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1469,7 +1469,7 @@ export const EVENTS = {
       "profile_views_used"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1482,7 +1482,7 @@ export const EVENTS = {
       "source"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1496,7 +1496,7 @@ export const EVENTS = {
       "source"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1510,7 +1510,7 @@ export const EVENTS = {
       "source"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1524,7 +1524,7 @@ export const EVENTS = {
       "format"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1538,7 +1538,7 @@ export const EVENTS = {
       "budget_usd"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1552,7 +1552,7 @@ export const EVENTS = {
       "to_status"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1566,7 +1566,7 @@ export const EVENTS = {
       "source"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1581,7 +1581,7 @@ export const EVENTS = {
       "to_status"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1594,7 +1594,7 @@ export const EVENTS = {
       "creator_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1609,7 +1609,7 @@ export const EVENTS = {
       "round"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1623,7 +1623,7 @@ export const EVENTS = {
       "invite_state"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1638,7 +1638,7 @@ export const EVENTS = {
       "counter_usd"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1652,7 +1652,7 @@ export const EVENTS = {
       "decision"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1667,7 +1667,7 @@ export const EVENTS = {
       "content_kind"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1682,7 +1682,7 @@ export const EVENTS = {
       "version"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1694,7 +1694,7 @@ export const EVENTS = {
       "campaign_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1708,7 +1708,7 @@ export const EVENTS = {
       "source"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1723,7 +1723,7 @@ export const EVENTS = {
       "is_bot"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1737,7 +1737,7 @@ export const EVENTS = {
       "value_usd"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1751,7 +1751,7 @@ export const EVENTS = {
       "conversions"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1766,7 +1766,7 @@ export const EVENTS = {
       "fee_usd"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1780,7 +1780,7 @@ export const EVENTS = {
       "version"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1794,7 +1794,7 @@ export const EVENTS = {
       "version"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1807,7 +1807,7 @@ export const EVENTS = {
       "creator_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1822,7 +1822,7 @@ export const EVENTS = {
       "attempt"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1837,7 +1837,7 @@ export const EVENTS = {
       "outcome"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1851,7 +1851,7 @@ export const EVENTS = {
       "days_left"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1864,7 +1864,7 @@ export const EVENTS = {
       "filter_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1877,7 +1877,7 @@ export const EVENTS = {
       "filter_count"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1889,7 +1889,7 @@ export const EVENTS = {
       "saved_search_id"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,
@@ -1902,7 +1902,7 @@ export const EVENTS = {
       "truncated"
     ],
     "destinations": [
-      "amplitude",
+      "rudderstack",
       "warehouse"
     ],
     "ga4Name": null,

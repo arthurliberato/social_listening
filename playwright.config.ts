@@ -22,7 +22,7 @@ export default defineConfig({
     {
       name: "anonymous",
       testMatch:
-        /onboarding\.spec\.ts|public\.spec\.ts|queries\.spec\.ts|mentions\.spec\.ts|dashboards\.spec\.ts|alerts\.spec\.ts|ai\.spec\.ts|add-to-report\.spec\.ts|audit-coverage\.spec\.ts|throttle\.spec\.ts|auth-methods\.spec\.ts|insights\.spec\.ts|sales\.spec\.ts|reports\.spec\.ts|billing\.spec\.ts|team\.spec\.ts|influencers\.spec\.ts|campaigns\.spec\.ts|outreach\.spec\.ts|tracking\.spec\.ts|contracts\.spec\.ts|search-compare\.spec\.ts|sim-clock\.spec\.ts|categories\.spec\.ts|help\.spec\.ts|query-copy\.spec\.ts|history-pack\.spec\.ts|agent-m1\.spec\.ts|agent-influencers\.spec\.ts/,
+        /onboarding\.spec\.ts|public\.spec\.ts|queries\.spec\.ts|mentions\.spec\.ts|dashboards\.spec\.ts|alerts\.spec\.ts|ai\.spec\.ts|add-to-report\.spec\.ts|audit-coverage\.spec\.ts|throttle\.spec\.ts|auth-methods\.spec\.ts|insights\.spec\.ts|sales\.spec\.ts|reports\.spec\.ts|billing\.spec\.ts|team\.spec\.ts|influencers\.spec\.ts|campaigns\.spec\.ts|outreach\.spec\.ts|tracking\.spec\.ts|contracts\.spec\.ts|search-compare\.spec\.ts|sim-clock\.spec\.ts|categories\.spec\.ts|help\.spec\.ts|query-copy\.spec\.ts|history-pack\.spec\.ts|agent-m1\.spec\.ts|agent-influencers\.spec\.ts|rudderstack\.spec\.ts/,
     },
     // Specs that need a signed-in, onboarded user.
     {
@@ -32,11 +32,24 @@ export default defineConfig({
       use: { storageState: "tests/.auth/user.json" },
     },
   ],
-  webServer: {
-    // CI builds first (a separate step) and serves the production build. PW_PROD=1 does the same locally.
-    command: process.env.CI || process.env.PW_PROD ? "npm run start" : "npm run dev",
-    url: "http://localhost:3000/login",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: [
+    // A stand-in for RudderStack, so every run sends its events somewhere and tests can read them back.
+    {
+      command: "node tests/e2e/mock-dataplane.mjs",
+      url: "http://127.0.0.1:9411/__received",
+      reuseExistingServer: true,
+      timeout: 30_000,
+    },
+    {
+      // CI builds first (a separate step) and serves the production build. PW_PROD=1 does the same locally.
+      command: process.env.CI || process.env.PW_PROD ? "npm run start" : "npm run dev",
+      url: "http://localhost:3000/login",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+      env: {
+        RUDDERSTACK_WRITE_KEY: "e2e-write-key",
+        RUDDERSTACK_DATA_PLANE_URL: "http://127.0.0.1:9411",
+      },
+    },
+  ],
 });

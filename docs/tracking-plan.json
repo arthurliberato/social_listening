@@ -36,7 +36,7 @@
    "description": "",
    "ga4_name": "page_view",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
    ],
@@ -53,7 +53,7 @@
    "description": "",
    "ga4_name": "view_pricing",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
    ],
@@ -68,7 +68,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -80,7 +80,7 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -96,7 +96,7 @@
    "description": "",
    "ga4_name": "sign_up",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
    ],
@@ -111,7 +111,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -126,7 +126,7 @@
    "description": "",
    "ga4_name": "login",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
    ],
@@ -141,7 +141,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -153,7 +153,7 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -168,7 +168,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -185,7 +185,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -199,7 +199,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -214,7 +214,7 @@
    "description": "",
    "ga4_name": "onboarding_completed",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
    ],
@@ -230,7 +230,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -246,7 +246,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -266,7 +266,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -281,7 +281,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -304,7 +304,7 @@
    "description": "",
    "ga4_name": "first_query_saved",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
    ],
@@ -320,7 +320,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -334,7 +334,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -348,7 +348,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -365,7 +365,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -381,7 +381,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -395,7 +395,7 @@
    ],
    "description": "A query copied to another workspace of the account, or duplicated in place.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -411,7 +411,7 @@
    ],
    "description": "Older history collected for a query that has a history pack.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -427,7 +427,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -443,7 +443,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -458,7 +458,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -472,7 +472,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -489,7 +489,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -501,7 +501,7 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -516,7 +516,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -530,7 +530,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -544,7 +544,7 @@
    ],
    "description": "A named Boolean search saved as a category.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -556,7 +556,7 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -572,7 +572,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -588,7 +588,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -604,7 +604,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -618,7 +618,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -633,7 +633,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -647,7 +647,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -659,7 +659,7 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -673,7 +673,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -687,7 +687,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -702,7 +702,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -717,7 +717,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -732,7 +732,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -746,7 +746,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -762,7 +762,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -777,7 +777,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -791,7 +791,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -803,12 +803,12 @@
    "properties": [
     "alert_type",
     "threshold",
-    "channel",
+    "delivery_channel",
     "backtest_fire_count"
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -824,7 +824,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -835,11 +835,11 @@
    "side": "server",
    "properties": [
     "alert_id",
-    "channel"
+    "delivery_channel"
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -854,7 +854,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -869,7 +869,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -883,7 +883,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -897,7 +897,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -913,7 +913,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -927,7 +927,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -943,7 +943,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -958,7 +958,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -972,7 +972,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -988,7 +988,7 @@
    ],
    "description": "A widget from a dashboard, Topics or Authors was added to a report.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -1003,7 +1003,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -1019,7 +1019,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -1034,7 +1034,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -1045,11 +1045,11 @@
    "side": "server",
    "properties": [
     "report_id",
-    "channel"
+    "delivery_channel"
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -1064,7 +1064,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -1079,7 +1079,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1093,7 +1093,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1107,7 +1107,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1119,7 +1119,7 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1134,7 +1134,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1148,7 +1148,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1160,7 +1160,7 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1172,7 +1172,7 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1187,7 +1187,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1201,7 +1201,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1218,7 +1218,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1236,7 +1236,7 @@
    "description": "Fires revenue() with plan MRR",
    "ga4_name": "subscription_started",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
    ],
@@ -1254,7 +1254,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1270,7 +1270,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1285,7 +1285,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1299,7 +1299,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1315,7 +1315,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1330,7 +1330,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1345,7 +1345,7 @@
    ],
    "description": "A one-time add-on bought, such as a history pack.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "listening"
@@ -1361,7 +1361,7 @@
    "description": "",
    "ga4_name": "generate_lead",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
    ],
@@ -1377,7 +1377,7 @@
    "description": "",
    "ga4_name": "demo_booked",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
    ],
@@ -1392,7 +1392,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1406,7 +1406,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1422,7 +1422,7 @@
    "description": "",
    "ga4_name": "contract_signed",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
    ],
@@ -1437,7 +1437,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1451,7 +1451,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1465,7 +1465,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1479,7 +1479,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1494,7 +1494,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1508,7 +1508,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1520,7 +1520,7 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1535,7 +1535,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1549,7 +1549,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1563,7 +1563,7 @@
    ],
    "description": "Opened the shortcut dialog (no topic) or a Help center topic.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1577,7 +1577,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1591,7 +1591,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1605,7 +1605,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1619,7 +1619,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1633,7 +1633,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1647,7 +1647,7 @@
    ],
    "description": "A question sent from the Help center.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1662,7 +1662,7 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "platform"
@@ -1677,7 +1677,7 @@
    ],
    "description": "The post-login screen where a person chooses Social listening or Influencers.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "hub"
@@ -1692,7 +1692,7 @@
    ],
    "description": "A person chose a product from the hub or the product switcher. target_product: listening | influencers. source: hub | switcher.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "hub"
@@ -1710,7 +1710,7 @@
    ],
    "description": "Discovery results were shown for a new combination of search, filters, sort or page (once per URL change).",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1728,7 +1728,7 @@
    ],
    "description": "A creator profile was opened. Counts against the monthly profile allowance once per creator per month.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1743,7 +1743,7 @@
    ],
    "description": "A creator list was created. source: lists_page | add_menu.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1759,7 +1759,7 @@
    ],
    "description": "A creator was added to a list. source: discovery | profile | compare.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1775,7 +1775,7 @@
    ],
    "description": "A creator was removed from a list. source: list | discovery | profile.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1791,7 +1791,7 @@
    ],
    "description": "A creator list was exported (CSV).",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1807,7 +1807,7 @@
    ],
    "description": "An influencer campaign was created.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1823,7 +1823,7 @@
    ],
    "description": "A campaign moved between draft, active, completed and archived.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1839,7 +1839,7 @@
    ],
    "description": "Creators were added to a campaign. source: list.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1856,7 +1856,7 @@
    ],
    "description": "A creator moved along the campaign pipeline (invited, confirmed, content approved, paid...).",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1871,7 +1871,7 @@
    ],
    "description": "A creator was removed from a campaign.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1888,7 +1888,7 @@
    ],
    "description": "A brand sent (or revised) an invitation to a creator. round counts offers to this creator on this campaign.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1904,7 +1904,7 @@
    ],
    "description": "A creator opened their invitation page for the first time.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "creator_portal"
@@ -1921,7 +1921,7 @@
    ],
    "description": "A creator accepted, declined or countered from the portal. response: accepted | declined | countered.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "creator_portal"
@@ -1937,7 +1937,7 @@
    ],
    "description": "A brand answered a creator's counter-offer. decision: accepted | revised | declined.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1954,7 +1954,7 @@
    ],
    "description": "A creator submitted content from the portal. version is 1 for the first submission. content_kind: link | file.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "creator_portal"
@@ -1971,7 +1971,7 @@
    ],
    "description": "A brand reviewed submitted content. decision: approved | changes_requested.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -1985,7 +1985,7 @@
    ],
    "description": "A brand set (or changed) where a campaign's tracking links send people.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2001,7 +2001,7 @@
    ],
    "description": "A creator's tracking link was created. source: destination_set | confirmed | brand.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2018,7 +2018,7 @@
    ],
    "description": "Someone followed a creator's tracking link. The actor is the audience member: anonymous, no account. is_unique: first non-bot visit by that visitor in 24 hours.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2034,7 +2034,7 @@
    ],
    "description": "The brand's site reported a conversion for a click through the postback. Anonymous actor.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2050,7 +2050,7 @@
    ],
    "description": "A brand opened a campaign's results page.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2067,7 +2067,7 @@
    ],
    "description": "A brand sent (or revised) the agreement for a creator. version is 1 for the first.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2083,7 +2083,7 @@
    ],
    "description": "A creator signed their agreement from their page.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "creator_portal"
@@ -2099,7 +2099,7 @@
    ],
    "description": "A creator asked for changes to their agreement instead of signing.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "creator_portal"
@@ -2114,7 +2114,7 @@
    ],
    "description": "A creator saved where they want to be paid. The account itself is never sent to analytics.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "creator_portal"
@@ -2131,7 +2131,7 @@
    ],
    "description": "A brand started a payout to a creator. attempt is 1, or higher when retrying after a failure.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2148,7 +2148,7 @@
    ],
    "description": "A payout reached its outcome. outcome: paid | failed. The actor is the system (actor_type: system), not a person.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2164,7 +2164,7 @@
    ],
    "description": "A creator who hadn't answered was reminded that the invitation closes soon (once per invitation). The actor is the system (actor_type: system).",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2179,7 +2179,7 @@
    ],
    "description": "A discovery search was saved under a name.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2194,7 +2194,7 @@
    ],
    "description": "A saved search was opened from the discovery page.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2208,7 +2208,7 @@
    ],
    "description": "A saved search was deleted.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
@@ -2223,16 +2223,16 @@
    ],
    "description": "A side-by-side comparison was opened. truncated: the link asked for more creators than the plan compares.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
    ],
    "product": "influencers"
   }
  ],
  "destinations": {
-  "amplitude": "all events",
+  "rudderstack": "all events: the one collection point (browser SDK for client events, Node SDK for server events). RudderStack delivers to BigQuery and to any product-analytics tool added later.",
   "ga4": "funnel/lead events only (ga4_name mapping); separate property for synthetic traffic",
-  "warehouse": "BigQuery: Postgres analytics_events batch load + Amplitude Export API + GA4 native export"
+  "warehouse": "also mirrored to Postgres analytics_events, for reconciliation against what BigQuery received and as a fallback load"
  },
  "signup_attribution_fields": [
   "ga_client_id",
