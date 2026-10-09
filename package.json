@@ -19,12 +19,14 @@
     "gen:events": "tsx scripts/gen-events.ts",
     "gen:grammar": "tsx scripts/gen-grammar.ts",
     "worker": "tsx jobs/worker.ts",
+    "seed:agents": "tsx scripts/seed-agents.ts",
+    "loadtest": "tsx scripts/loadtest.ts",
+    "agent:case": "tsx agents/run-case.ts",
     "test:palette": "tsx scripts/validate-charts.ts",
-    "screenshots": "playwright test --config playwright.screenshots.config.ts"
+    "screenshots": "playwright test --config playwright.screenshots.config.ts",
+    "audit:warehouse": "tsx scripts/audit-warehouse.ts"
   },
   "dependencies": {
-    "@amplitude/analytics-browser": "^2.47.2",
-    "@amplitude/analytics-node": "^1.5.76",
     "@codemirror/autocomplete": "^6.20.3",
     "@codemirror/commands": "^6.11.1",
     "@codemirror/language": "^6.12.4",
@@ -33,6 +35,8 @@
     "@codemirror/view": "^6.43.13",
     "@lezer/highlight": "^1.2.5",
     "@node-rs/argon2": "^2.2.1",
+    "@rudderstack/analytics-js": "^3.34.3",
+    "@rudderstack/rudder-sdk-node": "^3.0.14",
     "@tanstack/react-table": "^8.21.3",
     "@types/pdfkit": "^0.17.6",
     "drizzle-orm": "^0.45.3",

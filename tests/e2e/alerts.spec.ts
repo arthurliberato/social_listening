@@ -102,7 +102,7 @@ test("empty state → build an alert with a live backtest → it appears in the 
   expect(created.props).toMatchObject({
     alert_type: "volume_spike",
     threshold: 2,
-    channel: "in_app+email",
+    delivery_channel: "in_app+email",
   });
   expect(typeof created.props.backtest_fire_count).toBe("number");
 
@@ -240,6 +240,7 @@ test("crisis room: tasks, a stakeholder update that lands in the inbox, and reso
   await expect(page.getByTestId("open-crisis")).toHaveAttribute("href", new RegExp(crisisId));
   void rule;
   await page.goto(`/w/${slug}/crisis/${crisisId}`);
+  await page.waitForLoadState("networkidle"); // a production build paints the form before React attaches
 
   await expect(page.getByTestId("tasks-empty")).toBeVisible();
   await page.getByTestId("task-title").fill("Draft holding statement");

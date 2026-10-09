@@ -179,7 +179,10 @@ export async function evaluateAlerts(queryId: string, until: Date): Promise<Fire
       if (channel === "email") {
         await emailMembers(rule.workspaceId, ws!.slug, rule.name, verdict.summary, ev!.id);
       }
-      await trackServer("Alert Notification Sent", ctx, { alert_id: rule.id, channel });
+      await trackServer("Alert Notification Sent", ctx, {
+        alert_id: rule.id,
+        delivery_channel: channel,
+      });
     }
   }
   return fired;

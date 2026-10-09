@@ -13,6 +13,7 @@ export type EmailType =
   | "trial"
   | "billing"
   | "sales"
+  | "support"
   | "security"
   | "outreach";
 

@@ -1,0 +1,5 @@
+{
+  "id": "CS-001",
+  "brand": "Juniper Roast",
+  "rubric": { "mentions_brand": true, "min_recommendations": 2, "min_findings": 2 }
+}

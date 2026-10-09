@@ -16,6 +16,7 @@ import { getTemplate, layoutTemplate } from "@/lib/dashboards/templates";
 import type { WidgetResult } from "@/lib/dashboards/types";
 import { PLANS, planUnlocking } from "@/lib/entitlements/plans";
 import { canEdit } from "@/lib/queries";
+import { simNow } from "@/lib/simclock";
 
 type Fail = { ok: false; error: string; upgradeTo?: string };
 
@@ -138,7 +139,7 @@ export async function saveDashboard(
   const saved = await db.transaction(async (tx) => {
     await tx
       .update(dashboards)
-      .set({ name: parsed.data.name, description: parsed.data.description, updatedAt: new Date() })
+      .set({ name: parsed.data.name, description: parsed.data.description, updatedAt: simNow() })
       .where(eq(dashboards.id, id));
     await tx.delete(widgets).where(eq(widgets.dashboardId, id));
     const out: { id: string; x: number; y: number; w: number; h: number }[] = [];

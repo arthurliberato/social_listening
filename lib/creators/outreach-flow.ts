@@ -15,6 +15,9 @@ export const newToken = () =>
   ).join("");
 export const isToken = (s: string) => /^[0-9a-f]{48}$/.test(s);
 
+/** A creator who hasn't answered is reminded once, this many days before the invitation lapses. */
+export const REMINDER_DAYS_BEFORE = 3;
+
 export const expiryFrom = (now: Date) => new Date(now.getTime() + INVITE_TTL_DAYS * 86_400_000);
 
 export interface InviteLike {
@@ -104,6 +107,15 @@ export function checkSubmission(
   return { ok: true, url: parsed.toString(), caption: caption.trim() };
 }
 
+/** An upload carries no link, only an optional caption. */
+export function checkCaption(
+  caption: string,
+): { ok: true; caption: string } | { ok: false; reason: string } {
+  if (caption.length > 2000)
+    return { ok: false, reason: "Keep the caption under 2,000 characters." };
+  return { ok: true, caption: caption.trim() };
+}
+
 export function checkReview(
   decision: "approve" | "changes",
   feedback: string,
@@ -121,3 +133,10 @@ export function defaultMessage(o: { brand: string; campaign: string; creator: st
 }
 
 export const creatorAddress = (handle: string) => `${handle.toLowerCase()}@creators.example.test`;
+
+/** Whether a reminder is due: still unanswered, not yet reminded, inside the reminder window and not yet expired. */
+export function reminderDue(i: InviteLike & { remindedAt: Date | null }, now: Date): boolean {
+  if (i.status !== "sent" || i.remindedAt) return false;
+  const left = i.expiresAt.getTime() - now.getTime();
+  return left > 0 && left <= REMINDER_DAYS_BEFORE * 86_400_000;
+}

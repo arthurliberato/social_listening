@@ -4,7 +4,11 @@ services:
     ports: ["3000:3000"]
     environment:
       DATABASE_URL: postgres://ripplewise:ripplewise@postgres:5432/ripplewise
+      # Read when the app runs. Empty means nothing is sent to RudderStack; events still go to Postgres.
+      RUDDERSTACK_WRITE_KEY: ${RUDDERSTACK_WRITE_KEY:-}
+      RUDDERSTACK_DATA_PLANE_URL: ${RUDDERSTACK_DATA_PLANE_URL:-}
       SMTP_URL: smtp://mailpit:1025
+      ALLOW_SIM_CLOCK: "true" # lets the agent harness give each agent its own clock (cookie rw_sim); leave off in production
     depends_on: [postgres, mailpit]
   postgres:
     image: postgres:16

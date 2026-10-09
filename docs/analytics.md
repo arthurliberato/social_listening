@@ -4,25 +4,32 @@ The product is instrumented the way a real B2B SaaS would be: one plan for what 
 
 ## 1. The plan is the source of truth
 
-`docs/tracking-plan.json` defines **104 events** (83 sent from the browser, 21 from the server) in 17 areas, plus the properties each one may carry. Typed code is generated from it, so an event or property that is not in the plan fails the build. Events are named "Object Action" in the past tense (`Alert Created`, `Quote Accepted`), and the plan states up front that this is B2B SaaS: there are no cart or purchase events. A plan change is a subscription event (`Plan Upgraded`, `Subscription Started`), not a "purchase".
+`docs/tracking-plan.json` defines **145 events** (87 sent from the browser, 58 from the server) in 19 areas, plus the properties each one may carry. Typed code is generated from it, so an event or property that is not in the plan fails the build. Events are named "Object Action" in the past tense (`Alert Created`, `Quote Accepted`), and the plan states up front that this is B2B SaaS: there are no cart or purchase events. A plan change is a subscription event (`Plan Upgraded`, `Subscription Started`), not a "purchase".
 
-Every event carries the same global properties: account, workspace, plan tier, trial day, user role, persona archetype, whether the user is synthetic, the agent run, app version, route and theme. They are filled in on the server from the database, so a screen cannot forget one.
+Every event carries the same global properties: account, workspace, plan tier, trial day, user role, persona archetype, whether the user is synthetic, the agent run, app version, route and theme, plus two that exist for cross-product analysis: `product` and `actor_type` (below). They are filled in on the server from the database, so a screen cannot forget one.
+
+**Product.** The platform has two products behind one login: Social listening and Influencers. Every event has a `product`: `listening`, `influencers`, `creator_portal` (the creator's own page), `hub` (the post-login chooser) or `platform` (shared: auth, billing, onboarding, help). Each event in the plan declares its product; events that fire in more than one (paywalls, errors, theme changes) take the product of the screen they fired on, and a paywall raised from a server action takes it from its trigger (`outreach_quota` is Influencers). The rule is one small tested function (`lib/analytics/product.ts`) used by both the browser and the server, so RudderStack, BigQuery and the warehouse mirror always agree.
 
 ## 2. How an event travels
 
-- **Browser events** go to Amplitude directly (when a key is set) *and* to our own `/api/track`, which drops any property the plan does not list for that event, records the event, and forwards it per the plan. A `forwarded` flag stops Amplitude counting it twice.
+- **Browser events** go to our own `/api/track`, which drops any property the plan does not list for that event, adds the global properties only the server knows (account, plan, role, persona, agent run), records the event, and sends it to RudderStack. Nothing is sent to RudderStack from the browser, so every event arrives complete, none is lost to an ad blocker, and nothing can be counted twice.
 - **Server events** (sign-up completed, contract signed, alert triggered, and so on) are recorded where they happen, so they cannot be lost to an ad blocker or a closed tab.
-- **Every event is also written to a Postgres table** (`analytics_events`): the warehouse feed, queryable today.
+- **Every event is also written to a Postgres table** (`analytics_events`): the reconciliation copy, queryable today, and the fallback if RudderStack is down or unset.
+- **RudderStack** receives every event (a `track` call) from the server (`lib/analytics/rudder.ts`), batching a few seconds at a time, and delivers it to BigQuery (and anything added later). With no write key or data plane URL set it sends nothing.
 - **GA4 gets 10 funnel events only**, renamed to GA4 conventions (`sign_up`, `view_pricing`, `generate_lead`, `demo_booked`, `contract_signed`, and so on) and with almost nothing attached: plan tier, the synthetic flag and the account ID.
 - Recording an event never throws into the request that caused it. An analytics failure is logged, not shown to a customer.
 
 ## 3. Identity and privacy
 
-The same user UUID identifies a person in Amplitude and GA4. Account and workspace are Amplitude groups, set on login and on workspace switch, and the identity is reset on logout. **Emails and names are never sent to analytics**, and the plan whitelist means a stray property cannot slip through. Account-level properties pushed from the nightly job are scores and counts only.
+The same user UUID identifies a person in RudderStack and GA4. The first time the server sees a person it sends RudderStack an `identify` (ids and kinds only: `user_type`, `account_id`) and `group` calls for their account and workspace; a different workspace is a new introduction, which is how a workspace switch reaches the warehouse. There is no browser identity to reset on sign-out: the device id stays on the browser, and the signed-in person is read from the session. **Emails and names are never sent to analytics**, and the plan whitelist means a stray property cannot slip through. Account-level properties pushed from the nightly job are scores and counts only.
+
+**Creators are a second kind of actor.** A creator answering an invitation has no account, so their events (`Creator Portal Viewed`, `Creator Invitation Answered`, `Creator Content Submitted`) carry `actor_type: creator` and no member id. In RudderStack and BigQuery they appear as a stable synthetic user, `creator_<directory id>`, with a `user_type: creator` trait, and their events carry the inviting brand's account and workspace. That gives the funnel invited, opened, answered, delivered, paid as one journey per creator, while a creator can never be counted as an active member of an account: the activity scores ignore events without a member id. The creator id is a synthetic directory number, not personal data.
+
+`actor_type` is `member` (a signed-in person), `creator`, `system` (nobody acted: a payout settling because its time came, a scheduled job), or `anonymous` (marketing visitors, signed-out screens, and the audience clicking a creator's tracking link or the brand's site reporting a conversion).
 
 ## 4. From a lead to behaviour in the product
 
-Marketing questions need the lead and the product to be joined. At sign-up the product stores the GA client and session IDs, campaign tags, click ID and referrer on the user row. The lead events (`Marketing Page Viewed`, `Pricing Page Viewed`, `Sign Up Completed`, `Sales Contact Requested`, `Demo Booked`, `Contract Signed`) go to GA4; everything after sign-up lives in Amplitude and the warehouse. Joining on the stored attribution is what connects "this campaign" to "these accounts became healthy, or churned".
+Marketing questions need the lead and the product to be joined. At sign-up the product stores the GA client and session IDs, campaign tags, click ID and referrer on the user row. The lead events (`Marketing Page Viewed`, `Pricing Page Viewed`, `Sign Up Completed`, `Sales Contact Requested`, `Demo Booked`, `Contract Signed`) go to GA4; everything after sign-up lives in RudderStack's destinations and the warehouse. Joining on the stored attribution is what connects "this campaign" to "these accounts became healthy, or churned".
 
 ## 5. Questions it can answer today
 
@@ -58,9 +65,11 @@ FROM x GROUP BY variant;
 
 B2B outcomes happen to accounts, not people, so the nightly job (`jobs/pqa.ts`) scores every account and keeps one row per account per day (`account_scores`), which gives the warehouse a time series.
 
-- **PQA (product-qualified account), 0–100:** breadth of use, people on seats, quota pressure, repeated paywalls, activity days. Accounts already on Enterprise, already talking to sales, or locked are never leads. At 60 or more the owner sees a dismissible card and sales gets one email (at most once in 30 days).
-- **Health, 0–100, in three bands:** recency, breadth of features, people active, minus risks such as a failed payment or a scheduled cancellation. Admins see their own band and the reasons.
-- Both are pushed to Amplitude as properties of the `account` group, so product analytics can be cut by health band or plan.
+- **PQA (product-qualified account), 0–100:** breadth of use, people on seats, quota pressure, repeated paywalls, activity days, and Influencers depth (three or more active campaigns, creator-profile and invitation allowances at 80%). Using both products is a signal on its own (+10). Accounts already on Enterprise, already talking to sales, or locked are never leads. At 60 or more the owner sees a dismissible card and sales gets one email (at most once in 30 days).
+- **Health, 0–100, in three bands:** recency, breadth of features (five: queries, alerts, dashboards, scheduled reports, and Influencers, so an account that lives in Influencers reads as using what it pays for), people active, minus risks such as a failed payment or a scheduled cancellation. Admins see their own band and the reasons.
+- Both are sent to RudderStack as traits of the `account` group (BigQuery's `groups` table), so product analytics can be cut by health band or plan. The group also carries the product mix: `products_used` (`listening`, `influencers`, both, or `none`), `uses_both_products`, `creator_lists`, `active_campaigns`, and the creator-profile and invitation allowance percentages. That makes cross-product cohorts a filter, not a join: for example, accounts that started in listening and added Influencers, and whether they retain better.
+
+Activity and recency already counted every member event, so Influencers work keeps an account "active"; what the earlier rules missed was breadth and depth.
 
 Each score is a short list of explainable rules (`lib/scoring/score.ts`) with tests, not a model. For a product this size, being able to say *why* an account scored 64 matters more than a point of accuracy.
 
@@ -74,8 +83,8 @@ The product is built to be used by autonomous agents. Every event says whether i
 
 ## What is not verified or not built
 
-- **No analytics keys are set here**, so I checked events in the Postgres mirror, not in Amplitude's debugger or GA4's DebugView. The definition of done asks for the Amplitude check; it still needs doing with a real project key.
-- **The mirror is not loaded into BigQuery yet.** The table exists and is shaped for it. A batch loader, the Amplitude Export API pull and GA4's native BigQuery export are the intended feeds and are not wired.
+- **Nothing has been sent to a real RudderStack yet.** What the server sends is checked against a stand-in data plane (`tests/e2e/mock-dataplane.mjs`): the mirror and what arrives agree, once each, with the global properties and nothing personal. A live check needs a source's write key and data plane URL (see `docs/rudderstack-bigquery.md`).
+- **BigQuery is configured in RudderStack, not in this repository.** `docs/rudderstack-bigquery.md` is the checklist and says what lands where. GA4's native BigQuery export is a separate feed and is not wired.
 - **A separate GA4 property for synthetic traffic is a deployment choice** (point the measurement ID at it), not something the code switches.
 - Today every sign-up is flagged synthetic, because the whole environment exists for synthetic users; the flag only becomes useful once a deployment also has human users.
 - Only the `account` group gets properties; the `workspace` group is set but carries none.

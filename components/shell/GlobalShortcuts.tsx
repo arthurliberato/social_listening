@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { track } from "@/lib/analytics/client";
@@ -104,6 +105,17 @@ export function GlobalShortcuts({ ws }: { ws: string }) {
           </dl>
         </section>
       ))}
+      <p className="mt-5 text-sm">
+        Need more than a shortcut?{" "}
+        <Link
+          href={`/w/${ws}/help`}
+          className="text-[var(--primary)] underline underline-offset-2"
+          data-testid="open-help-center"
+          onClick={() => setHelp(false)}
+        >
+          Open the Help center
+        </Link>
+      </p>
       <form method="dialog" className="mt-6">
         <button className="min-h-9 rounded-md border border-[var(--border)] px-4 text-sm font-medium">
           Close

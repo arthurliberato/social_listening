@@ -1,9 +1,11 @@
 // Creator outreach: the brand sends an invitation, the creator answers from their own page, content comes back for
 // review. Everything that changes state lives here so the brand's actions and the creator's portal follow one set of
 // rules (outreach-flow.ts) and write the same audit, analytics and email records.
-import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { createHash } from "node:crypto";
+import { and, count, desc, eq, gt, inArray, isNull, lte, sql } from "drizzle-orm";
 import {
   campaignContent,
+  campaignContentFiles,
   campaignCreators,
   campaignInvites,
   campaigns,
@@ -25,6 +27,7 @@ import {
   SUBMITTABLE_FROM,
   STATUS_AFTER_RESPONSE,
   checkOffer,
+  checkCaption,
   checkResponse,
   checkReview,
   checkSubmission,
@@ -34,20 +37,24 @@ import {
   inviteState,
   isToken,
   newToken,
+  REMINDER_DAYS_BEFORE,
+  reminderDue,
   type Response,
 } from "./outreach-flow";
-import { brandNotice, creatorNotice, invitationEmail } from "./outreach-emails";
+import { contractOutstanding } from "./contract-state";
+import { ensureLink, linkFor } from "./tracking";
+import { brandNotice, creatorNotice, invitationEmail, reminderEmail } from "./outreach-emails";
 
 export type Fail = { ok: false; error: string; upgradeTo?: PlanTier; upgradeLabel?: string };
-const fail = (error: string): Fail => ({ ok: false, error });
+export const fail = (error: string): Fail => ({ ok: false, error });
 const METRIC = "creator_invites";
 
-interface Actor {
+export interface Actor {
   id: string;
   name: string;
   email: string;
 }
-interface Scope {
+export interface Scope {
   id: string;
   accountId: string;
   name: string;
@@ -55,7 +62,7 @@ interface Scope {
 
 const campaignUrl = (slug: string, id: string) => `${APP_URL}/w/${slug}/creators/campaigns/${id}`;
 
-async function workspaceOf(campaignId: string) {
+export async function workspaceOf(campaignId: string) {
   const [row] = await db
     .select({
       campaign: campaigns,
@@ -70,7 +77,7 @@ async function workspaceOf(campaignId: string) {
   return row ?? null;
 }
 
-const isOpen = (status: string) => status === "draft" || status === "active";
+export const isOpen = (status: string) => status === "draft" || status === "active";
 
 /** Invitations sent this month by the account, for the plan's allowance. */
 export async function invitationsUsed(accountId: string) {
@@ -110,7 +117,7 @@ export function canInvite(tier: PlanTier, used: number) {
   };
 }
 
-async function rosterRow(campaignId: string, creatorId: number) {
+export async function rosterRow(campaignId: string, creatorId: number) {
   const [r] = await db
     .select({
       status: campaignCreators.status,
@@ -348,6 +355,7 @@ export async function resolveCounter(o: {
           ),
         );
     });
+    await ensureLink(o.campaignId, o.creatorId, "confirmed");
     await sendEmail({
       to: creatorAddress(row.handle),
       type: "outreach",
@@ -484,7 +492,7 @@ export async function reviewContent(o: {
   return { ok: true };
 }
 
-async function acceptedInvite(campaignId: string, creatorId: number) {
+export async function acceptedInvite(campaignId: string, creatorId: number) {
   const [i] = await db
     .select()
     .from(campaignInvites)
@@ -593,7 +601,7 @@ export async function markPortalViewed(p: Portal) {
   if (first.length)
     await trackServer(
       "Creator Portal Viewed",
-      { workspaceId: p.workspaceId, accountId: p.accountId },
+      { workspaceId: p.workspaceId, accountId: p.accountId, creatorId: p.creator.id },
       { campaign_id: p.campaign.id, creator_id: p.creator.id, invite_state: p.state },
     );
 }
@@ -666,6 +674,7 @@ export async function respondToInvitation(
       ),
     );
 
+  if (kind === "accept") await ensureLink(p.campaign.id, p.creator.id, "confirmed");
   await notifyBrand(
     p,
     kind === "accept" ? "accepted" : kind === "decline" ? "declined" : "countered",
@@ -673,7 +682,7 @@ export async function respondToInvitation(
   );
   await trackServer(
     "Creator Invitation Answered",
-    { workspaceId: p.workspaceId, accountId: p.accountId },
+    { workspaceId: p.workspaceId, accountId: p.accountId, creatorId: p.creator.id },
     {
       campaign_id: p.campaign.id,
       creator_id: p.creator.id,
@@ -684,10 +693,18 @@ export async function respondToInvitation(
   return { ok: true };
 }
 
+/** A file the creator uploaded in place of a link; already checked by checkFile. */
+export interface UploadedFile {
+  name: string;
+  mime: string;
+  bytes: Buffer;
+}
+
 export async function submitContent(
   token: string,
   url: string,
   caption: string,
+  file?: UploadedFile,
 ): Promise<{ ok: true; version: number } | Fail> {
   const p = await portalFor(token);
   if (!p) return fail("We couldn't find that page.");
@@ -699,8 +716,17 @@ export async function submitContent(
     p.invite.status !== "accepted"
   )
     return fail("You can submit content once you've accepted, and not while it's being reviewed.");
-  const check = checkSubmission(url, caption);
+  // An agreement the brand sent has to be dealt with first: signed, or revised after the creator asked for changes.
+  if (await contractOutstanding(p.campaign.id, p.creator.id))
+    return fail("Sign your agreement before submitting content. It's on this page.");
+  const check = checkCaption(caption);
   if (!check.ok) return fail(check.reason);
+  let link = "";
+  if (!file) {
+    const l = checkSubmission(url, caption);
+    if (!l.ok) return fail(l.reason);
+    link = l.url;
+  }
   const version = (p.content[0]?.version ?? 0) + 1;
   const now = simNow();
   // Only the move out of "confirmed" counts, so two quick submissions can't both go through.
@@ -716,19 +742,36 @@ export async function submitContent(
     )
     .returning({ id: campaignCreators.creatorId });
   if (!moved.length) return fail("Your content is already with the brand for review.");
-  await db.insert(campaignContent).values({
-    campaignId: p.campaign.id,
-    creatorId: p.creator.id,
-    version,
-    url: check.url,
-    caption: check.caption,
-    submittedAt: now,
-  });
+  const [saved] = await db
+    .insert(campaignContent)
+    .values({
+      campaignId: p.campaign.id,
+      creatorId: p.creator.id,
+      version,
+      url: link,
+      caption: check.caption,
+      submittedAt: now,
+      fileName: file?.name ?? null,
+      fileMime: file?.mime ?? null,
+      fileSize: file?.bytes.length ?? null,
+    })
+    .returning({ id: campaignContent.id });
+  if (file && saved)
+    await db.insert(campaignContentFiles).values({
+      contentId: saved.id,
+      sha256: createHash("sha256").update(file.bytes).digest("hex"),
+      data: file.bytes,
+    });
   await notifyBrand(p, "content", {});
   await trackServer(
     "Creator Content Submitted",
-    { workspaceId: p.workspaceId, accountId: p.accountId },
-    { campaign_id: p.campaign.id, creator_id: p.creator.id, version },
+    { workspaceId: p.workspaceId, accountId: p.accountId, creatorId: p.creator.id },
+    {
+      campaign_id: p.campaign.id,
+      creator_id: p.creator.id,
+      version,
+      content_kind: file ? "file" : "link",
+    },
   );
   return { ok: true, version };
 }
@@ -751,9 +794,34 @@ export interface PortalView {
   creatorNote: string;
   expiresAt: string;
   agreedUsd: number | null;
+  /** The creator's own tracking link, once they're confirmed and the brand has set a landing page. */
+  trackingLink: string | null;
+  /** The agreement waiting for, or signed by, this creator. Filled in by portal-extras. */
+  contract: {
+    version: number;
+    status: string;
+    text: string;
+    signedName: string | null;
+    signedAt: string | null;
+    requestNote: string;
+  } | null;
+  /** Payout details and the latest payout. `enabled` is false when the brand's plan can't pay from Ripplewise. */
+  payout: {
+    enabled: boolean;
+    details: { holderName: string; last4: string; country: string } | null;
+    latest: {
+      status: string;
+      amountUsd: number;
+      reference: string;
+      settleAt: string;
+      failureReason: string;
+    } | null;
+  };
   content: {
     version: number;
     url: string;
+    /** The uploaded file, when the creator sent one instead of a link. */
+    file: { name: string; size: number; mime: string } | null;
     caption: string;
     status: string;
     feedback: string;
@@ -761,7 +829,7 @@ export interface PortalView {
   }[];
 }
 
-export function portalView(p: Portal): PortalView {
+export function portalView(p: Portal, trackingLink: string | null = null): PortalView {
   return {
     state: p.state,
     brand: p.brand,
@@ -779,9 +847,13 @@ export function portalView(p: Portal): PortalView {
     creatorNote: p.invite.creatorNote,
     expiresAt: p.invite.expiresAt.toISOString(),
     agreedUsd: p.agreedUsd,
+    trackingLink,
+    contract: null,
+    payout: { enabled: false, details: null, latest: null },
     content: p.content.map((c) => ({
       version: c.version,
       url: c.url,
+      file: c.fileName ? { name: c.fileName, size: c.fileSize ?? 0, mime: c.fileMime ?? "" } : null,
       caption: c.caption,
       status: c.status,
       feedback: c.feedback,
@@ -790,7 +862,72 @@ export function portalView(p: Portal): PortalView {
   };
 }
 
+/** Only creators who've said yes get a link; it appears the moment the brand has set somewhere to send people. */
+export async function trackingLinkOf(p: Portal): Promise<string | null> {
+  if (!["confirmed", "in_review", "approved", "paid"].includes(p.state)) return null;
+  const made = await ensureLink(p.campaign.id, p.creator.id, "confirmed");
+  return made ? await linkFor(p.campaign.id, p.creator.id) : null;
+}
+
 export async function portalViewFor(token: string): Promise<PortalView | null> {
   const p = await portalFor(token);
-  return p ? portalView(p) : null;
+  return p ? portalView(p, await trackingLinkOf(p)) : null;
+}
+
+/**
+ * Reminds creators who haven't answered, once, shortly before their invitation lapses. Claiming the reminder is a
+ * conditional update, so overlapping runs send it once. Only campaigns that are still open send reminders.
+ */
+export async function sendInvitationReminders(now: Date = simNow()): Promise<number> {
+  const horizon = new Date(now.getTime() + REMINDER_DAYS_BEFORE * 86_400_000);
+  const candidates = await db
+    .select()
+    .from(campaignInvites)
+    .where(
+      and(
+        eq(campaignInvites.status, "sent"),
+        isNull(campaignInvites.remindedAt),
+        gt(campaignInvites.expiresAt, now),
+        lte(campaignInvites.expiresAt, horizon),
+      ),
+    );
+  let sent = 0;
+  for (const i of candidates) {
+    if (!reminderDue(i, now)) continue;
+    const w = await workspaceOf(i.campaignId);
+    const row = await rosterRow(i.campaignId, i.creatorId);
+    if (!w || !row || !isOpen(w.campaign.status)) continue;
+    const claimed = await db
+      .update(campaignInvites)
+      .set({ remindedAt: now })
+      .where(
+        and(
+          eq(campaignInvites.id, i.id),
+          eq(campaignInvites.status, "sent"),
+          isNull(campaignInvites.remindedAt),
+        ),
+      )
+      .returning({ id: campaignInvites.id });
+    if (!claimed.length) continue;
+    const daysLeft = Math.max(1, Math.ceil((i.expiresAt.getTime() - now.getTime()) / 86_400_000));
+    await sendEmail({
+      to: creatorAddress(row.handle),
+      type: "outreach",
+      ...reminderEmail({
+        brand: w.wsName,
+        campaign: w.campaign.name,
+        offeredUsd: i.offeredUsd,
+        token: i.token,
+        expiresOn: i.expiresAt.toISOString().slice(0, 10),
+        daysLeft,
+      }),
+    });
+    await trackServer(
+      "Creator Invitation Reminded",
+      { workspaceId: w.wsId, accountId: w.accountId, system: true },
+      { campaign_id: i.campaignId, creator_id: i.creatorId, days_left: daysLeft },
+    );
+    sent++;
+  }
+  return sent;
 }

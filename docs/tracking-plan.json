@@ -13,7 +13,9 @@
   "agent_run_id",
   "app_version",
   "route",
-  "ui_theme"
+  "ui_theme",
+  "product",
+  "actor_type"
  ],
  "groups": [
   "account",
@@ -34,10 +36,11 @@
    "description": "",
    "ga4_name": "page_view",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Acquisition",
@@ -50,10 +53,11 @@
    "description": "",
    "ga4_name": "view_pricing",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Acquisition",
@@ -64,9 +68,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Auth",
@@ -75,9 +80,10 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Auth",
@@ -90,10 +96,11 @@
    "description": "",
    "ga4_name": "sign_up",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Auth",
@@ -104,9 +111,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Auth",
@@ -118,10 +126,11 @@
    "description": "",
    "ga4_name": "login",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Auth",
@@ -132,9 +141,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Auth",
@@ -143,9 +153,10 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Onboarding",
@@ -157,9 +168,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Onboarding",
@@ -173,9 +185,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Onboarding",
@@ -186,9 +199,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Onboarding",
@@ -200,10 +214,11 @@
    "description": "",
    "ga4_name": "onboarding_completed",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Onboarding",
@@ -215,9 +230,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Query",
@@ -230,9 +246,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Query",
@@ -249,9 +266,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Query",
@@ -263,9 +281,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Query",
@@ -285,10 +304,11 @@
    "description": "",
    "ga4_name": "first_query_saved",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Query",
@@ -300,9 +320,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Query",
@@ -313,9 +334,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Query",
@@ -326,9 +348,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Query",
@@ -342,9 +365,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Query",
@@ -357,9 +381,40 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
+  },
+  {
+   "area": "Query",
+   "name": "Query Copied",
+   "side": "server",
+   "properties": [
+    "across_workspaces"
+   ],
+   "description": "A query copied to another workspace of the account, or duplicated in place.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "listening"
+  },
+  {
+   "area": "Query",
+   "name": "History Pack Completed",
+   "side": "server",
+   "properties": [
+    "query_id",
+    "matched_count",
+    "duration_ms"
+   ],
+   "description": "Older history collected for a query that has a history pack.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "listening"
   },
   {
    "area": "Mentions",
@@ -372,9 +427,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Mentions",
@@ -387,9 +443,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Mentions",
@@ -401,9 +458,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Mentions",
@@ -414,9 +472,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Mentions",
@@ -430,9 +489,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Mentions",
@@ -441,9 +501,10 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Mentions",
@@ -455,9 +516,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Mentions",
@@ -468,9 +530,36 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
+  },
+  {
+   "area": "Mentions",
+   "name": "Category Created",
+   "side": "server",
+   "properties": [
+    "term_count"
+   ],
+   "description": "A named Boolean search saved as a category.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "listening"
+  },
+  {
+   "area": "Mentions",
+   "name": "Category Deleted",
+   "side": "server",
+   "properties": [],
+   "description": "",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "listening"
   },
   {
    "area": "Insight",
@@ -483,9 +572,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Insight",
@@ -498,9 +588,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Insight",
@@ -513,9 +604,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Insight",
@@ -526,9 +618,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Insight",
@@ -540,9 +633,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Insight",
@@ -553,9 +647,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Insight",
@@ -564,9 +659,10 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Insight",
@@ -577,9 +673,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Dashboards",
@@ -590,9 +687,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Dashboards",
@@ -604,9 +702,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Dashboards",
@@ -618,9 +717,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Dashboards",
@@ -632,9 +732,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Dashboards",
@@ -645,9 +746,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Dashboards",
@@ -660,9 +762,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Dashboards",
@@ -674,9 +777,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Dashboards",
@@ -687,9 +791,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Alerts",
@@ -698,14 +803,15 @@
    "properties": [
     "alert_type",
     "threshold",
-    "channel",
+    "delivery_channel",
     "backtest_fire_count"
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Alerts",
@@ -718,9 +824,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Alerts",
@@ -728,13 +835,14 @@
    "side": "server",
    "properties": [
     "alert_id",
-    "channel"
+    "delivery_channel"
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Alerts",
@@ -746,9 +854,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Alerts",
@@ -760,9 +869,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Alerts",
@@ -773,9 +883,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Alerts",
@@ -786,9 +897,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Crisis",
@@ -801,9 +913,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Crisis",
@@ -814,9 +927,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Crisis",
@@ -829,9 +943,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Crisis",
@@ -843,9 +958,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Reports",
@@ -856,9 +972,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Reports",
@@ -871,9 +988,10 @@
    ],
    "description": "A widget from a dashboard, Topics or Authors was added to a report.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Reports",
@@ -885,9 +1003,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Reports",
@@ -900,9 +1019,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Reports",
@@ -914,9 +1034,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Reports",
@@ -924,13 +1045,14 @@
    "side": "server",
    "properties": [
     "report_id",
-    "channel"
+    "delivery_channel"
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Reports",
@@ -942,9 +1064,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "listening"
   },
   {
    "area": "Collaboration",
@@ -956,9 +1079,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Collaboration",
@@ -969,9 +1093,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Collaboration",
@@ -982,9 +1107,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Collaboration",
@@ -993,9 +1119,10 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Workspaces",
@@ -1007,9 +1134,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Workspaces",
@@ -1020,9 +1148,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Workspaces",
@@ -1031,9 +1160,10 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Workspaces",
@@ -1042,9 +1172,10 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Plan",
@@ -1056,9 +1187,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Plan",
@@ -1069,9 +1201,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Plan",
@@ -1085,9 +1218,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Plan",
@@ -1102,10 +1236,11 @@
    "description": "Fires revenue() with plan MRR",
    "ga4_name": "subscription_started",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Plan",
@@ -1119,9 +1254,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Plan",
@@ -1134,9 +1270,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Plan",
@@ -1148,9 +1285,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Plan",
@@ -1161,9 +1299,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Plan",
@@ -1176,9 +1315,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Plan",
@@ -1190,9 +1330,25 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
+  },
+  {
+   "area": "Plan",
+   "name": "Add-on Purchased",
+   "side": "server",
+   "properties": [
+    "addon",
+    "price_cents"
+   ],
+   "description": "A one-time add-on bought, such as a history pack.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "listening"
   },
   {
    "area": "Sales",
@@ -1205,10 +1361,11 @@
    "description": "",
    "ga4_name": "generate_lead",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Sales",
@@ -1220,10 +1377,11 @@
    "description": "",
    "ga4_name": "demo_booked",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Sales",
@@ -1234,9 +1392,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Sales",
@@ -1247,9 +1406,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Sales",
@@ -1262,10 +1422,11 @@
    "description": "",
    "ga4_name": "contract_signed",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse",
     "ga4"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Churn",
@@ -1276,9 +1437,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Churn",
@@ -1289,9 +1451,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Churn",
@@ -1302,9 +1465,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Churn",
@@ -1315,9 +1479,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Churn",
@@ -1329,9 +1494,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Churn",
@@ -1342,9 +1508,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Engagement",
@@ -1353,9 +1520,10 @@
    "properties": [],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Engagement",
@@ -1367,9 +1535,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Engagement",
@@ -1380,20 +1549,24 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Engagement",
    "name": "Help Opened",
    "side": "client",
-   "properties": [],
-   "description": "",
+   "properties": [
+    "topic"
+   ],
+   "description": "Opened the shortcut dialog (no topic) or a Help center topic.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Engagement",
@@ -1404,9 +1577,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Engagement",
@@ -1417,9 +1591,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Engagement",
@@ -1430,9 +1605,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Engagement",
@@ -1443,9 +1619,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Engagement",
@@ -1456,9 +1633,24 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
+  },
+  {
+   "area": "Engagement",
+   "name": "Support Contacted",
+   "side": "server",
+   "properties": [
+    "category"
+   ],
+   "description": "A question sent from the Help center.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "platform"
   },
   {
    "area": "Experiments",
@@ -1470,9 +1662,10 @@
    ],
    "description": "",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "platform"
   },
   {
    "area": "Hub",
@@ -1484,23 +1677,25 @@
    ],
    "description": "The post-login screen where a person chooses Social listening or Influencers.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "hub"
   },
   {
    "area": "Hub",
    "name": "Product Opened",
    "side": "client",
    "properties": [
-    "product",
+    "target_product",
     "source"
    ],
-   "description": "A person chose a product from the hub or the product switcher. source: hub | switcher.",
+   "description": "A person chose a product from the hub or the product switcher. target_product: listening | influencers. source: hub | switcher.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "hub"
   },
   {
    "area": "Influencers",
@@ -1515,9 +1710,10 @@
    ],
    "description": "Discovery results were shown for a new combination of search, filters, sort or page (once per URL change).",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1532,9 +1728,10 @@
    ],
    "description": "A creator profile was opened. Counts against the monthly profile allowance once per creator per month.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1546,9 +1743,10 @@
    ],
    "description": "A creator list was created. source: lists_page | add_menu.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1559,11 +1757,12 @@
     "creator_id",
     "source"
    ],
-   "description": "A creator was added to a list. source: discovery | profile.",
+   "description": "A creator was added to a list. source: discovery | profile | compare.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1576,9 +1775,10 @@
    ],
    "description": "A creator was removed from a list. source: list | discovery | profile.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1591,9 +1791,10 @@
    ],
    "description": "A creator list was exported (CSV).",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1606,9 +1807,10 @@
    ],
    "description": "An influencer campaign was created.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1621,9 +1823,10 @@
    ],
    "description": "A campaign moved between draft, active, completed and archived.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1636,9 +1839,10 @@
    ],
    "description": "Creators were added to a campaign. source: list.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1652,9 +1856,10 @@
    ],
    "description": "A creator moved along the campaign pipeline (invited, confirmed, content approved, paid...).",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1666,9 +1871,10 @@
    ],
    "description": "A creator was removed from a campaign.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1682,9 +1888,10 @@
    ],
    "description": "A brand sent (or revised) an invitation to a creator. round counts offers to this creator on this campaign.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1697,9 +1904,10 @@
    ],
    "description": "A creator opened their invitation page for the first time.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "creator_portal"
   },
   {
    "area": "Influencers",
@@ -1713,9 +1921,10 @@
    ],
    "description": "A creator accepted, declined or countered from the portal. response: accepted | declined | countered.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "creator_portal"
   },
   {
    "area": "Influencers",
@@ -1728,9 +1937,10 @@
    ],
    "description": "A brand answered a creator's counter-offer. decision: accepted | revised | declined.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
   },
   {
    "area": "Influencers",
@@ -1739,13 +1949,15 @@
    "properties": [
     "campaign_id",
     "creator_id",
-    "version"
+    "version",
+    "content_kind"
    ],
-   "description": "A creator submitted content from the portal. version is 1 for the first submission.",
+   "description": "A creator submitted content from the portal. version is 1 for the first submission. content_kind: link | file.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "creator_portal"
   },
   {
    "area": "Influencers",
@@ -1759,15 +1971,268 @@
    ],
    "description": "A brand reviewed submitted content. decision: approved | changes_requested.",
    "destinations": [
-    "amplitude",
+    "rudderstack",
     "warehouse"
-   ]
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Campaign Destination Set",
+   "side": "server",
+   "properties": [
+    "campaign_id"
+   ],
+   "description": "A brand set (or changed) where a campaign's tracking links send people.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Tracking Link Created",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "source"
+   ],
+   "description": "A creator's tracking link was created. source: destination_set | confirmed | brand.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Tracking Link Clicked",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "is_unique",
+    "is_bot"
+   ],
+   "description": "Someone followed a creator's tracking link. The actor is the audience member: anonymous, no account. is_unique: first non-bot visit by that visitor in 24 hours.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Campaign Conversion Recorded",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "value_usd"
+   ],
+   "description": "The brand's site reported a conversion for a click through the postback. Anonymous actor.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Campaign Results Viewed",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "clicks",
+    "conversions"
+   ],
+   "description": "A brand opened a campaign's results page.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Contract Sent",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "version",
+    "fee_usd"
+   ],
+   "description": "A brand sent (or revised) the agreement for a creator. version is 1 for the first.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Contract Signed",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "version"
+   ],
+   "description": "A creator signed their agreement from their page.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "creator_portal"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Contract Changes Requested",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "version"
+   ],
+   "description": "A creator asked for changes to their agreement instead of signing.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "creator_portal"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Payout Details Saved",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id"
+   ],
+   "description": "A creator saved where they want to be paid. The account itself is never sent to analytics.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "creator_portal"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Payout Initiated",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "amount_usd",
+    "attempt"
+   ],
+   "description": "A brand started a payout to a creator. attempt is 1, or higher when retrying after a failure.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Payout Settled",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "amount_usd",
+    "outcome"
+   ],
+   "description": "A payout reached its outcome. outcome: paid | failed. The actor is the system (actor_type: system), not a person.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Invitation Reminded",
+   "side": "server",
+   "properties": [
+    "campaign_id",
+    "creator_id",
+    "days_left"
+   ],
+   "description": "A creator who hadn't answered was reminded that the invitation closes soon (once per invitation). The actor is the system (actor_type: system).",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creator Search Saved",
+   "side": "server",
+   "properties": [
+    "saved_search_id",
+    "filter_count"
+   ],
+   "description": "A discovery search was saved under a name.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Saved Search Opened",
+   "side": "client",
+   "properties": [
+    "saved_search_id",
+    "filter_count"
+   ],
+   "description": "A saved search was opened from the discovery page.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Saved Search Deleted",
+   "side": "server",
+   "properties": [
+    "saved_search_id"
+   ],
+   "description": "A saved search was deleted.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
+  },
+  {
+   "area": "Influencers",
+   "name": "Creators Compared",
+   "side": "server",
+   "properties": [
+    "creator_count",
+    "truncated"
+   ],
+   "description": "A side-by-side comparison was opened. truncated: the link asked for more creators than the plan compares.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "influencers"
   }
  ],
  "destinations": {
-  "amplitude": "all events",
+  "rudderstack": "all events: the one collection point (browser SDK for client events, Node SDK for server events). RudderStack delivers to BigQuery and to any product-analytics tool added later.",
   "ga4": "funnel/lead events only (ga4_name mapping); separate property for synthetic traffic",
-  "warehouse": "BigQuery: Postgres analytics_events batch load + Amplitude Export API + GA4 native export"
+  "warehouse": "also mirrored to Postgres analytics_events, for reconciliation against what BigQuery received and as a fallback load"
  },
  "signup_attribution_fields": [
   "ga_client_id",
@@ -1777,5 +2242,18 @@
   "utm_campaign",
   "gclid",
   "referrer"
- ]
+ ],
+ "product_values": {
+  "listening": "Social listening: queries, mentions, dashboards, alerts, crisis rooms, reports, Ask AI",
+  "influencers": "Influencers, from the brand's side: discovery, lists, campaigns, outreach, content review",
+  "creator_portal": "The creator's own page, reached by link (the actor is a creator, not a member)",
+  "hub": "The post-login product chooser",
+  "platform": "Shared across products: auth, onboarding, team, billing, sales, help. Resolved to listening or influencers from the route when an event fires inside one of them"
+ },
+ "actor_type_values": {
+  "member": "A signed-in person (Amplitude user_id is their UUID)",
+  "creator": "A creator acting from their invitation page (Amplitude user_id is creator_<directory id>, a synthetic non-personal id)",
+  "anonymous": "Neither: marketing visitors, signed-out screens, the audience following a creator's tracking link, the brand's site reporting a conversion",
+  "system": "Nobody acted: a payout settling because its time came, a scheduled job. Never attributed to whoever happened to load the page."
+ }
 }

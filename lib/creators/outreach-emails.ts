@@ -23,6 +23,20 @@ export function invitationEmail(o: {
   };
 }
 
+export function reminderEmail(o: {
+  brand: string;
+  campaign: string;
+  offeredUsd: number;
+  token: string;
+  expiresOn: string;
+  daysLeft: number;
+}) {
+  return {
+    subject: `Reminder: ${o.brand}'s offer for "${o.campaign}" closes in ${o.daysLeft} day${o.daysLeft === 1 ? "" : "s"}`,
+    text: `You haven't answered ${o.brand}'s invitation yet. The offer of ${usd(o.offeredUsd)} per post is open until ${o.expiresOn}, after which it lapses.\n\nSee the brief and answer here:\n${portalLink(o.token)}\n\nIf you're not interested you can decline from the same page. We won't remind you again.${footer}`,
+  };
+}
+
 export function creatorNotice(
   kind: "counter_accepted" | "counter_declined" | "changes" | "approved" | "paid",
   o: { brand: string; campaign: string; token: string; usd?: number; feedback?: string },
