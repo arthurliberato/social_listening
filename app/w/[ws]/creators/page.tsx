@@ -402,13 +402,15 @@ export default async function DiscoverPage({
           data-testid="creator-pagination"
         >
           {f.page > 1 ? (
-            <Link
+            // A plain link: a client-side navigation between pages of this list stalls in production builds.
+            <a
               href={pageHref(f.page - 1)}
               rel="prev"
               className="inline-flex min-h-9 items-center rounded-md border border-[var(--border)] px-3"
+              data-testid="creator-prev"
             >
               Previous
-            </Link>
+            </a>
           ) : (
             <span />
           )}
@@ -416,14 +418,14 @@ export default async function DiscoverPage({
             Page {f.page} of {pages.toLocaleString("en-US")} · {PAGE_SIZE} per page
           </span>
           {f.page < pages ? (
-            <Link
+            <a
               href={pageHref(f.page + 1)}
               rel="next"
               className="inline-flex min-h-9 items-center rounded-md border border-[var(--border)] px-3"
               data-testid="creator-next"
             >
               Next
-            </Link>
+            </a>
           ) : (
             <span />
           )}
