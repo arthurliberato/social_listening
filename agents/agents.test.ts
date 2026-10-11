@@ -225,6 +225,26 @@ describe("Claude brain", () => {
       "router",
     ]);
   });
+  it("repairs a rejected query, sending the editor's errors and the platform syntax", async () => {
+    const fetched: string[] = [];
+    const calls: { task: string }[] = [];
+    const b = new ClaudeBrain(
+      "m",
+      (c) => calls.push(c),
+      reply({ text: "juniper NEAR/5 coffee", rationale: "fixed NEAR" }, fetched),
+      "k",
+    );
+    const r = await b.repairQuery({
+      scope: "Juniper Roast",
+      text: "juniper NEAR(coffee)",
+      errors: ["Unexpected ( after NEAR"],
+      operators: ["AND", "OR", "NOT"],
+    });
+    expect(r.text).toBe("juniper NEAR/5 coffee");
+    expect(calls.map((c) => c.task)).toEqual(["repair_query"]);
+    expect(fetched[0]).toContain("Unexpected ( after NEAR");
+    expect(fetched[0]).toContain("NEAR/5");
+  });
   it("refuses to run without a key, and surfaces API errors", async () => {
     await expect(
       new ClaudeBrain("m", () => {}, reply({}), undefined).draftQuery({

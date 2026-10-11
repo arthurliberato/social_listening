@@ -17,6 +17,10 @@ const SYSTEM = [
   "Answer with a single JSON object and nothing else.",
 ].join(" ");
 
+// The platform's query syntax, so a draft is not rejected for notation it does not use.
+const SYNTAX =
+  'Syntax: operators are UPPERCASE (AND, OR, NOT); NOT goes before a term ("coffee NOT job"); quote phrases; a trailing * is the only wildcard; NEAR is written "a NEAR/5 b" (a number after the slash, no brackets); fields are written lang:en, source:reddit; terms are plain words (no underscores, no function-call brackets).';
+
 export class ClaudeBrain implements Brain {
   readonly name = "claude";
   constructor(
@@ -95,7 +99,13 @@ export class ClaudeBrain implements Brain {
   draftQuery(i: { brief: string; scope: string; operators: string[] }) {
     return this.ask<{ text: string; rationale: string }>(
       "draft_query",
-      `Brief: ${i.brief}\nScope: ${i.scope}\nYou only know these operators: ${i.operators.join(", ")}. Quote exact phrases. Write a Boolean search query for the platform.\nReturn {"text": string, "rationale": string}.`,
+      `Brief: ${i.brief}\nScope: ${i.scope}\nYou only know these operators: ${i.operators.join(", ")}. Quote exact phrases. Write a Boolean search query for the platform. ${SYNTAX}\nReturn {"text": string, "rationale": string}.`,
+    );
+  }
+  repairQuery(i: { scope: string; text: string; errors: string[]; operators: string[] }) {
+    return this.ask<{ text: string; rationale: string }>(
+      "repair_query",
+      `Scope: ${i.scope}\nThe platform's editor rejected this query:\n${i.text}\nIts error messages:\n${i.errors.map((e) => `- ${e}`).join("\n")}\nYou only know these operators: ${i.operators.join(", ")}. ${SYNTAX}\nReturn a corrected query that keeps the intent.\nReturn {"text": string, "rationale": string}.`,
     );
   }
   async judgeRelevance(i: { scope: string; mentions: SampleMention[] }) {

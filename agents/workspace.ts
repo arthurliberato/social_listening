@@ -39,18 +39,43 @@ export class Workspace {
     return { slug: this.slug };
   }
 
-  /** create_query: the advanced editor, because that is where Boolean text goes. */
+  /**
+   * create_query: the advanced editor, because that is where Boolean text goes. If the editor reports errors, `repair`
+   * (when given) is asked for corrected text, up to `maxRepairs` times; every rejected attempt is returned.
+   */
   async createQuery(
     name: string,
     text: string,
     onPreview?: () => Promise<void>,
-  ): Promise<{ queryId: string; previewCount: number; noise: string }> {
+    repair?: (text: string, errors: string[]) => Promise<string>,
+    maxRepairs = 2,
+  ): Promise<{
+    queryId: string;
+    previewCount: number;
+    noise: string;
+    text: string;
+    rejected: { text: string; errors: string[] }[];
+  }> {
     await this.go(`/w/${this.slug}/queries/new`);
     await this.page.getByTestId("mode-advanced").click();
     const editor = this.page.getByTestId("advanced-editor-content");
     await editor.click();
     await this.page.keyboard.type(text);
     await this.page.getByTestId("query-name").fill(name);
+    const rejected: { text: string; errors: string[] }[] = [];
+    let outcome = await this.waitPreviewOrErrors();
+    while (outcome.errors) {
+      rejected.push({ text, errors: outcome.errors });
+      if (!repair || rejected.length > maxRepairs)
+        throw new Error(
+          `The editor rejects the query after ${rejected.length} attempt(s): ${outcome.errors.join("; ")}`,
+        );
+      text = await repair(text, outcome.errors);
+      await editor.click();
+      await this.page.keyboard.press("Control+a");
+      await this.page.keyboard.type(text);
+      outcome = await this.waitPreviewOrErrors();
+    }
     const preview = await this.readPreview();
     await onPreview?.();
     await this.page.getByTestId("save-query").click();
@@ -62,7 +87,26 @@ export class Workspace {
       .locator("a")
       .first()
       .getAttribute("href");
-    return { queryId: href!.split("/").pop()!, ...preview };
+    return { queryId: href!.split("/").pop()!, ...preview, text, rejected };
+  }
+
+  /** Waits until the preview shows a count, or the editor lists errors; returns those errors (warnings are ignored). */
+  private async waitPreviewOrErrors(): Promise<{ errors?: string[] }> {
+    const deadline = Date.now() + 15_000;
+    await this.page.waitForTimeout(800); // the editor and preview are debounced
+    while (Date.now() < deadline) {
+      if (await this.page.getByTestId("preview-count").isVisible()) return {};
+      const issues = this.page.getByTestId("query-issues");
+      if (await issues.isVisible()) {
+        const errors = (await issues.locator("li").allInnerTexts())
+          .map((t) => t.replace(/\s+/g, " ").trim())
+          .filter((t) => t.startsWith("Error:"))
+          .map((t) => t.replace(/^Error:\s*/, ""));
+        if (errors.length) return { errors };
+      }
+      await this.page.waitForTimeout(250);
+    }
+    return {};
   }
 
   /** What is on screen right now, as a JPEG: the agent's eyes (spec 6, a vision-enabled agent). */

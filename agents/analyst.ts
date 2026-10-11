@@ -102,12 +102,33 @@ export async function runAnalystCase(o: {
   const degraded = degradeQuery(p, draft.text, rng, o.options.forceWeakQuery);
   let text = degraded.text;
   const initialQueryText = text;
-  const created = await ws.createQuery(name, text, () =>
-    see(
-      "query_preview",
-      "Does the preview suggest this query will find the right mentions? Is the noise estimate acceptable?",
-    ),
+  const created = await ws.createQuery(
+    name,
+    text,
+    () =>
+      see(
+        "query_preview",
+        "Does the preview suggest this query will find the right mentions? Is the noise estimate acceptable?",
+      ),
+    brain.repairQuery
+      ? async (bad, errors) => {
+          const fix = await brain.repairQuery!({
+            scope: c.monitoring_scope,
+            text: bad,
+            errors,
+            operators: ops,
+          });
+          log({
+            step: "repair_query",
+            tool: "create_query",
+            intent: `the editor rejected the query (${errors.join("; ")}): ${fix.rationale}`,
+            observed: { rejected_text: bad, errors, repaired_text: fix.text },
+          });
+          return fix.text;
+        }
+      : undefined,
   );
+  text = created.text;
   log({
     step: "create_query",
     tool: "create_query",

@@ -89,6 +89,13 @@ export interface Brain {
     scope: string;
     operators: string[];
   }): Promise<{ text: string; rationale: string }>;
+  /** Optional: correct a query the platform's editor rejected, given its error messages. */
+  repairQuery?(i: {
+    scope: string;
+    text: string;
+    errors: string[];
+    operators: string[];
+  }): Promise<{ text: string; rationale: string }>;
   judgeRelevance(i: {
     scope: string;
     mentions: SampleMention[];
