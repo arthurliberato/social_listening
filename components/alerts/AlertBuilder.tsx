@@ -135,7 +135,7 @@ export function AlertBuilder({
       track("Alert Created", {
         alert_type: type,
         threshold: a,
-        channel: channels.join("+"),
+        delivery_channel: channels.join("+"),
         backtest_fire_count: typeof test === "object" && test?.ok ? test.fires : null,
       });
       return router.push(`/w/${ws}/alerts?created=1`);

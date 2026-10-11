@@ -1,0 +1,10 @@
+{
+  "id": "CS-001",
+  "client_project_id": "proj-juniper-roast",
+  "requester_role": "strategist",
+  "brief": "The client is nervous about how people have been talking about their brand lately. Find out what the conversation is about, whether it is mostly positive or negative, and what the main themes are. Recommend what we should tell the client.",
+  "deliverable": "findings_and_recommendations",
+  "window_days": 30,
+  "monitoring_scope": "Juniper Roast, a coffee brand (people also write just Juniper)",
+  "due_in_days": 2
+}

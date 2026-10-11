@@ -564,6 +564,7 @@ test("the audit log records what happened, filters, and is a paywall below Enter
   await setPlan(owner.email, "enterprise");
   const editor = await joinNew(browser, page, owner.slug, "editor", "Eddie Editor");
   await page.goto(`/settings/members?ws=${owner.slug}`);
+  await page.waitForLoadState("networkidle"); // a production build paints the select before React attaches
   await page
     .getByTestId("member-row")
     .filter({ hasText: "Eddie Editor" })
@@ -573,6 +574,18 @@ test("the audit log records what happened, filters, and is a paywall below Enter
     "data-role",
     "viewer",
   );
+  // The row flips at once; wait for the server to have the change before leaving the page, or the request is cancelled.
+  await expect
+    .poll(
+      async () =>
+        (
+          await pool.query(
+            `SELECT m.role FROM memberships m JOIN users u ON u.id = m.user_id WHERE u.name = 'Eddie Editor' AND m.account_id IN (SELECT mo.account_id FROM memberships mo JOIN users uo ON uo.id = mo.user_id WHERE lower(uo.email) = $1) ORDER BY m.role LIMIT 1`,
+            [owner.email.toLowerCase()],
+          )
+        ).rows[0]?.role,
+    )
+    .toBe("viewer");
 
   await page.goto("/settings/audit");
   // History from before the upgrade was kept (the invitation), and so was everything since.

@@ -71,6 +71,7 @@ export const AUDIT_LABEL: Record<string, string> = {
   "branding.updated": "Changed white-label settings",
   "plan.subscribed": "Started a plan",
   "plan.upgraded": "Upgraded the plan",
+  "plan.addon_purchased": "Bought an add-on",
   "plan.downgrade_scheduled": "Scheduled a downgrade",
   "plan.canceled": "Cancelled the plan",
   "plan.resumed": "Resumed the plan",
@@ -83,6 +84,9 @@ export const AUDIT_LABEL: Record<string, string> = {
   "query.paused": "Paused a query",
   "query.resumed": "Resumed a query",
   "query.deleted": "Deleted a query",
+  "query.copied": "Copied a query",
+  "category.created": "Created a category",
+  "category.deleted": "Deleted a category",
   "dashboard.created": "Created a dashboard",
   "dashboard.updated": "Saved changes to a dashboard",
   "dashboard.duplicated": "Duplicated a dashboard",
@@ -138,12 +142,18 @@ export function auditDetail(
       return `${m("plan")} (${m("interval")})`;
     case "plan.canceled":
       return m("reason").replace("_", " ");
+    case "plan.addon_purchased":
+      return `${m("addon")}: ${m("name")}`;
+    case "query.copied":
+      return m("from") ? `${m("name")} (from ${m("from")})` : m("name");
     case "dashboard.shared_publicly":
     case "dashboard.unshared":
     case "query.paused":
     case "query.resumed":
     case "query.deleted":
     case "query.created":
+    case "category.created":
+    case "category.deleted":
     case "dashboard.created":
     case "dashboard.duplicated":
     case "dashboard.deleted":
@@ -186,6 +196,7 @@ export const AUDIT_CATEGORIES: Record<string, { label: string; prefixes: string[
     label: "Queries, dashboards and reports",
     prefixes: [
       "query.",
+      "category.",
       "dashboard.created",
       "dashboard.updated",
       "dashboard.duplicated",

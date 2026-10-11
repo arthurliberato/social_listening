@@ -1,6 +1,6 @@
 // Creates one verified, onboarded user (via the real UI) and saves its session for other specs.
 import { expect, test as setup } from "@playwright/test";
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { createUser, pool } from "./helpers";
 
 setup("create onboarded user", async ({ page }) => {
@@ -55,6 +55,7 @@ setup("create onboarded user", async ({ page }) => {
       ],
     )
   ).rows[0].id;
+  mkdirSync("tests/.auth", { recursive: true }); // gitignored, so absent on a fresh checkout
   writeFileSync(
     "tests/.auth/meta.json",
     JSON.stringify({ slug, email, dashboardId, eventId, crisisId, reportId }),

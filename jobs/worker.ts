@@ -1,10 +1,13 @@
 import { getBoss, QUEUES } from "@/lib/jobs/boss";
 import { runBackfill } from "./backfill";
+import { runHistoryBackfill } from "./history-pack";
 import { runBillingLifecycle } from "@/lib/billing/lifecycle";
 import { runDueReports } from "./reports";
 import { runNightlyScoring } from "./pqa";
 import { runSalesDesk } from "@/lib/sales/desk";
 import { runReleaseAll } from "./release";
+import { settleDuePayouts } from "@/lib/creators/payouts";
+import { sendInvitationReminders } from "@/lib/creators/outreach";
 
 let started = false;
 
@@ -16,6 +19,13 @@ export async function startWorkers() {
   await boss.work<{ queryId: string }>(QUEUES.backfill, { localConcurrency: 2 }, async (jobs) => {
     for (const job of jobs) await runBackfill(job.data.queryId);
   });
+  await boss.work<{ packId: string }>(
+    QUEUES.historyBackfill,
+    { localConcurrency: 1 },
+    async (jobs) => {
+      for (const job of jobs) await runHistoryBackfill(job.data.packId);
+    },
+  );
   // Reveal newly published mentions every 5 minutes (a plan's refresh tier decides what it sees).
   await boss.schedule(QUEUES.release, "*/5 * * * *");
   await boss.work(QUEUES.release, async () => {
@@ -35,6 +45,16 @@ export async function startWorkers() {
   await boss.schedule(QUEUES.scoring, "0 2 * * *");
   await boss.work(QUEUES.scoring, async () => {
     await runNightlyScoring();
+  });
+  // Creator payouts that have come due either arrive or fail, even if nobody has the campaign open.
+  await boss.schedule(QUEUES.payouts, "*/5 * * * *");
+  await boss.work(QUEUES.payouts, async () => {
+    await settleDuePayouts();
+  });
+  // Creators who haven't answered are reminded once, three days before their invitation lapses.
+  await boss.schedule(QUEUES.reminders, "*/30 * * * *");
+  await boss.work(QUEUES.reminders, async () => {
+    await sendInvitationReminders();
   });
   // A simulated sales desk answers contact requests and follows up on demos.
   await boss.schedule(QUEUES.sales, "*/5 * * * *");

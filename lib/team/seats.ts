@@ -2,6 +2,7 @@
 // including invitations that haven't been accepted yet. Client viewers are free.
 import { and, eq, gt, isNull, ne } from "drizzle-orm";
 import { db, invitations, memberships, users } from "@/db/client";
+import { simNow } from "@/lib/simclock";
 
 export interface SeatUsage {
   members: number;
@@ -27,7 +28,7 @@ export async function seatUsage(accountId: string): Promise<SeatUsage> {
       and(
         eq(invitations.accountId, accountId),
         isNull(invitations.acceptedAt),
-        gt(invitations.expiresAt, new Date()),
+        gt(invitations.expiresAt, simNow()),
         ne(invitations.role, "client_viewer"),
       ),
     );

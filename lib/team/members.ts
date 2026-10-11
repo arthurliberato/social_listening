@@ -7,6 +7,7 @@ import { can, PLANS, type PlanTier } from "@/lib/entitlements/plans";
 import { canChangeRole, ROLE_LABEL, usesSeat, type Role } from "@/lib/permissions";
 import type { Actor } from "./invites";
 import { seatUsage } from "./seats";
+import { simNow } from "@/lib/simclock";
 
 export interface MemberRow {
   userId: string;
@@ -46,7 +47,7 @@ export async function listInvites(workspaceId: string) {
       and(
         eq(invitations.workspaceId, workspaceId),
         isNull(invitations.acceptedAt),
-        gt(invitations.expiresAt, new Date()),
+        gt(invitations.expiresAt, simNow()),
       ),
     )
     .orderBy(asc(invitations.createdAt));

@@ -48,7 +48,7 @@ export default async function ReportPage({
     await trackServer(
       "Report Opened",
       { userId: user.id, workspaceId: ws.id, accountId: ws.accountId },
-      { report_id: id, channel: "app" },
+      { report_id: id, delivery_channel: "app" },
     );
   const s = sched[0];
   return (

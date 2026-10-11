@@ -53,8 +53,8 @@ export const isRole = (s: string): s is Role => (ROLES as readonly string[]).inc
 export const can = (role: string, cap: Capability): boolean =>
   isRole(role) && MATRIX[cap].includes(role);
 
-/** The only parts of a workspace a client viewer may open. */
-export const CLIENT_SECTIONS = ["dashboards", "reports"] as const;
+/** The only parts of a workspace a client viewer may open (Help included, so they can always ask). */
+export const CLIENT_SECTIONS = ["dashboards", "reports", "help"] as const;
 export const clientMaySee = (section: string | undefined) =>
   !!section && (CLIENT_SECTIONS as readonly string[]).includes(section);
 

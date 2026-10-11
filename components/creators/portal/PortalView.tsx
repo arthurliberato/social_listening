@@ -4,8 +4,17 @@ import { useState } from "react";
 import { respondAction, submitContentAction } from "@/app/creator/[token]/actions";
 import { Button } from "@/components/ui/button";
 import { OBJECTIVE_LABEL, type Objective } from "@/lib/creators/campaign-flow";
+import {
+  ACCEPT_ATTR,
+  ACCEPTED_LABEL,
+  MAX_FILE_BYTES,
+  prettySize,
+} from "@/lib/creators/content-files";
 import type { PortalState, PortalView as View } from "@/lib/creators/outreach";
 import { useBusy } from "@/lib/use-busy";
+import { CopyField } from "@/components/creators/results/CopyField";
+import { ContractSection } from "./ContractSection";
+import { PayoutSection } from "./PayoutSection";
 
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 const day = (iso: string) =>
@@ -45,6 +54,9 @@ export function PortalView({ token, initial }: { token: string; initial: View })
   const [note, setNote] = useState("");
   const [url, setUrl] = useState("");
   const [caption, setCaption] = useState("");
+  const [mode, setMode] = useState<"link" | "file">("link");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileKey, setFileKey] = useState(0);
 
   const respond = (kind: "accept" | "decline" | "counter") =>
     run(async () => {
@@ -58,6 +70,14 @@ export function PortalView({ token, initial }: { token: string; initial: View })
 
   const latest = v.content[v.content.length - 1];
   const changes = latest?.status === "changes_requested" ? latest : null;
+  const accepted =
+    v.state === "confirmed" ||
+    v.state === "in_review" ||
+    v.state === "approved" ||
+    v.state === "paid";
+  // An agreement waiting on the creator (or on a revision) has to be dealt with before content goes in.
+  const contractBlocks =
+    !!v.contract && (v.contract.status === "sent" || v.contract.status === "changes_requested");
 
   return (
     <div data-testid="portal" data-state={v.state}>
@@ -239,10 +259,11 @@ export function PortalView({ token, initial }: { token: string; initial: View })
         </p>
       )}
 
-      {(v.state === "confirmed" ||
-        v.state === "in_review" ||
-        v.state === "approved" ||
-        v.state === "paid") && (
+      {accepted && v.contract && (
+        <ContractSection token={token} contract={v.contract} brand={v.brand} onView={setV} />
+      )}
+
+      {accepted && (
         <section aria-labelledby="content-h" className="mt-6">
           <h2 id="content-h" className="text-xl font-semibold">
             Your content
@@ -256,6 +277,25 @@ export function PortalView({ token, initial }: { token: string; initial: View })
             <p className="mt-2" data-testid="portal-paid">
               {usd(v.agreedUsd ?? 0)} was marked as paid. Thank you!
             </p>
+          )}
+          {v.trackingLink && (
+            <div
+              className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4"
+              data-testid="portal-tracking"
+            >
+              <p className="font-medium">Your tracking link</p>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
+                Use this link in your post or bio, so visits and sales that come from you are
+                credited to you.
+              </p>
+              <div className="mt-2">
+                <CopyField
+                  label="your tracking link"
+                  value={v.trackingLink}
+                  testId="portal-tracking-link"
+                />
+              </div>
+            </div>
           )}
           {changes && v.state === "confirmed" && (
             <div
@@ -275,6 +315,34 @@ export function PortalView({ token, initial }: { token: string; initial: View })
                 e.preventDefault();
                 run(async () => {
                   setError("");
+                  if (mode === "file") {
+                    if (!file) return setError("Choose a file to upload.");
+                    if (file.size > MAX_FILE_BYTES)
+                      return setError(
+                        `That file is too large. The limit is ${prettySize(MAX_FILE_BYTES)}.`,
+                      );
+                    const body = new FormData();
+                    body.set("file", file);
+                    body.set("caption", caption);
+                    let r: { ok: true; view: View } | { ok: false; error: string };
+                    try {
+                      const res = await fetch(`/api/creator/${token}/content`, {
+                        method: "POST",
+                        body,
+                      });
+                      r = await res.json();
+                    } catch {
+                      return setError(
+                        "The upload didn't go through. Check your connection and try again.",
+                      );
+                    }
+                    if (!r.ok) return setError(r.error);
+                    setV(r.view);
+                    setFile(null);
+                    setFileKey((k) => k + 1);
+                    setCaption("");
+                    return;
+                  }
                   const r = await submitContentAction(token, url, caption);
                   if (!r.ok) return setError(r.error);
                   setV(r.view);
@@ -286,20 +354,64 @@ export function PortalView({ token, initial }: { token: string; initial: View })
               className="mt-3 grid max-w-xl gap-3"
               aria-label="Submit content"
             >
-              <div className="flex flex-col gap-1">
-                <label htmlFor="content-url" className="text-sm font-medium">
-                  Link to your post
-                </label>
-                <input
-                  id="content-url"
-                  type="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://"
-                  className={box}
-                  data-testid="content-url"
-                />
-              </div>
+              <fieldset className="flex flex-wrap gap-4">
+                <legend className="text-sm font-medium">How are you sharing it?</legend>
+                {(
+                  [
+                    ["link", "A link to my post"],
+                    ["file", "Upload a file"],
+                  ] as const
+                ).map(([m, label]) => (
+                  <label key={m} className="flex min-h-6 items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="content-mode"
+                      checked={mode === m}
+                      onChange={() => {
+                        setMode(m);
+                        setError("");
+                      }}
+                      data-testid={`content-mode-${m}`}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </fieldset>
+              {mode === "link" ? (
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="content-url" className="text-sm font-medium">
+                    Link to your post
+                  </label>
+                  <input
+                    id="content-url"
+                    type="url"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://"
+                    className={box}
+                    data-testid="content-url"
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="content-file" className="text-sm font-medium">
+                    File
+                  </label>
+                  <input
+                    key={fileKey}
+                    id="content-file"
+                    type="file"
+                    accept={ACCEPT_ATTR}
+                    aria-describedby="content-file-hint"
+                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                    className="min-h-9 text-sm"
+                    data-testid="content-file"
+                  />
+                  <p id="content-file-hint" className="text-xs text-[var(--text-muted)]">
+                    {ACCEPTED_LABEL}.
+                  </p>
+                </div>
+              )}
               <div className="flex flex-col gap-1">
                 <label htmlFor="content-caption" className="text-sm font-medium">
                   Caption (optional)
@@ -314,8 +426,18 @@ export function PortalView({ token, initial }: { token: string; initial: View })
                   data-testid="content-caption"
                 />
               </div>
+              {contractBlocks && (
+                <p className="text-sm text-[var(--text-muted)]" data-testid="content-blocked">
+                  Sign your agreement above before you submit content.
+                </p>
+              )}
               <div>
-                <Button type="submit" loading={busy} data-testid="content-submit">
+                <Button
+                  type="submit"
+                  loading={busy}
+                  disabled={contractBlocks}
+                  data-testid="content-submit"
+                >
                   {changes ? "Submit a new version" : "Submit for review"}
                 </Button>
               </div>
@@ -336,14 +458,29 @@ export function PortalView({ token, initial }: { token: string; initial: View })
                         ? "Changes requested"
                         : "Waiting for review"}
                   </p>
-                  <a
-                    href={c.url}
-                    rel="noopener noreferrer nofollow"
-                    target="_blank"
-                    className="break-all text-[var(--primary)] underline"
-                  >
-                    {c.url}
-                  </a>
+                  {c.file ? (
+                    <a
+                      href={`/api/creator/${token}/content/${c.version}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-all text-[var(--primary)] underline"
+                      data-testid="portal-file"
+                    >
+                      {c.file.name}{" "}
+                      <span className="text-[var(--text-muted)] no-underline">
+                        ({prettySize(c.file.size)})
+                      </span>
+                    </a>
+                  ) : (
+                    <a
+                      href={c.url}
+                      rel="noopener noreferrer nofollow"
+                      target="_blank"
+                      className="break-all text-[var(--primary)] underline"
+                    >
+                      {c.url}
+                    </a>
+                  )}
                   {c.caption && (
                     <p className="mt-1 whitespace-pre-line text-[var(--text-muted)]">{c.caption}</p>
                   )}
@@ -352,6 +489,10 @@ export function PortalView({ token, initial }: { token: string; initial: View })
             </ul>
           )}
         </section>
+      )}
+
+      {accepted && v.payout.enabled && (
+        <PayoutSection token={token} payout={v.payout} agreedUsd={v.agreedUsd} onView={setV} />
       )}
 
       {error && (

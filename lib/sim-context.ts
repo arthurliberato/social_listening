@@ -1,22 +1,16 @@
 import { cookies } from "next/headers";
+import { parseSim, type SimContext } from "./sim-clock-cookie";
 
-export interface SimContext {
-  persona: string | null;
-  run: string | null;
-  model: string | null;
-}
+export { parseSim, type SimContext };
 
 /**
  * Ground-truth labels for synthetic agents, supplied by the agent harness as a cookie (`rw_sim`,
- * base64 JSON). This only labels analytics; it changes no product behaviour.
+ * base64 JSON). Labels analytics; the optional clock is honoured only when ALLOW_SIM_CLOCK=true (lib/simclock.ts).
  */
 export async function readSimContext(): Promise<SimContext> {
   try {
-    const raw = (await cookies()).get("rw_sim")?.value;
-    if (!raw) return { persona: null, run: null, model: null };
-    const j = JSON.parse(Buffer.from(raw, "base64").toString("utf8")) as Partial<SimContext>;
-    return { persona: j.persona ?? null, run: j.run ?? null, model: j.model ?? null };
+    return parseSim((await cookies()).get("rw_sim")?.value);
   } catch {
-    return { persona: null, run: null, model: null };
+    return parseSim(undefined); // outside a request (jobs, scripts)
   }
 }

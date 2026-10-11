@@ -1,6 +1,6 @@
 {
-  "id": "cafeee0b-34b6-4e6b-830c-59407eb8d6a5",
-  "prevId": "710bfb3b-70cd-477c-8efb-7c00ad5f4995",
+  "id": "ac4389ca-7bf3-4b6b-865e-a889b506a6fe",
+  "prevId": "cf9b91b2-46f5-4ba9-938b-3bb13febde72",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -188,234 +188,6 @@
           ]
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.creators": {
-      "name": "creators",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "platform": {
-          "name": "platform",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "handle": {
-          "name": "handle",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "display_name": {
-          "name": "display_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "bio": {
-          "name": "bio",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "niche": {
-          "name": "niche",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tags": {
-          "name": "tags",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "country": {
-          "name": "country",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "language": {
-          "name": "language",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "followers": {
-          "name": "followers",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "engagement_rate": {
-          "name": "engagement_rate",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "avg_views": {
-          "name": "avg_views",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "posts_per_week": {
-          "name": "posts_per_week",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "growth_30d": {
-          "name": "growth_30d",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "verified": {
-          "name": "verified",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sponsored_pct": {
-          "name": "sponsored_pct",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "fake_follower_pct": {
-          "name": "fake_follower_pct",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "authenticity_score": {
-          "name": "authenticity_score",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "brand_safety": {
-          "name": "brand_safety",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rate_per_post_usd": {
-          "name": "rate_per_post_usd",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "avatar_seed": {
-          "name": "avatar_seed",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "audience": {
-          "name": "audience",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tsv": {
-          "name": "tsv",
-          "type": "tsvector",
-          "primaryKey": false,
-          "notNull": false,
-          "generated": {
-            "as": "to_tsvector('simple', display_name || ' ' || handle || ' ' || bio || ' ' || niche)",
-            "type": "stored"
-          }
-        }
-      },
-      "indexes": {
-        "creators_followers_idx": {
-          "name": "creators_followers_idx",
-          "columns": [
-            {
-              "expression": "followers",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "creators_niche_idx": {
-          "name": "creators_niche_idx",
-          "columns": [
-            {
-              "expression": "niche",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "followers",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "creators_platform_idx": {
-          "name": "creators_platform_idx",
-          "columns": [
-            {
-              "expression": "platform",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "followers",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "creators_tsv_idx": {
-          "name": "creators_tsv_idx",
-          "columns": [
-            {
-              "expression": "tsv",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "gin",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1970,108 +1742,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.campaign_creators": {
-      "name": "campaign_creators",
-      "schema": "",
-      "columns": {
-        "campaign_id": {
-          "name": "campaign_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "creator_id": {
-          "name": "creator_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'shortlisted'"
-        },
-        "fee_usd": {
-          "name": "fee_usd",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "added_by": {
-          "name": "added_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "added_at": {
-          "name": "added_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "status_changed_at": {
-          "name": "status_changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "campaign_creators_campaign_id_campaigns_id_fk": {
-          "name": "campaign_creators_campaign_id_campaigns_id_fk",
-          "tableFrom": "campaign_creators",
-          "tableTo": "campaigns",
-          "columnsFrom": [
-            "campaign_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "campaign_creators_added_by_users_id_fk": {
-          "name": "campaign_creators_added_by_users_id_fk",
-          "tableFrom": "campaign_creators",
-          "tableTo": "users",
-          "columnsFrom": [
-            "added_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "campaign_creators_campaign_id_creator_id_pk": {
-          "name": "campaign_creators_campaign_id_creator_id_pk",
-          "columns": [
-            "campaign_id",
-            "creator_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.campaigns": {
-      "name": "campaigns",
+    "public.categories": {
+      "name": "categories",
       "schema": "",
       "columns": {
         "id": {
@@ -2093,45 +1765,11 @@
           "primaryKey": false,
           "notNull": true
         },
-        "objective": {
-          "name": "objective",
+        "boolean_text": {
+          "name": "boolean_text",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'awareness'"
-        },
-        "brief": {
-          "name": "brief",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "budget_usd": {
-          "name": "budget_usd",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "starts_on": {
-          "name": "starts_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ends_on": {
-          "name": "ends_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'draft'"
+          "notNull": true
         },
         "created_by": {
           "name": "created_by",
@@ -2148,8 +1786,8 @@
         }
       },
       "indexes": {
-        "campaigns_ws_idx": {
-          "name": "campaigns_ws_idx",
+        "categories_workspace_name_idx": {
+          "name": "categories_workspace_name_idx",
           "columns": [
             {
               "expression": "workspace_id",
@@ -2158,22 +1796,22 @@
               "nulls": "last"
             },
             {
-              "expression": "status",
-              "isExpression": false,
+              "expression": "lower(\"name\")",
               "asc": true,
+              "isExpression": true,
               "nulls": "last"
             }
           ],
-          "isUnique": false,
+          "isUnique": true,
           "concurrently": false,
           "method": "btree",
           "with": {}
         }
       },
       "foreignKeys": {
-        "campaigns_workspace_id_workspaces_id_fk": {
-          "name": "campaigns_workspace_id_workspaces_id_fk",
-          "tableFrom": "campaigns",
+        "categories_workspace_id_workspaces_id_fk": {
+          "name": "categories_workspace_id_workspaces_id_fk",
+          "tableFrom": "categories",
           "tableTo": "workspaces",
           "columnsFrom": [
             "workspace_id"
@@ -2184,9 +1822,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "campaigns_created_by_users_id_fk": {
-          "name": "campaigns_created_by_users_id_fk",
-          "tableFrom": "campaigns",
+        "categories_created_by_users_id_fk": {
+          "name": "categories_created_by_users_id_fk",
+          "tableFrom": "categories",
           "tableTo": "users",
           "columnsFrom": [
             "created_by"
@@ -2329,242 +1967,6 @@
           ]
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.creator_list_items": {
-      "name": "creator_list_items",
-      "schema": "",
-      "columns": {
-        "list_id": {
-          "name": "list_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "creator_id": {
-          "name": "creator_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "added_by": {
-          "name": "added_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "added_at": {
-          "name": "added_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "creator_list_items_list_id_creator_lists_id_fk": {
-          "name": "creator_list_items_list_id_creator_lists_id_fk",
-          "tableFrom": "creator_list_items",
-          "tableTo": "creator_lists",
-          "columnsFrom": [
-            "list_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "creator_list_items_added_by_users_id_fk": {
-          "name": "creator_list_items_added_by_users_id_fk",
-          "tableFrom": "creator_list_items",
-          "tableTo": "users",
-          "columnsFrom": [
-            "added_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "creator_list_items_list_id_creator_id_pk": {
-          "name": "creator_list_items_list_id_creator_id_pk",
-          "columns": [
-            "list_id",
-            "creator_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.creator_lists": {
-      "name": "creator_lists",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "workspace_id": {
-          "name": "workspace_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "created_by": {
-          "name": "created_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "creator_lists_ws_idx": {
-          "name": "creator_lists_ws_idx",
-          "columns": [
-            {
-              "expression": "workspace_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "creator_lists_workspace_id_workspaces_id_fk": {
-          "name": "creator_lists_workspace_id_workspaces_id_fk",
-          "tableFrom": "creator_lists",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "creator_lists_created_by_users_id_fk": {
-          "name": "creator_lists_created_by_users_id_fk",
-          "tableFrom": "creator_lists",
-          "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.creator_profile_views": {
-      "name": "creator_profile_views",
-      "schema": "",
-      "columns": {
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "creator_id": {
-          "name": "creator_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "period": {
-          "name": "period",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "first_viewed_at": {
-          "name": "first_viewed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "creator_profile_views_account_id_accounts_id_fk": {
-          "name": "creator_profile_views_account_id_accounts_id_fk",
-          "tableFrom": "creator_profile_views",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "creator_profile_views_account_id_creator_id_period_pk": {
-          "name": "creator_profile_views_account_id_creator_id_period_pk",
-          "columns": [
-            "account_id",
-            "creator_id",
-            "period"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -5189,6 +4591,138 @@
             "id"
           ],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.support_requests": {
+      "name": "support_requests",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subject": {
+          "name": "subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'open'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "support_requests_user_idx": {
+          "name": "support_requests_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "support_requests_account_id_accounts_id_fk": {
+          "name": "support_requests_account_id_accounts_id_fk",
+          "tableFrom": "support_requests",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "support_requests_workspace_id_workspaces_id_fk": {
+          "name": "support_requests_workspace_id_workspaces_id_fk",
+          "tableFrom": "support_requests",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "support_requests_user_id_users_id_fk": {
+          "name": "support_requests_user_id_users_id_fk",
+          "tableFrom": "support_requests",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },

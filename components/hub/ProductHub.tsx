@@ -70,7 +70,7 @@ export function ProductHub({
                   } catch {
                     /* ignore */
                   }
-                  track("Product Opened", { product: p.key, source: "hub" });
+                  track("Product Opened", { target_product: p.key, source: "hub" });
                 }}
                 className={`group flex flex-1 flex-col justify-center gap-4 p-8 transition-colors hover:bg-[var(--surface-2)] md:p-16 ${i === 0 ? "bg-[var(--bg)] md:border-r md:border-[var(--border)]" : "bg-[var(--surface)]"} max-md:border-b max-md:border-[var(--border)]`}
               >

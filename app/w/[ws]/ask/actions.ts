@@ -8,6 +8,7 @@ import { explainPeak, summarize, writeQuery, askQuestion, type Ctx } from "@/lib
 import type { AiFail } from "@/lib/ai/service";
 import { PLANS, type PlanTier } from "@/lib/entitlements/plans";
 import { accountPlan } from "@/lib/queries";
+import { simNow } from "@/lib/simclock";
 
 export interface Upgrade {
   planLabel: string;
@@ -77,7 +78,7 @@ export async function summaryAction(slug: string, crisisId: string) {
       failure: "no_queries",
       error: "That crisis room no longer exists.",
     } as AiFail;
-  const to = new Date(Math.min(Date.now(), room.windowStart.getTime() + 7 * 86_400_000));
+  const to = new Date(Math.min(simNow().getTime(), room.windowStart.getTime() + 7 * 86_400_000));
   const [q] = await db.select().from(queries).where(eq(queries.id, room.queryId));
   const end = q?.releasedThrough && q.releasedThrough < to ? q.releasedThrough : to;
   return withUpgrade(

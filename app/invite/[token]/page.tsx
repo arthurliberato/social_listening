@@ -6,6 +6,7 @@ import { AcceptInvite } from "@/components/team/AcceptInvite";
 import { LogoutButton } from "@/components/team/LogoutButton";
 import { hashToken } from "@/lib/auth/tokens";
 import { ROLE_LABEL, type Role } from "@/lib/permissions";
+import { simNow } from "@/lib/simclock";
 
 export const metadata = {
   title: "Invitation · Ripplewise",
@@ -32,7 +33,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
         .from(invitations)
         .where(eq(invitations.tokenHash, hashToken(token)))
     : [];
-  if (!inv || inv.acceptedAt || inv.expiresAt <= new Date())
+  if (!inv || inv.acceptedAt || inv.expiresAt <= simNow())
     return (
       <Card testId="invite-unavailable">
         <h1 className="text-[24px] font-semibold">This invitation isn&apos;t available</h1>

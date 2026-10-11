@@ -22,7 +22,8 @@ export function ProductSwitcher({ slug }: { slug: string }) {
             } catch {
               /* ignore */
             }
-            if (p.key !== current) track("Product Opened", { product: p.key, source: "switcher" });
+            if (p.key !== current)
+              track("Product Opened", { target_product: p.key, source: "switcher" });
           }}
           className={`inline-flex min-h-8 items-center rounded-md px-3 text-sm ${p.key === current ? "bg-[var(--surface-2)] font-medium text-[var(--text)]" : "text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"}`}
         >

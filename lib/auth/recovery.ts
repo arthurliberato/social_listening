@@ -6,6 +6,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { clearFailures } from "@/lib/auth/throttle";
 import { consumeToken, issueToken, recentTokenCount, revokeTokens } from "@/lib/auth/tokens";
 import { APP_URL, sendEmail } from "@/lib/email/service";
+import { simNow } from "@/lib/simclock";
 
 export const RESET_TTL_MS = 60 * 60_000;
 export const MAGIC_TTL_MS = 15 * 60_000;
@@ -29,7 +30,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
   const u = await findUser(email);
   if (!u) return;
   if (
-    (await recentTokenCount(u.id, "reset_password", new Date(Date.now() - 3_600_000))) >=
+    (await recentTokenCount(u.id, "reset_password", new Date(simNow().getTime() - 3_600_000))) >=
     MAX_PER_HOUR
   )
     return;
@@ -52,7 +53,7 @@ export async function resetPassword(token: string, password: string): Promise<Re
   const userId = await consumeToken(token, "reset_password");
   if (!userId)
     return { ok: false, error: "This link has expired or was already used. Ask for a new one." };
-  const now = new Date();
+  const now = simNow();
   const [u] = await db
     .update(users)
     .set({
@@ -78,7 +79,8 @@ export async function resetPassword(token: string, password: string): Promise<Re
 export async function requestMagicLink(email: string, next?: string): Promise<void> {
   const u = await findUser(email);
   if (!u) return;
-  if ((await recentTokenCount(u.id, "magic_link", new Date(Date.now() - 3_600_000))) >= 5) return;
+  if ((await recentTokenCount(u.id, "magic_link", new Date(simNow().getTime() - 3_600_000))) >= 5)
+    return;
   const token = await issueToken(u.id, "magic_link", MAGIC_TTL_MS);
   const n = safeNext(next);
   await sendEmail({

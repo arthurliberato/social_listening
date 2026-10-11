@@ -7,6 +7,7 @@ import { limits, type PlanTier } from "@/lib/entitlements/plans";
 import { can } from "@/lib/permissions";
 import { contrastOnWhite, isHex, MIN_CONTRAST, NO_BRANDING, type Branding } from "./contrast";
 import type { Actor } from "./invites";
+import { simNow } from "@/lib/simclock";
 
 export type { Branding };
 export { NO_BRANDING };
@@ -84,10 +85,10 @@ export async function saveBranding(o: {
   }
   await db
     .insert(workspaceBranding)
-    .values({ workspaceId: o.workspaceId, ...b, updatedAt: new Date() })
+    .values({ workspaceId: o.workspaceId, ...b, updatedAt: simNow() })
     .onConflictDoUpdate({
       target: workspaceBranding.workspaceId,
-      set: { ...b, updatedAt: new Date() },
+      set: { ...b, updatedAt: simNow() },
     });
   await audit({
     accountId: ws.accountId,

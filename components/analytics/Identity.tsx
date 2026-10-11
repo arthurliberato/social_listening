@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { identify, setClientWorkspace } from "@/lib/analytics/client";
+import { setClientWorkspace } from "@/lib/analytics/client";
 
-/** Mount inside authenticated layouts so Amplitude gets the user id and account/workspace groups. */
+/**
+ * Mount inside authenticated layouts so browser events say which workspace they happened in. (The server introduces the
+ * user, account and workspace to RudderStack itself; see lib/analytics/server.ts.)
+ */
 export function Identity(props: {
   userId: string;
   accountId: string | null;
@@ -11,7 +14,6 @@ export function Identity(props: {
 }) {
   useEffect(() => {
     setClientWorkspace(props.workspaceId);
-    identify(props);
-  }, [props.userId, props.accountId, props.workspaceId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [props.workspaceId]);
   return null;
 }

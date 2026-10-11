@@ -2,11 +2,14 @@ import { PgBoss } from "pg-boss";
 
 export const QUEUES = {
   backfill: "backfill",
+  historyBackfill: "history-backfill",
   release: "release",
   reports: "reports",
   billing: "billing",
   scoring: "scoring",
   sales: "sales",
+  payouts: "payouts",
+  reminders: "reminders",
 } as const;
 
 const g = globalThis as unknown as { __boss?: Promise<PgBoss> };
@@ -29,4 +32,9 @@ export async function enqueueBackfill(queryId: string) {
   const boss = await getBoss();
   // singletonKey collapses duplicate requests while one is already queued.
   await boss.send(QUEUES.backfill, { queryId }, { singletonKey: queryId, retryLimit: 2 });
+}
+
+export async function enqueueHistoryBackfill(packId: string) {
+  const boss = await getBoss();
+  await boss.send(QUEUES.historyBackfill, { packId }, { singletonKey: packId, retryLimit: 2 });
 }

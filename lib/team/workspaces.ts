@@ -15,6 +15,7 @@ import { audit } from "@/lib/audit";
 import { can, type PlanTier } from "@/lib/entitlements/plans";
 import { can as roleCan } from "@/lib/permissions";
 import type { Actor } from "./invites";
+import { simNow } from "@/lib/simclock";
 
 type Out<T = object> = ({ ok: true } & T) | { ok: false; error: string; upgradeTo?: PlanTier };
 export const WORKSPACE_TYPES = ["own_brand", "client"] as const;
@@ -218,7 +219,7 @@ export async function archiveWorkspace(o: {
     .set({ status: "paused" })
     .where(and(eq(queries.workspaceId, ws.id), eq(queries.status, "live")))
     .returning({ id: queries.id });
-  await db.update(workspaces).set({ archivedAt: new Date() }).where(eq(workspaces.id, ws.id));
+  await db.update(workspaces).set({ archivedAt: simNow() }).where(eq(workspaces.id, ws.id));
   await audit({
     accountId: ws.accountId,
     workspaceId: ws.id,

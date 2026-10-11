@@ -123,6 +123,19 @@ export function compile(n: Node): SQL {
         }
         case "logo":
           return sql`detected_logos @> ARRAY[${slug(v)}]::text[]`;
+        case "replyto": {
+          // Replies (comments) to one post, named by its URL, or to anything a handle wrote.
+          const url = /^https?:\/\//i.test(v);
+          if (!url) {
+            const h = v.replace(/^@/, "").toLowerCase();
+            return sql`(content_type = 'comment' AND parent_id IN (SELECT p.id FROM mentions p WHERE p.author_id IN (SELECT id FROM authors WHERE lower(handle) = ${h})))`;
+          }
+          // Post URLs look like https://<source>/@<handle>/<n>: narrow by the handle before comparing URLs.
+          const h = /\/@([^/]+)\//.exec(v)?.[1]?.toLowerCase();
+          return h
+            ? sql`(content_type = 'comment' AND parent_id IN (SELECT p.id FROM mentions p WHERE p.author_id IN (SELECT id FROM authors WHERE lower(handle) = ${h}) AND p.url = ${v}))`
+            : sql`(content_type = 'comment' AND parent_id IN (SELECT p.id FROM mentions p WHERE p.url = ${v}))`;
+        }
         default:
           return FALSE;
       }

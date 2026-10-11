@@ -8,6 +8,7 @@ import { trackServer } from "./lib/analytics/server";
 import { verifyPassword } from "./lib/auth/password";
 import { clearFailures, lockedUntil, recordFailure } from "./lib/auth/throttle";
 import { consumeToken } from "./lib/auth/tokens";
+import { simNow } from "@/lib/simclock";
 
 declare module "@auth/core/jwt" {
   interface JWT {
@@ -42,7 +43,7 @@ const tokenProvider = (id: string, type: string, method: string) =>
       await db
         .update(users)
         .set({
-          lastLoginAt: new Date(),
+          lastLoginAt: simNow(),
           emailVerifiedAt: sql`coalesce(${users.emailVerifiedAt}, now())`,
         })
         .where(eq(users.id, user.id));
@@ -107,7 +108,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
         await clearFailures(email);
-        await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
+        await db.update(users).set({ lastLoginAt: simNow() }).where(eq(users.id, user.id));
         await trackServer("Login Completed", { userId: user.id }, { method: "password" });
         return { id: user.id, name: user.name };
       },

@@ -44,7 +44,7 @@ export async function findInvite(rawToken: string) {
         and(
           eq(invitations.tokenHash, hashToken(rawToken)),
           isNull(invitations.acceptedAt),
-          gt(invitations.expiresAt, new Date()),
+          gt(invitations.expiresAt, simNow()),
         ),
       )
       .limit(1)

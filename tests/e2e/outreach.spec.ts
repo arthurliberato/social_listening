@@ -36,6 +36,16 @@ async function sendInvite(row: Locator, offer?: string) {
   return row.getByTestId("invite-link").inputValue();
 }
 
+/** Analytics events recorded for a workspace, newest last. */
+async function eventsOf(slug: string, name: string) {
+  return (
+    await pool.query(
+      `SELECT user_id, props FROM analytics_events WHERE name = $1 AND workspace_id = (SELECT id FROM workspaces WHERE slug = $2) ORDER BY ts`,
+      [name, slug],
+    )
+  ).rows as { user_id: string | null; props: Record<string, unknown> }[];
+}
+
 /** The creator opens their link in their own browser, signed in as nobody. */
 async function asCreator(browser: Browser, link: string) {
   const ctx = await browser.newContext();
@@ -129,6 +139,39 @@ test("invite, accept, submit content, request changes, resubmit, approve, pay: b
   expect(paid.rows.length).toBeGreaterThanOrEqual(1);
   await ctx.close();
   expect(campaign).toMatch(/campaigns\//);
+
+  // Analytics: brand-side events belong to Influencers and a member; the creator's own events belong to the
+  // creator page and carry no member id, only a creator actor.
+  const sent = (await eventsOf(slug, "Creator Invitation Sent"))[0]!;
+  expect(sent.user_id).not.toBeNull();
+  expect(sent.props).toMatchObject({
+    product: "influencers",
+    actor_type: "member",
+    offered_usd: 800,
+  });
+  for (const name of [
+    "Creator Portal Viewed",
+    "Creator Invitation Answered",
+    "Creator Content Submitted",
+  ]) {
+    const rows = await eventsOf(slug, name);
+    expect(rows.length, name).toBeGreaterThanOrEqual(1);
+    for (const r of rows) {
+      expect(r.user_id, name).toBeNull();
+      expect(r.props, name).toMatchObject({ product: "creator_portal", actor_type: "creator" });
+      expect(r.props.account_id, name).toBeTruthy();
+      expect(r.props.workspace_id, name).toBeTruthy();
+    }
+  }
+  expect((await eventsOf(slug, "Creator Invitation Answered"))[0]!.props).toMatchObject({
+    response: "accepted",
+  });
+  expect((await eventsOf(slug, "Creator Content Reviewed")).map((r) => r.props.decision)).toEqual([
+    "changes_requested",
+    "approved",
+  ]);
+  // The creator's page was opened once, however many times it was reloaded.
+  expect(await eventsOf(slug, "Creator Portal Viewed")).toHaveLength(1);
 });
 
 test("a counter-offer can be accepted, or answered with a revised offer that replaces the old link", async ({
@@ -280,6 +323,117 @@ test("the monthly invitation allowance is a paywall, and viewers can't invite", 
   );
   await page.reload();
   await expect(page.getByTestId("invite-open")).toHaveCount(0);
+});
+
+// A 1x1 PNG.
+const PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "base64",
+);
+
+test("a creator can upload a file instead of a link, and only the right people can open it", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(300_000);
+  const { slug, email } = await createUser(page, { prefix: "upl" });
+  await setPlan(email, "growth");
+  const campaign = await campaignWith(page, slug, 1);
+  const row = page.getByTestId("roster-row").first();
+  const link = await sendInvite(row, "500");
+  const { ctx, page: cp } = await asCreator(browser, link);
+  await cp.getByTestId("portal-accept").click();
+  await expect(cp.getByTestId("portal-heading")).toHaveText("You're confirmed");
+
+  // Upload mode: nothing chosen, then a file that isn't what its name says, are refused.
+  await cp.getByTestId("content-mode-file").check();
+  await cp.getByTestId("content-submit").click();
+  await expect(cp.getByTestId("portal-error")).toContainText("Choose a file");
+  await cp.getByTestId("content-file").setInputFiles({
+    name: "holiday.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("<html><script>alert(1)</script></html>"),
+  });
+  await cp.getByTestId("content-submit").click();
+  await expect(cp.getByTestId("portal-error")).toContainText("kind of file");
+
+  // The upload form has no serious accessibility problems, in either theme.
+  for (const theme of ["light", "dark"]) {
+    await cp.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
+    await cp.waitForTimeout(500); // let colour transitions finish before measuring contrast
+    const { violations } = await new AxeBuilder({ page: cp })
+      .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
+      .analyze();
+    const serious = violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(serious, `upload form (${theme}): ${JSON.stringify(serious, null, 1)}`).toEqual([]);
+  }
+
+  // A real image goes through.
+  await cp.getByTestId("content-file").setInputFiles({
+    name: "../../My Reel.png",
+    mimeType: "application/octet-stream",
+    buffer: PNG,
+  });
+  await cp.getByTestId("content-caption").fill("First cut");
+  await cp.getByTestId("content-submit").click();
+  await expect(cp.getByTestId("portal-heading")).toContainText("is with");
+  await expect(cp.getByTestId("portal-file")).toContainText("My Reel.png");
+
+  // The brand sees the file, and it is served as what it is, never sniffed or run.
+  await page.reload();
+  const r = page.getByTestId("roster-row").first();
+  const fileLink = r.getByTestId("review-file");
+  await expect(fileLink).toContainText("My Reel.png");
+  const href = (await fileLink.getAttribute("href"))!;
+  expect(href).toContain(`${campaign}/content/`);
+  const got = await page.request.get(href);
+  expect(got.status()).toBe(200);
+  expect(got.headers()["content-type"]).toBe("image/png");
+  expect(got.headers()["x-content-type-options"]).toBe("nosniff");
+  expect(got.headers()["content-security-policy"]).toContain("sandbox");
+  expect(Buffer.from(await got.body()).equals(PNG)).toBe(true);
+
+  // The creator can open their own upload by their link; nobody else can open either address.
+  const mine = await cp.request.get((await cp.getByTestId("portal-file").getAttribute("href"))!);
+  expect(mine.status()).toBe(200);
+  const token = link.split("/").pop()!;
+  const stranger = await ctx.request.get(`/api/creator/${"0".repeat(48)}/content/1`);
+  expect(stranger.status()).toBe(404);
+  const anon = await ctx.request.get(href, { maxRedirects: 0 });
+  expect(anon.status()).not.toBe(200);
+  expect(await anon.text()).not.toContain("PNG");
+
+  // The upload address refuses what the page would: too big, and the wrong kind of file.
+  const big = Buffer.alloc(26 * 1024 * 1024);
+  PNG.copy(big);
+  const tooBig = await ctx.request.post(`/api/creator/${token}/content`, {
+    multipart: { file: { name: "big.png", mimeType: "image/png", buffer: big } },
+  });
+  expect([413, 422]).toContain(tooBig.status());
+  const wrong = await ctx.request.post(`/api/creator/${token}/content`, {
+    multipart: {
+      file: { name: "a.svg", mimeType: "image/svg+xml", buffer: Buffer.from("<svg/>") },
+    },
+  });
+  expect(wrong.status()).toBe(422);
+
+  // Review works as it does for links; a second version can be a link again.
+  await r.getByTestId("review-changes").click();
+  await r.getByTestId("review-feedback").fill("Shorter, please");
+  await r.getByTestId("review-changes-send").click();
+  await expect(r.getByTestId("awaiting-resubmission")).toBeVisible();
+  await cp.reload();
+  await cp.getByTestId("content-url").fill("https://social.example.test/p/final");
+  await cp.getByTestId("content-submit").click();
+  await expect(cp.getByTestId("portal-versions").getByRole("listitem")).toHaveCount(2);
+  await page.reload();
+  await expect(page.getByTestId("roster-row").first().getByTestId("review-url")).toHaveText(
+    "https://social.example.test/p/final",
+  );
+
+  const sent = await eventsOf(slug, "Creator Content Submitted");
+  expect(sent.map((e) => e.props.content_kind)).toEqual(["file", "link"]);
+  await ctx.close();
 });
 
 for (const theme of ["light", "dark"] as const) {

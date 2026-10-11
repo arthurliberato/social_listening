@@ -11,6 +11,7 @@ import { inviteMembers } from "@/lib/team/invites";
 import { enqueueBackfill } from "@/lib/jobs/boss";
 import { brandQuery } from "@/lib/query/generate";
 import { estimateMentions } from "@/lib/query/estimate";
+import { simNow } from "@/lib/simclock";
 
 export type StepResult = { ok: true } | { ok: false; error: string };
 
@@ -155,7 +156,7 @@ export async function completeOnboarding(durationMs: number): Promise<void> {
   const user = await requireUser();
   const ws = (await userWorkspaces(user.id))[0]!;
   if (!user.onboardingCompletedAt) {
-    await db.update(users).set({ onboardingCompletedAt: new Date() }).where(eq(users.id, user.id));
+    await db.update(users).set({ onboardingCompletedAt: simNow() }).where(eq(users.id, user.id));
     await trackServer(
       "Onboarding Completed",
       { userId: user.id, workspaceId: ws.id },

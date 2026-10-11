@@ -1,0 +1,10 @@
+{
+  "id": "CI-001",
+  "platform": "instagram",
+  "niche": "food",
+  "min_authenticity": 70,
+  "brand_safe_required": true,
+  "budget_usd": 6000,
+  "creators_wanted": 3,
+  "invites_wanted": 2
+}

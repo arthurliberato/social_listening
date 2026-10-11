@@ -85,7 +85,7 @@ export async function saveReport(
     };
   await db
     .update(reports)
-    .set({ ...p.data, updatedAt: new Date() })
+    .set({ ...p.data, updatedAt: simNow() })
     .where(eq(reports.id, id));
   await auditIn(ws, user.id, "report.updated", { type: "report", id }, { name: p.data.name });
   revalidatePath(`/w/${slug}/reports`);

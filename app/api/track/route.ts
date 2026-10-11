@@ -36,6 +36,7 @@ export async function POST(req: Request) {
       ui_theme: parsed.data.ui_theme,
       device_id: parsed.data.device_id,
       forwarded: parsed.data.forwarded,
+      user_agent: req.headers.get("user-agent") ?? undefined,
       side: "client",
     },
   );

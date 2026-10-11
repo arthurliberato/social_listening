@@ -19,6 +19,7 @@ import { auditIn } from "@/lib/audit";
 import { itemCompleted } from "@/lib/checklist";
 import { can, PLANS, planUnlocking, type PlanTier } from "@/lib/entitlements/plans";
 import { accountPlan, canEdit } from "@/lib/queries";
+import { simNow } from "@/lib/simclock";
 
 type Fail = { ok: false; error: string; upgradeTo?: PlanTier; paywall?: "alert_limit" | "feature" };
 
@@ -155,7 +156,7 @@ export async function setAlertMuted(
   if (!rule) return { ok: false, error: "That alert no longer exists." };
   await db
     .update(alertRules)
-    .set({ status: muted ? "muted" : "active", updatedAt: new Date() })
+    .set({ status: muted ? "muted" : "active", updatedAt: simNow() })
     .where(eq(alertRules.id, id));
   await auditIn(
     ws,
@@ -194,7 +195,7 @@ export async function markOpened(
 ): Promise<{ firstOpenMs: number | null }> {
   const { ev } = await ownEvent(slug, id);
   if (!ev || ev.openedAt) return { firstOpenMs: null };
-  const now = new Date();
+  const now = simNow();
   await db
     .update(alertEvents)
     .set({ openedAt: now, status: ev.status === "new" ? "opened" : ev.status })
@@ -210,7 +211,7 @@ export async function acknowledgeAlert(
   if (!canEdit(ws.role))
     return { ok: false, error: "Your role can view alerts but not acknowledge them." };
   if (!ev) return { ok: false, error: "That alert no longer exists." };
-  const now = new Date();
+  const now = simNow();
   if (ev.status !== "acknowledged")
     await db
       .update(alertEvents)
@@ -255,7 +256,7 @@ export async function startCrisis(
   if (ev.status !== "acknowledged")
     await db
       .update(alertEvents)
-      .set({ status: "acknowledged", acknowledgedAt: new Date(), acknowledgedBy: user.id })
+      .set({ status: "acknowledged", acknowledgedAt: simNow(), acknowledgedBy: user.id })
       .where(eq(alertEvents.id, eventId));
   await auditIn(
     ws,

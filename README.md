@@ -37,3 +37,8 @@ npm run dev                         # http://localhost:3000  (signup -> verify v
 ```
 Checks: `npm run typecheck && npm run lint && npm test && npm run test:contrast && npm run test:e2e`
 (set `PW_CHROMIUM_PATH` to use a pre-installed Chromium). See CLAUDE.md for the build brief and milestones.
+
+## Autonomous agents
+
+`agents/` holds the first milestone of the agent programme: an analyst agent that takes a case through the real UI,
+with a profile, a brain (scripted or Claude), a private ledger and an evaluator. See `docs/agents.md`.

@@ -85,6 +85,14 @@ export async function searchCreators(f: CreatorFilters) {
   return { rows, total: n, pages: Math.max(1, Math.ceil(n / PAGE_SIZE)) };
 }
 
+/** Summaries for a set of ids, in the order asked for; ids that aren't in the directory are skipped. */
+export async function creatorsByIds(ids: number[]): Promise<CreatorSummary[]> {
+  if (!ids.length) return [];
+  const rows = await db.select(SUMMARY_COLUMNS).from(creators).where(inArray(creators.id, ids));
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  return ids.flatMap((id) => (byId.has(id) ? [byId.get(id)!] : []));
+}
+
 export async function getCreator(id: number): Promise<CreatorRow | null> {
   if (!Number.isInteger(id) || id < 1) return null;
   return (await db.select().from(creators).where(eq(creators.id, id)).limit(1))[0] ?? null;

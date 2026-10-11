@@ -15,6 +15,8 @@ same text, so both modes produce identical queries.
 | `a NEAR/5f b` | within 5 words, `a` before `b` |
 | `#brand`, `@brand` | hashtag / mention (the `#` / `@` must be present in the text) |
 | `author:handle` `site:domain` `source:reddit` `lang:en` `country:US` `hashtag:brand` `logo:brandslug` | field filters |
+| `replyto:"https://…/@jane/12"` | the replies (comments) to one post, named by its URL; quote it, since URLs contain `:` |
+| `replyto:@jane` | replies to anything `@jane` posted |
 | `<<<note>>>` | comment, ignored |
 
 **Precedence (tight → loose):** `NEAR`, `NOT`, `AND`, `OR`. So `a OR b c` means `a OR (b AND c)`; the linter warns
@@ -31,3 +33,5 @@ OR-groups of them. A query must contain at least one positive term.
 - Preview "noise" is a *product-side* heuristic (author bot score + promotional wording), deliberately independent of
   the corpus's ground-truth `is_spam`.
 - Backfill covers the plan's history window, newest first, up to the account's remaining monthly mention allowance.
+
+**Reusing a query:** on the Queries page, *Copy to…* makes an independent copy in another workspace of your account (or duplicates it in place). The copy collects its own history and counts toward the plan's active-query limit.

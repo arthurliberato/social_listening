@@ -1,0 +1,13 @@
+{
+  "id": "CI-001",
+  "kind": "influencers",
+  "client_project_id": "proj-latte-lane",
+  "client": "Latte Lane",
+  "requester_role": "strategist",
+  "brief": "Latte Lane is launching a spring latte next month and wants creators on Instagram to show it off. Find food creators whose audiences are real and who are safe for the brand to work with. We have $6,000 for the whole campaign. Set up the campaign, shortlist three creators, and invite two of them with offers that keep us inside the budget.",
+  "deliverable": "campaign_plan",
+  "budget_usd": 6000,
+  "creators_wanted": 3,
+  "invites_wanted": 2,
+  "due_in_days": 3
+}

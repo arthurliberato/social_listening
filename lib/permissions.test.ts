@@ -62,9 +62,9 @@ describe("role matrix", () => {
       expect(can("superuser", cap)).toBe(false);
   });
 
-  it("client viewers see dashboards and reports and nothing else", () => {
-    expect([...CLIENT_SECTIONS]).toEqual(["dashboards", "reports"]);
-    for (const s of ["dashboards", "reports"]) expect(clientMaySee(s)).toBe(true);
+  it("client viewers see dashboards, reports and Help, and nothing else", () => {
+    expect([...CLIENT_SECTIONS]).toEqual(["dashboards", "reports", "help"]);
+    for (const s of ["dashboards", "reports", "help"]) expect(clientMaySee(s)).toBe(true);
     for (const s of [
       "mentions",
       "queries",

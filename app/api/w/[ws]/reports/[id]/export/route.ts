@@ -14,6 +14,7 @@ import {
 } from "@/lib/reports/service";
 import { effectiveBranding } from "@/lib/team/branding";
 import { toTable } from "@/lib/charts/tables";
+import { simNow } from "@/lib/simclock";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -51,7 +52,7 @@ export async function GET(
       title: report.name,
       workspace: ws.name,
       period: periodLabel(report, loaded),
-      generatedAt: new Date(),
+      generatedAt: simNow(),
       sections: pdfSections(loaded),
       brand: branded
         ? {
