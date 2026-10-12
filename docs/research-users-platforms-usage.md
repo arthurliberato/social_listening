@@ -12,8 +12,9 @@ single source, undated or conflicting.
 
 1. **The trial conversion target is too high for a no-card trial.** The plan targets about 15–20% of trials converting.
    The best 2026 data (200 B2B products) puts the median free-to-paid rate at 8%, and a no-card trial at roughly 6–9%.
-   Cards-required trials reach about 30%. Ripplewise's trial needs no card, so aim for **6–10%** overall. Keep the plan's
-   activated-versus-not contrast, which is the useful part.
+   Cards-required trials reach about 30%. Ripplewise's trial needs no card, so aim for **6–10%** overall. Keep the
+   activated-versus-not contrast, rescaled so it adds up: about 30% of activated trials against about 2% of the rest gives
+   roughly 7–8% overall if a fifth of trials activate.
 2. **Real tools cannot see all platforms, and the corpus pretends they can.** About 31% of the corpus is Instagram and
    TikTok, which real listening tools reach only partially. This is a product-fiction choice, but it should be a
    conscious one, because "data coverage" is the top real-world complaint.
@@ -96,6 +97,13 @@ The corpus is **social-first and Instagram/TikTok-heavy (31%)**, while real tool
 and reviews. Options: keep it as a deliberate product choice and show a visible "coverage" note in the product, or
 rebalance toward Reddit and the open web. Either way it is a documented decision, not an accident.
 
+**Rebalancing is not a config change (tried and reverted).** I changed the source shares in `datagen/config.ts` to favour
+Reddit and the open web, and rebuilt the deployment-sized corpus. The mix did not move the way intended: X rose to 39.5%
+and YouTube to 20.1%, while Reddit fell to 2.5% and the open web to about 5% combined. Root posts do follow the shares,
+but about 63% of the corpus is comments and reposts, and those cascades pile up on X, YouTube, Instagram and TikTok
+regardless. Steering the final mix means reworking the cascade rules, which could disturb the spam, sentiment and crisis
+checks the corpus was validated against, so the change was reverted and the corpus is unchanged.
+
 ## 3. Usage
 
 | Finding | Source | Conf. |
@@ -123,7 +131,7 @@ rebalance toward Reddit and the open web. Either way it is a documented decision
 
 | Plan claim | What the evidence says | Verdict | Suggested change |
 |---|---|---|---|
-| About 15–20% of trials convert | Median 8%; no-card trials about 6–9%; card-required about 30% | **Too high** for a no-card trial | Target 6–10% overall; keep about 45% activated against about 4% not activated |
+| About 15–20% of trials convert | Median 8%; no-card trials about 6–9%; card-required about 30% | **Too high** for a no-card trial | Target 6–10% overall; rescale activated and non-activated to match (about 30% against 2% if a fifth of trials activate). Applied in `docs/simulation-plan.md` |
 | Monthly report bursts for agencies | Monthly is the dominant client reporting cadence (46%) | Supported | Keep; weekly reporters a minority (about 14%) |
 | Small and solo accounts exist | Most social teams are 0–2 people | Supported | Keep single-user and pair archetypes |
 | Higher tiers expand, lower tiers shrink (NRR by tier) | NRR over 100% is far more common at high ARPA | Supported in direction | Keep; the exact rates stay design parameters |
@@ -137,7 +145,8 @@ rebalance toward Reddit and the open web. Either way it is a documented decision
 
 - **Trial conversion:** lower the target to 6–10% when the simulation drives conversion.
 - **Platform coverage:** decide whether the corpus should stay Instagram/TikTok-heavy, and if so show a visible coverage
-  note, because incomplete data is the top real-world complaint (64.6%).
+  note, because incomplete data is the top real-world complaint (64.6%). Changing the mix itself needs a cascade rework
+  (section 2.4).
 - **Activity shape:** build low-frequency, spiky usage into the archetypes; reserve daily use for a small share of
   accounts (crisis-prone brands, customer-service-style monitoring).
 - **Outreach:** drive creator replies from creator tier and message quality.
