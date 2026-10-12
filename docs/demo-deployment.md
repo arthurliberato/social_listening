@@ -75,6 +75,21 @@ Without `DATABASE_URL` the app falls back to `localhost` and every page that rea
 error. An empty database (no tables) fails the same way, which is why the setup above runs first. RudderStack, GA4 and
 BigQuery are optional; see `docs/rudderstack-bigquery.md`.
 
+## Background jobs need a worker
+
+Saving a query, finishing onboarding, alerts, scheduled reports and emails go through a job queue (pg-boss, stored in
+the same Postgres). Something has to run the worker (`npm run worker`) to process it, and Vercel's serverless hosting
+does not run a long-lived process. So on Vercel alone:
+
+- **Works:** logging in, browsing the seeded accounts, their mentions, dashboards and everything already collected
+  (the seeding collects each account's history directly).
+- **Does not finish:** a query created after deployment stays on "collecting your first mentions", and alerts,
+  scheduled reports and emails do not run.
+
+To make those work, run `npm run worker` somewhere that stays on, with the same `DATABASE_URL` (your own computer is
+fine for a demo). The worker has not been tested against Neon's pooled connection string; use the direct string for it,
+because the queue relies on session features that connection pooling can break.
+
 ## Keeping inside the limit
 
 - **Saved queries are the main growth.** Each query stores one row (about 200 bytes) per matching mention, inside the
