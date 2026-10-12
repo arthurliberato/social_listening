@@ -5,8 +5,15 @@ import { requireWorkspace } from "@/lib/auth/session";
 export const metadata = { title: "Help · Ripplewise" };
 export const dynamic = "force-dynamic";
 
-export default async function HelpPage({ params }: { params: Promise<{ ws: string }> }) {
+export default async function HelpPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ ws: string }>;
+  searchParams: Promise<{ topic?: string | string[] }>;
+}) {
   const { ws: slug } = await params;
+  const { topic } = await searchParams;
   await requireWorkspace(slug);
   return (
     <div className="mx-auto max-w-4xl">
@@ -21,7 +28,7 @@ export default async function HelpPage({ params }: { params: Promise<{ ws: strin
         <h2 id="topics-h" className="sr-only">
           Help topics
         </h2>
-        <HelpTopics ws={slug} />
+        <HelpTopics ws={slug} openTopic={Array.isArray(topic) ? topic[0] : topic} />
       </section>
       <section className="mt-10" aria-labelledby="ask-h">
         <h2 id="ask-h" className="text-lg font-semibold">

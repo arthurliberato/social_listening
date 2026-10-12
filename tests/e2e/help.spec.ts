@@ -69,3 +69,34 @@ test("a client viewer can open Help and ask for it too", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Help", exact: true })).toBeVisible();
   await expect(page.getByTestId("support-form")).toBeVisible();
 });
+
+test("the coverage note sits where counts are read and opens its Help topic", async ({ page }) => {
+  const { email, slug } = await createUser(page, { brand: "Orbit Lace" });
+
+  // In the live preview of the query builder.
+  await page.goto(`/w/${slug}/queries/new`);
+  await page.waitForLoadState("networkidle");
+  await page.getByTestId("mode-advanced").click();
+  await page.getByTestId("advanced-editor-content").click();
+  await page.keyboard.type('"Orbit Lace"');
+  await expect(page.getByTestId("preview-count")).toBeVisible();
+  await expect(page.getByTestId("preview-panel").getByTestId("coverage-note")).toBeVisible();
+
+  // On the Mentions feed, with a link that opens the topic.
+  await page.goto(`/w/${slug}/mentions`);
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByTestId("coverage-note")).toBeVisible();
+  await page.getByTestId("coverage-note-link").click();
+  await page.waitForURL(`**/w/${slug}/help?topic=data-coverage`);
+  const topic = page.locator('[data-testid="help-topic"][data-topic="data-coverage"]');
+  await expect(topic).toHaveAttribute("open", "");
+  await expect(topic).toContainText("direct messages");
+  // Arriving on an open topic counts as opening it, once.
+  await expect
+    .poll(
+      async () =>
+        (await events(email, "Help Opened")).filter((e) => e.props.topic === "data-coverage")
+          .length,
+    )
+    .toBe(1);
+});

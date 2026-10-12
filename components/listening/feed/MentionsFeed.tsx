@@ -16,6 +16,7 @@ import {
   type EditResult,
   type MentionDetail,
 } from "@/app/w/[ws]/mentions/actions";
+import { CoverageNote } from "@/components/listening/CoverageNote";
 import { PaywallModal, type PaywallProps } from "@/components/listening/PaywallModal";
 import { Button } from "@/components/ui/button";
 import { Menu } from "@/components/ui/menu";
@@ -625,6 +626,7 @@ export function MentionsFeed({
           </Button>
         </div>
       </header>
+      <CoverageNote ws={ws} className="-mt-2" />
       {!canEdit && (
         <p role="status" className="rounded-md border border-[var(--info)] p-2 text-sm">
           You have view-only access: you can read and export mentions but not tag, flag or change

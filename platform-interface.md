@@ -63,7 +63,7 @@ Routes under `app/`. "Role" is the minimum role (matrix in section 3). Every `/w
 
 `/w/[ws]/tags` (Tags & Categories): create, check, open and delete categories; list of workspace tags with counts.
 
-`/w/[ws]/help` (Help): Help center: ten topics (searchable, native disclosure widgets; opening one fires `Help Opened` with its `topic`), and an "ask us" form (`sendSupport`, category, title, question; max 5 a day) that returns a reference `RW-XXXXXXXX`, emails it to the person's `/inbox` (`type = support`), stores a `support_requests` row and fires `Support Contacted`. A simulated desk only acknowledges; there is no staff console or reply. Open to every role, client viewers included. The top-bar Help button (same place on every screen) opens the shortcuts dialog, which links to the Help center.
+`/w/[ws]/help` (Help): Help center: eleven topics, including what data is collected and its limits (`?topic=data-coverage` opens one; the Mentions feed and the query preview link to it from a short coverage note) (searchable, native disclosure widgets; opening one fires `Help Opened` with its `topic`), and an "ask us" form (`sendSupport`, category, title, question; max 5 a day) that returns a reference `RW-XXXXXXXX`, emails it to the person's `/inbox` (`type = support`), stores a `support_requests` row and fires `Support Contacted`. A simulated desk only acknowledges; there is no staff console or reply. Open to every role, client viewers included. The top-bar Help button (same place on every screen) opens the shortcuts dialog, which links to the Help center.
 
 Not present as screens: Sources/upload, API/keys, notifications settings page beyond the bell, auto-tag rules (see Gaps).
 

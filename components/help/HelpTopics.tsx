@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { track } from "@/lib/analytics/client";
 import { HELP_TOPICS } from "@/lib/help/topics";
 
@@ -9,8 +9,13 @@ const text = (t: (typeof HELP_TOPICS)[number]) =>
   `${t.title} ${t.summary} ${t.steps.join(" ")}`.toLowerCase();
 
 /** Topics as native disclosure widgets (keyboard and screen-reader friendly), with a small filter box. */
-export function HelpTopics({ ws }: { ws: string }) {
+export function HelpTopics({ ws, openTopic }: { ws: string; openTopic?: string }) {
   const [q, setQ] = useState("");
+  // A topic that arrives open (from a link) is reported once on load; the browser's own toggle event for it is skipped.
+  const arrived = useRef(HELP_TOPICS.some((t) => t.id === openTopic) ? openTopic : undefined);
+  useEffect(() => {
+    if (arrived.current) track("Help Opened", { topic: arrived.current });
+  }, []);
   const shown = useMemo(() => {
     const words = q.toLowerCase().split(/\s+/).filter(Boolean);
     return HELP_TOPICS.filter((t) => words.every((w) => text(t).includes(w)));
@@ -51,8 +56,11 @@ export function HelpTopics({ ws }: { ws: string }) {
                 className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3"
                 data-testid="help-topic"
                 data-topic={t.id}
+                open={t.id === openTopic}
                 onToggle={(e) => {
-                  if ((e.currentTarget as HTMLDetailsElement).open)
+                  const skip = arrived.current === t.id;
+                  if (skip) arrived.current = undefined;
+                  if (!skip && (e.currentTarget as HTMLDetailsElement).open)
                     track("Help Opened", { topic: t.id });
                 }}
               >

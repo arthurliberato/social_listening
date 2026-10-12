@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CoverageNote } from "@/components/listening/CoverageNote";
 import { SentimentPill } from "@/components/listening/SentimentPill";
 import { findMatches, splitHighlighted } from "@/lib/query/highlight";
 import type { Preview, SampleMention } from "@/lib/query/preview";
@@ -75,7 +76,7 @@ function Mention({
   );
 }
 
-export function PreviewPanel({ state }: { state: PreviewState }) {
+export function PreviewPanel({ state, ws }: { state: PreviewState; ws: string }) {
   const [showAll, setShowAll] = useState(false);
   const data =
     state.status === "ready" ? state.data : state.status === "loading" ? state.previous : undefined;
@@ -142,6 +143,7 @@ export function PreviewPanel({ state }: { state: PreviewState }) {
             Noise is the share of likely spam among the latest {data.noiseSampleSize} matches. Add
             exclusions to lower it.
           </p>
+          <CoverageNote ws={ws} className="mt-1" />
           {data.count === 0 ? (
             <p className="mt-4" data-testid="preview-empty">
               No mentions match yet. Try broader terms, a trailing wildcard (run*) or remove an

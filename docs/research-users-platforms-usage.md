@@ -146,7 +146,8 @@ checks the corpus was validated against, so the change was reverted and the corp
 - **Trial conversion:** lower the target to 6–10% when the simulation drives conversion.
 - **Platform coverage:** decide whether the corpus should stay Instagram/TikTok-heavy, and if so show a visible coverage
   note, because incomplete data is the top real-world complaint (64.6%). Changing the mix itself needs a cascade rework
-  (section 2.4).
+  (section 2.4). **Done:** the Mentions feed and the query preview now carry a short coverage note that links to a Help topic,
+  "What data is collected, and its limits".
 - **Activity shape:** build low-frequency, spiky usage into the archetypes; reserve daily use for a small share of
   accounts (crisis-prone brands, customer-service-style monitoring).
 - **Outreach:** drive creator replies from creator tier and message quality.

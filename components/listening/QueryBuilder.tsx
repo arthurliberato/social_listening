@@ -489,7 +489,7 @@ export function QueryBuilder({
         </div>
 
         <aside className="lg:sticky lg:top-4 lg:self-start">
-          <PreviewPanel state={preview} />
+          <PreviewPanel state={preview} ws={ws} />
         </aside>
       </div>
 

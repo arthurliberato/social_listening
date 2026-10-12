@@ -31,6 +31,19 @@ export const HELP_TOPICS: HelpTopic[] = [
     ],
   },
   {
+    id: "data-coverage",
+    title: "What data is collected, and its limits",
+    summary: "Counts show what we collected, not everything that was posted.",
+    steps: [
+      "Ripplewise collects public content: posts, comments, reviews, forum threads, blogs and news articles from the sources in the Source filter. It does not collect direct messages, private accounts or closed groups.",
+      "Coverage differs by source and can change, because platforms decide what any listening tool may collect. A count is what was collected for your query, so treat it as a close view of the conversation, not a census.",
+      "How far back we collect depends on your plan, and a query only gathers history up to your plan's monthly mention allowance.",
+      "Sentiment, topics and emotion are automatic estimates. You can correct a mention, and your corrections are kept for your workspace.",
+      "Every source in this demo workspace is simulated; no real platform data is collected.",
+    ],
+    link: { label: "Open Mentions", href: (ws) => `/w/${ws}/mentions` },
+  },
+  {
     id: "triage",
     title: "Reading and triaging mentions",
     summary: "Filters live in the address bar, so you can share or bookmark any view.",
