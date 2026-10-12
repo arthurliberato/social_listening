@@ -31,7 +31,48 @@ export interface AgentSeed {
   /** Stored on the user as `persona_archetype`, so every event carries it. */
   persona: string;
   region: string;
+  /** Set when the account came from `mix`: its tier profile and the usage it was seeded to show. */
+  account_profile?: TierProfile;
+  usage_profile?: "at_limits" | "typical" | "low";
 }
+
+/**
+ * Account tiers for a mixed population. Each is a plan, a team size and how much the account has already used:
+ * - starter-limit: the cheapest plan, one seat, all three query slots used, two of them broad enough to fill the
+ *   monthly mention allowance (so the quota meter, paywalls and upgrade prompts are in play from day one);
+ * - growth: the middle plan with a normal workload of brand queries;
+ * - agency-low: the top self-serve plan, barely used (a couple of queries, a small team).
+ * Everything is created through the product's own sign-up, subscription and backfill code.
+ */
+export const TIER_PROFILES = {
+  "starter-limit": {
+    plan: "starter",
+    team: 1,
+    brandQueries: [1, 1],
+    broadQueries: 2,
+    usage: "at_limits",
+  },
+  growth: { plan: "growth", team: [3, 5], brandQueries: [4, 8], broadQueries: 0, usage: "typical" },
+  "agency-low": {
+    plan: "agency",
+    team: [2, 4],
+    brandQueries: [1, 2],
+    broadQueries: 0,
+    usage: "low",
+  },
+} as const;
+export type TierProfile = keyof typeof TIER_PROFILES;
+export const isTierProfile = (s: string): s is TierProfile => s in TIER_PROFILES;
+
+/**
+ * Everyday words that appear in many posts, so a query on them matches a large share of the corpus. In the small
+ * deployment corpus (`datagen:demo`) the last 30 days hold about 9,400 mentions and these two match about 11,000
+ * between them, which is more than a Starter month allows (10,000). Larger corpora reach the cap sooner.
+ */
+const BROAD_QUERIES = [
+  "this OR the OR for OR can OR not OR any OR did OR now",
+  "better OR same OR about OR here OR exactly OR relatable OR confirm OR following OR thanks OR interesting OR sharing OR link OR happen OR when OR getting OR still OR with OR price OR their OR place OR good OR than OR skin OR right OR great OR new OR support",
+];
 
 export interface SeedOptions {
   accounts: number;
@@ -46,6 +87,8 @@ export interface SeedOptions {
   emailDomain?: string;
   /** Users per account, a number or an inclusive [min, max] range picked per account. Default: the full team of 8-9. */
   teamSize?: number | [number, number];
+  /** Accounts per tier profile, in order. Replaces `accounts`, `plan`, `teamSize` and `firstQuery`. */
+  mix?: { profile: TierProfile; accounts: number }[];
 }
 
 const TEAM: { role: AgentRole; seniority: Seniority; platform: Role }[] = [
@@ -88,7 +131,10 @@ export async function seedAgents(o: SeedOptions): Promise<AgentSeed[]> {
   let brands: string[] | undefined;
   const domain = o.emailDomain ?? "agents.example.test";
   const sim = { persona: null as string | null, run: o.run, model: o.model ?? null, clock: null };
-  for (let a = 0; a < o.accounts; a++) {
+  const profiles = o.mix?.flatMap((m) => Array<TierProfile>(m.accounts).fill(m.profile));
+  const total = profiles?.length ?? o.accounts;
+  for (let a = 0; a < total; a++) {
+    const tier = profiles ? TIER_PROFILES[profiles[a]!] : undefined;
     const r = rngFor(o.seed, "account", a);
     const acc = `acc${String(a + 1).padStart(3, "0")}`;
     const company = `${r.pick(CO_A)} ${r.pick(CO_B)} ${acc}`;
@@ -100,7 +146,8 @@ export async function seedAgents(o: SeedOptions): Promise<AgentSeed[]> {
         : []),
     ];
     // Own generator, so the default roster and every later draw for an account stay the same as before.
-    const [lo, hi] = Array.isArray(o.teamSize) ? o.teamSize : [o.teamSize, o.teamSize];
+    const wanted: number | readonly [number, number] | undefined = tier ? tier.team : o.teamSize;
+    const [lo, hi] = typeof wanted === "number" || wanted === undefined ? [wanted, wanted] : wanted;
     const size =
       lo === undefined
         ? 0
@@ -175,12 +222,13 @@ export async function seedAgents(o: SeedOptions): Promise<AgentSeed[]> {
         platform_role: t.platform,
         persona,
         region,
+        ...(tier ? { account_profile: profiles![a]!, usage_profile: tier.usage } : {}),
       });
     }
     // A paid plan with room for the whole team, through the same code as the Billing page (test card only).
     const sub = await subscribe({
       accountId,
-      tier: o.plan ?? "agency",
+      tier: tier?.plan ?? o.plan ?? "agency",
       interval: "monthly",
       card: {
         number: "4242 4242 4242 4242",
@@ -191,7 +239,39 @@ export async function seedAgents(o: SeedOptions): Promise<AgentSeed[]> {
       },
     });
     if (!sub.ok) throw new Error(`could not subscribe ${acc}: ${sub.error}`);
-    if (o.firstQuery) {
+    if (tier) {
+      brands ??= await busiestBrands(12);
+      const [ws] = await db.select().from(workspaces).where(eq(workspaces.accountId, accountId));
+      const [bLo, bHi] = tier.brandQueries;
+      const qr = rngFor(o.seed, "queries", a); // its own stream: the rest of the account is unaffected
+      const nBrand = Math.min(brands.length, qr.int(bHi - bLo + 1) + bLo);
+      const shuffled = [...brands];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = qr.int(i + 1);
+        [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+      }
+      const mine = shuffled.slice(0, nBrand);
+      const texts = [
+        ...mine.map((b) => ({ name: `${b} (brand)`, text: brandQuery(b) })),
+        ...BROAD_QUERIES.slice(0, tier.broadQueries).map((t, i) => ({
+          name: `Broad chatter ${i + 1}`,
+          text: t,
+        })),
+      ];
+      for (const t of texts) {
+        const [q] = await db
+          .insert(queries)
+          .values({
+            workspaceId: ws!.id,
+            name: t.name,
+            booleanText: t.text,
+            status: "live",
+            createdBy: ownerId,
+          })
+          .returning({ id: queries.id });
+        await runBackfill(q!.id, ownerId);
+      }
+    } else if (o.firstQuery) {
       brands ??= await busiestBrands(12);
       const brand = r.pick(brands);
       const [ws] = await db.select().from(workspaces).where(eq(workspaces.accountId, accountId));

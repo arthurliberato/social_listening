@@ -27,6 +27,8 @@ runner sets, so the dataset can be joined to the ledger afterwards.
 ```bash
 npm run seed:agents -- --accounts 1 --run r1 --onboard-owner --out agents.json   # accounts and logins
 # --team-size 2 (or 2-4) makes smaller teams: an owner and an analyst first, then the rest. Default is the full 8-9.
+# --mix starter-limit:50,growth:25,agency-low:15 seeds a tiered population (plan, team size and prior usage per
+# account; see docs/demo-deployment.md). It replaces --accounts, --plan, --team-size and --first-query.
 npm run start                                                                      # the platform (ALLOW_SIM_CLOCK=true if using --clock)
 npm run agent:case -- --manifest agents.json --agent acc001_u05 --case CS-001 \
     [--provider scripted|claude] [--base http://localhost:3000] [--out agents/out] [--headed]

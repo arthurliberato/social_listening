@@ -148,8 +148,11 @@ Accounts for the autonomous agents are created through the product's own sign-up
 - Every seeded account is on one plan (default Agency, `--plan starter|growth|agency`) and has a team of 8–9 people by
   default. `--team-size 2` or `--team-size 2-4` makes smaller teams (an owner and an analyst first).
 - A Starter account has one seat, so a larger seeded team would exceed its plan.
-- **Open decision:** a mix of account tiers with different usage (for example Agency accounts with low use, and Starter
-  accounts that reach their limits). It is not built; the seeder gives every account the same plan today.
+- `--mix starter-limit:50,growth:25,agency-low:15` seeds a tiered population instead: Starter accounts with one seat
+  and all three query slots used (two broad, so they reach the 10,000-mention allowance), Growth accounts with a normal
+  workload, and Agency accounts that barely use the top plan. Each user in the manifest carries `account_profile` and
+  `usage_profile`. Details and measured results are in `docs/demo-deployment.md`.
+- Not simulated at seed time: Ask AI use, alerts and how often people log in. That comes from agents acting over time.
 
 ## Where to look in the code
 
@@ -165,3 +168,4 @@ Accounts for the autonomous agents are created through the product's own sign-up
 | Influencers product | `docs/influencers.md`, `lib/creators/`, `app/w/[ws]/creators/` |
 | Synthetic creators | `datagen/creators.ts` |
 | Agent personas and seeding | `agents/profile.ts`, `lib/sim/seed-agents.ts`, `docs/agents.md` |
+| Demo deployment (Vercel + Neon) | `docs/demo-deployment.md` |

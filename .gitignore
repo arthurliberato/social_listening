@@ -10,3 +10,6 @@ tests/.auth
 
 # agent run output
 agents/out
+
+# seeded logins (passwords) written by seed:agents / seed:demo
+agents*.json
