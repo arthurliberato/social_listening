@@ -4,6 +4,20 @@ Read from the code in this repository (Ripplewise), so these are the **current d
 2026-10-12; it replaces the earlier version, which predates the Influencers product. All pricing is simulated test-mode
 billing for a fictitious product, so the numbers are placeholders chosen for the demo.
 
+## Short answers
+
+1. **User-type definitions.** There is no single "user type" field; five layers exist (workspace roles, self-declared job
+   role, stated goals, account fields, agent personas), listed in section 1. The workspace roles are the permission
+   taxonomy to build on. Creators are records, not users.
+2. **What the influencer product does.** Discovery and search, outreach (email invitations, a creator page to accept,
+   decline or counter), campaign management, and campaign tracking and reporting (tracking links, clicks, conversions,
+   cost per click, return on spend), plus contracts and simulated payouts. **It is not a CRM**: there are no contact
+   records, notes or relationship history, only creator lists and campaign rosters with status stages. Creator emails
+   are simulated, and client viewers cannot open the product. Details in section 2.
+3. **How plans are structured.** Five tiers (Trial, Starter $79, Growth $249, Agency $599, Enterprise quoted) with seats,
+   query, mention and creator limits per tier, in section 3. **There is no bundle pricing**: both tools sit in one
+   plan with one set of limits, so nothing is set for a two-product bundle.
+
 ## 1. User-type definitions today
 
 There is no single "user type" field. These layers exist, in different places.
@@ -66,7 +80,7 @@ anonymous audience actor. Neither counts as a seat.
 
 There **is** an Influencers product (Ripplewise Creators). It shares the login, workspaces, roles, plan, billing and
 analytics with Social listening, and people choose between the two on a hub page (`/hub`) after sign-in. Client viewers
-skip the hub. Full detail is in `docs/influencers.md`; in short:
+skip the hub and cannot open Influencers. Full detail is in `docs/influencers.md`; in short:
 
 | Area | What it does |
 | --- | --- |
