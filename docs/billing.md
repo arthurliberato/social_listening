@@ -81,7 +81,7 @@ A one-time purchase that collects another year of history for one query, before 
 - **Who and when:** paid, active plans (Starter and up); owner or admin only; a card must be on file; the query must have
   finished its first collection. One pack per query. Trials, lapsed and cancelled accounts see the offer explained and a
   link to plans.
-- **What it costs and gives:** $49 once, up to 50,000 older mentions, collected newest first by a background job. They are
+- **What it costs and gives:** $49 once, up to 10,000 older mentions, collected newest first by a background job. They are
   not counted against the monthly mentions allowance.
 - **Reading it:** the account's readable window grows by 365 days (`accounts.history_extra_days`, applied where plans are
   read), so date ranges and dashboards can reach it. Only queries with a pack have data in the extra year.

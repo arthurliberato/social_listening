@@ -11,7 +11,7 @@ import { defaultMethod, eventCtx, recordInvoice, sendReceipt } from "./service";
 import { getProvider } from "./provider";
 import type { PlanTier } from "@/lib/entitlements/plans";
 
-export const HISTORY_PACK = { priceCents: 4900, extraDays: 365, maxMentions: 50_000 } as const;
+export const HISTORY_PACK = { priceCents: 4900, extraDays: 365, maxMentions: 10_000 } as const;
 /** Plans that can buy add-ons. Trials, lapsed and cancelled accounts cannot. */
 export const PACK_TIERS: PlanTier[] = ["starter", "growth", "agency", "enterprise"];
 export const usd = (cents: number) => `$${(cents / 100).toFixed(cents % 100 ? 2 : 0)}`;

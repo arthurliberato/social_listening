@@ -127,7 +127,7 @@ Trial and Starter have none of the gated features. The API flag exists but nothi
 - Yearly billing is 10 months for 12.
 - A retention offer of 25% off two renewals is shown at most once.
 - Failed payments retry at 1, 3 and 5 days.
-- One add-on exists: a **history pack**, a one-time $49 for another year of history on one query (up to 50,000
+- One add-on exists: a **history pack**, a one-time $49 for another year of history on one query (up to 10,000
   mentions), kept outside the monthly mention allowance.
 
 **Enterprise quotes** (simulated sales desk): a $1,500/month platform fee plus $40 per seat per month, minimum 5 seats,
