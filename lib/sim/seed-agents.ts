@@ -44,6 +44,8 @@ export interface SeedOptions {
   /** Give each workspace a live query on one of the corpus's busiest brands, and collect its history. */
   firstQuery?: boolean;
   emailDomain?: string;
+  /** Users per account, a number or an inclusive [min, max] range picked per account. Default: the full team of 8-9. */
+  teamSize?: number | [number, number];
 }
 
 const TEAM: { role: AgentRole; seniority: Seniority; platform: Role }[] = [
@@ -56,6 +58,8 @@ const TEAM: { role: AgentRole; seniority: Seniority; platform: Role }[] = [
   { role: "analyst", seniority: "mid", platform: "editor" },
   { role: "analyst", seniority: "junior", platform: "editor" },
 ];
+/** Who joins first when a team is smaller than the full roster: an owner and an analyst, then the rest. */
+const SMALL_TEAM_ORDER = [0, 3, 1, 2, 4, 5, 6, 7, 8];
 const REGIONS = ["us_east", "us_west", "uk", "de", "br", "in", "au"];
 const FIRST = [
   "Ana",
@@ -89,12 +93,23 @@ export async function seedAgents(o: SeedOptions): Promise<AgentSeed[]> {
     const acc = `acc${String(a + 1).padStart(3, "0")}`;
     const company = `${r.pick(CO_A)} ${r.pick(CO_B)} ${acc}`;
     const region = r.pick(REGIONS);
-    const team = [
+    const full = [
       ...TEAM,
       ...(r.bool(0.5)
         ? [{ role: "analyst" as const, seniority: "junior" as const, platform: "editor" as Role }]
         : []),
     ];
+    // Own generator, so the default roster and every later draw for an account stay the same as before.
+    const [lo, hi] = Array.isArray(o.teamSize) ? o.teamSize : [o.teamSize, o.teamSize];
+    const size =
+      lo === undefined
+        ? 0
+        : Math.min(full.length, rngFor(o.seed, "team", a).int(hi! - lo + 1) + lo);
+    const team = size
+      ? SMALL_TEAM_ORDER.map((i) => full[i])
+          .filter((t): t is (typeof full)[number] => !!t)
+          .slice(0, size)
+      : full;
     let accountId = "";
     let slug = "";
     let ownerId = "";
