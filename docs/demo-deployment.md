@@ -34,15 +34,25 @@ the seeder; it comes from agents acting over time.
 ## Where to run the commands
 
 On **your own computer**, in a terminal, not in a cloud sandbox: the load needs a direct Postgres connection (port
-5432), which some sandboxes block. You need Node 22, git and the PostgreSQL command-line client (`psql`). On Windows use
-WSL or Git Bash.
+5432), which some sandboxes block. You need only Node 22 and git. The load is pure Node, so it needs no `psql` and works
+on Windows, macOS and Linux.
+
+macOS or Linux:
 
 ```
 git clone <repo url> && cd social_listening
 git checkout <branch>
 npm ci
-export DATABASE_URL='postgres://USER:PASSWORD@HOST/DBNAME?sslmode=require'   # Neon; PowerShell: $env:DATABASE_URL='...'
+export DATABASE_URL='postgres://USER:PASSWORD@HOST/DBNAME?sslmode=require'   # Neon, direct (not pooled) host
 export AUTH_SECRET='<a long random string>'
+npm run demo:setup
+```
+
+Windows PowerShell (`export` does not exist there; set the variables like this, in the same window):
+
+```
+$env:DATABASE_URL = 'postgres://USER:PASSWORD@HOST/DBNAME?sslmode=require'
+$env:AUTH_SECRET = [guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N')
 npm run demo:setup
 ```
 

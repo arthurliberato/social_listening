@@ -1,9 +1,14 @@
 // Usage: npx tsx db/load.ts [--dir data/corpus] [--url postgres://...]
-// Applies migrations, bulk-loads the generated corpus with COPY, then builds indexes
-// (indexes are dropped before the load: far faster than maintaining them row by row).
-import { spawn, spawnSync } from "node:child_process";
-import { readFileSync, readdirSync } from "node:fs";
+// Bulk-loads the generated corpus with COPY, then builds indexes (indexes are dropped before the load: far faster
+// than maintaining them row by row). Run `npm run db:migrate` first. Pure Node (pg and pg-copy-streams, Node's gzip),
+// so it needs no psql or zcat and runs on Windows too.
+import { createReadStream, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { PassThrough, type Readable, type Writable } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import { createGunzip } from "node:zlib";
+import pg from "pg";
+import { from as copyFrom } from "pg-copy-streams";
 
 const arg = (k: string, d: string) => {
   const i = process.argv.indexOf(`--${k}`);
@@ -14,62 +19,32 @@ const url = arg(
   "url",
   process.env.DATABASE_URL ?? "postgres://ripplewise:ripplewise@localhost:5432/ripplewise",
 );
+const client = new pg.Client({ connectionString: url });
 
-const psql = (sql: string) => {
-  const r = spawnSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-q", "-c", sql], {
-    encoding: "utf8",
-  });
-  if (r.status !== 0) throw new Error(r.stderr);
-};
+const run = (sql: string) => client.query(sql);
 
-function copy(
-  table: string,
-  columns: readonly string[],
-  feed: (stdin: NodeJS.WritableStream) => void | Promise<void>,
-) {
-  return new Promise<void>((resolve, reject) => {
-    const p = spawn(
-      "psql",
-      [
-        url,
-        "-v",
-        "ON_ERROR_STOP=1",
-        "-q",
-        "-c",
-        `\\copy ${table} (${columns.join(",")}) FROM STDIN`,
-      ],
-      { stdio: ["pipe", "inherit", "inherit"] },
-    );
-    p.on("exit", (c) => (c === 0 ? resolve() : reject(new Error(`copy ${table} exited ${c}`))));
-    Promise.resolve(feed(p.stdin!)).then(() => p.stdin!.end(), reject);
-  });
+async function copyFromSource(table: string, columns: readonly string[], source: Readable) {
+  const ingest = client.query(copyFrom(`COPY ${table} (${columns.join(",")}) FROM STDIN`));
+  await pipeline(source, ingest);
 }
 
+/** The small reference tables are written from memory. */
+async function copy(
+  table: string,
+  columns: readonly string[],
+  feed: (stdin: Writable) => void | Promise<void>,
+) {
+  const rows = new PassThrough();
+  const done = copyFromSource(table, columns, rows);
+  await feed(rows);
+  rows.end();
+  await done;
+}
+
+/** The big tables stream from gzipped files, never held in memory. */
 async function copyGz(table: string, columns: readonly string[], file: string) {
-  await copy(
-    table,
-    columns,
-    (stdin) =>
-      new Promise<void>((resolve, reject) => {
-        const z = spawn("zcat", [file], { stdio: ["ignore", "pipe", "inherit"] });
-        let code: number | null = null;
-        let drained = false;
-        const done = () => {
-          if (!drained || code === null) return;
-          code === 0 ? resolve() : reject(new Error(`zcat ${file} exited ${code}`));
-        };
-        // Resolve only after zcat's output has been fully handed to psql, not merely when it exits.
-        z.stdout.on("end", () => {
-          drained = true;
-          done();
-        });
-        z.on("exit", (c) => {
-          code = c ?? 1;
-          done();
-        });
-        z.stdout.pipe(stdin, { end: false });
-      }),
-  );
+  const ingest = client.query(copyFrom(`COPY ${table} (${columns.join(",")}) FROM STDIN`));
+  await pipeline(createReadStream(file), createGunzip(), ingest);
 }
 
 // Dropped before the bulk load and rebuilt after: far faster than per-row index maintenance.
@@ -93,8 +68,9 @@ async function main() {
   const stories = JSON.parse(readFileSync(join(dir, "stories.json"), "utf8"));
 
   // Corpus tables only: tenant/app tables are left untouched. Run `npm run db:migrate` first.
-  psql("TRUNCATE mentions, authors, stories, brands, sources RESTART IDENTITY CASCADE");
-  for (const i of INDEXES) psql(`DROP INDEX IF EXISTS ${indexName(i)}`);
+  await client.connect();
+  await run("TRUNCATE mentions, authors, stories, brands, sources RESTART IDENTITY CASCADE");
+  for (const i of INDEXES) await run(`DROP INDEX IF EXISTS ${indexName(i)}`);
 
   await copy("sources", ["id", "type", "display_name", "reach_multiplier"], (w) => {
     for (const s of sources)
@@ -181,8 +157,9 @@ async function main() {
     await copyGz("mentions", manifest.mentionColumns, join(dir, "mentions", f));
     console.error(`loaded ${f}`);
   }
-  for (const i of INDEXES) psql(i);
-  psql("ANALYZE");
+  for (const i of INDEXES) await run(i);
+  await run("ANALYZE");
+  await client.end();
   console.error("done");
 }
 main().catch((e) => {
