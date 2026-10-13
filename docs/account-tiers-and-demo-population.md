@@ -80,6 +80,24 @@ above; they happen when someone uses the product.
 **Starter accounts reach their cap but do not yet show an upgrade decision.** Nothing makes them upgrade; that is
 behavior to add.
 
+## Left in on purpose: Starter owners are stuck in onboarding
+
+`seed:demo` does not mark owners as onboarded, so every owner starts at the first-run wizard. For the 50 `starter-limit`
+accounts that is a dead end: all three query slots are already used, step 4 ("Here's your first query") tries to create a
+fourth, the plan blocks it ("Your Starter plan includes 3 active queries"), and that step has no skip. Those users cannot
+reach the rest of the app. This is kept deliberately as behavior to analyse (a funnel drop at step 4 for accounts at their
+limit), and it points at a product question: should the wizard offer a way out when the plan limit is already reached?
+
+- **Growth and agency-low owners are not stuck.** They have free query slots, so they can finish the wizard by entering
+  any brand that exists in the corpus, for example "Juniper Roast".
+- **To clear the dead end for a demo:** run this in the database, or add `--onboard-owner` to the `seed:demo` script and
+  reseed.
+
+  ```
+  update users set onboarding_completed_at = now(), role_selected = coalesce(role_selected, 'agency')
+  where email like 'demo.%@agents.example.test';
+  ```
+
 ## 6. How much space it needs
 
 Total database after setup: **about 455 MB** (Neon free plan limit: 1 GB).
