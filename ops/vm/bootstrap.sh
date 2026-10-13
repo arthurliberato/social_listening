@@ -91,7 +91,7 @@ sudo systemctl enable ripplewise
 sudo systemctl restart ripplewise
 
 for _ in $(seq 1 60); do
-  if curl -fsS -o /dev/null http://localhost:3000/login; then
+  if curl -fs -o /dev/null http://localhost:3000/login; then
     echo "The app is up on http://localhost:3000 (this VM only)."
     echo "Next: bash ops/vm/seed.sh small    # then medium or large when you are ready"
     exit 0
