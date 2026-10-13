@@ -22,7 +22,7 @@
     "gen:grammar": "tsx scripts/gen-grammar.ts",
     "worker": "tsx jobs/worker.ts",
     "seed:agents": "tsx scripts/seed-agents.ts",
-    "seed:demo": "tsx scripts/seed-agents.ts --mix starter-limit:50,growth:25,agency-low:15 --run demo --out agents-demo.json",
+    "seed:demo": "tsx scripts/seed-agents.ts --mix starter-limit:50,growth:25,agency-low:15 --onboard-owner --run demo --out agents-demo.json",
     "demo:setup": "npm run db:migrate && npm run datagen:demo && npm run db:load:demo && npm run seed:demo",
     "loadtest": "tsx scripts/loadtest.ts",
     "agent:case": "tsx agents/run-case.ts",
