@@ -38,6 +38,37 @@ Output goes to `agents/out/<run>/<agent>/`: `ledger.jsonl`, `deliverable.md`, `e
 Set `PW_CHROMIUM_PATH` to use a preinstalled Chromium. For the Claude brain set `ANTHROPIC_API_KEY` (and optionally
 `AGENT_MODEL`); it has been tested against a mocked API only, not live.
 
+## Running many agents (batch)
+
+`npm run agents:batch` runs a case for many agents, a few at a time, and records every outcome. It is the first step from
+single runs towards a population; it does not yet schedule agents over simulated time or give them tier-specific
+behavior (see the orchestrator in `docs/simulation-plan.md`).
+
+```
+npm run agents:batch -- --manifest agents-demo.json --base https://your-site --provider scripted \
+    --profile growth,agency-low --per-account 1 --count 20 --concurrency 2
+```
+
+| Option | Meaning |
+|---|---|
+| `--profile` | Only accounts of these tier profiles (`starter-limit`, `growth`, `agency-low`); agents without a profile are left out |
+| `--role` / `--per-account` / `--count` | Role (default `analyst`), agents per account (default 1) and a cap on the batch |
+| `--agents id1,id2` | Run exactly these agents; every other filter is ignored |
+| `--seed` | Shuffle the selection repeatably before the cap, so a sample is not just the first accounts |
+| `--concurrency` / `--retries` / `--timeout-min` | Agents at once (default 1), retries after a failure (default 1) and a limit per attempt (default 10 minutes) |
+| `--provider` | `scripted` (free, deterministic) or `claude` (needs `ANTHROPIC_API_KEY`) |
+| `--redo` / `--dry-run` | Run agents that already finished / list what would run |
+
+It resumes: agents already finished in `<out>/<run>/batch-results.jsonl` are skipped, so an interrupted batch continues
+where it stopped. Each agent also writes its own ledger, report and evaluation as before. At the end it writes
+`batch-summary.csv` (one row per agent: status, attempts, seconds, precision, recall, F1, spam share, report error, tokens)
+and prints averages per tier profile with an estimate of Claude cost.
+
+Notes: a failed attempt's partial output is deleted before the retry; Starter-limit accounts have no analyst and their owner
+is held at onboarding, so the useful profiles for this case are `growth` and `agency-low`; the case needs the app's job
+worker, which runs inside the app server by default (run `npm run worker` separately for a deployment where that is not
+reliable, such as serverless hosting).
+
 ## Seeing the screen (vision mode)
 
 By default an agent reads page text and element attributes, like a screen reader. Two opt-in flags change that:

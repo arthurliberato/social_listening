@@ -26,6 +26,7 @@
     "demo:setup": "npm run db:migrate && npm run datagen:demo && npm run db:load:demo && npm run seed:demo",
     "loadtest": "tsx scripts/loadtest.ts",
     "agent:case": "tsx agents/run-case.ts",
+    "agents:batch": "tsx agents/batch.ts",
     "test:palette": "tsx scripts/validate-charts.ts",
     "screenshots": "playwright test --config playwright.screenshots.config.ts",
     "audit:warehouse": "tsx scripts/audit-warehouse.ts"
