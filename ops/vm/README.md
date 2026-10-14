@@ -83,7 +83,7 @@ Check RudderStack's plan for its monthly event allowance: a large simulation can
 | Restart it | `sudo systemctl restart ripplewise` |
 | Look at the database | `sudo -u postgres psql ripplewise` |
 | Update the code | `git pull && npm ci && npm run build && sudo systemctl restart ripplewise` |
-| Run a batch of agents | `npm run agents:batch -- --manifest agents-lab1.json --profile growth,agency-low --count 20 --concurrency 3` |
+| Run a batch of agents | `set -a; . /etc/ripplewise.env; set +a` (once per SSH session, so the agents reach the database), then `npm run agents:batch -- --manifest agents-lab1.json --profile growth,agency-low --count 20 --concurrency 3` |
 
 To look at the app in your own browser without opening it to the internet, install the Google Cloud CLI on your computer
 and run `gcloud compute ssh ripplewise-lab --zone <your zone> -- -L 3000:localhost:3000`, then open
