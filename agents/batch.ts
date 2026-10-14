@@ -1,7 +1,7 @@
 // Usage: npx tsx agents/batch.ts --manifest agents-demo.json --base https://your-site [--provider scripted|claude]
 //          [--case CS-001] [--profile growth,agency-low] [--role analyst] [--per-account 1] [--count 20]
 //          [--agents id1,id2] [--seed 1] [--concurrency 2] [--retries 1] [--timeout-min 10] [--redo]
-//          [--out agents/out] [--run demo] [--dry-run]
+//          [--out agents/out] [--run demo] [--dry-run] [--pace fast]   (onboarding case: human pacing unless fast)
 // Runs many agents through a case, a few at a time. Each run is resumable (finished agents are skipped unless
 // --redo), failures are retried, and every outcome lands in <out>/<run>/batch-results.jsonl and batch-summary.csv.
 import {
@@ -167,7 +167,14 @@ async function main() {
       try {
         if (kind === "onboarding") {
           const res = await withTimeout(
-            runOnboardingCase({ agent: a, caseId, runId, baseUrl: base, outDir: out }),
+            runOnboardingCase({
+              agent: a,
+              caseId,
+              runId,
+              baseUrl: base,
+              outDir: out,
+              pace: arg("pace") === "fast" ? "fast" : undefined,
+            }),
             timeoutMs,
           );
           row = {

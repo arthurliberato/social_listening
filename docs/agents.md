@@ -166,3 +166,37 @@ npm run agents:batch -- --manifest agents-lab1.json --case CO-001 --profile star
 The batch defaults to owners for this case. Output is the same `batch-results.jsonl` and `batch-summary.csv`, with
 `outcome` (completed, abandoned, already_onboarded) and `last_step` columns. It uses no language model and no hidden
 truth yet; patience is a fixed number per agent until the simulation's latent traits (`sim_truth`) drive it.
+
+## Human pacing (onboarding agents)
+
+The aim is behaviour a person would show, so that timing columns in the events make sense and, later, a recorded
+session replay looks like someone using the product. `agents/human.ts` drives the onboarding case (login included): the
+mouse moves along a curve that speeds up and slows down, lands off-centre on its target and sometimes overshoots;
+text is typed key by key with a varying rhythm and occasional wrong-key slips that are noticed, deleted and retyped; and
+the agent pauses to take in each screen before acting, with the mouse idling and drifting while it reads. After
+finishing setup it stays on the home screen for a while, which is also when the in-product survey can appear.
+
+Everything comes from the agent's `digital_fluency` and a seed derived from its id, so a given agent behaves the same on
+every run, and a fluent agent is faster and slips less than a hesitant one. The pace of each agent is written to its
+ledger (`step: pace`). `--pace fast` (batch and run-case) turns all of it off, for tests.
+
+These numbers are modelling assumptions, kept in one table (`HUMAN` in `agents/human.ts`):
+
+| Assumption | Hesitant (fluency 0) | Fluent (fluency 1) |
+|---|---|---|
+| Typing speed | 25 words per minute | 70 |
+| Reading speed | 180 words per minute | 300 (and only half the words are read: instructions are skimmed) |
+| Time to reach a target with the mouse | Fitts's law, 190 ms per bit of difficulty | 110 ms |
+| Wrong key per letter | 5 % | 0.5 % |
+| Overshoots a target | 15 % of moves | 3 % |
+| Decision time | 1.35 times the baseline of about 1.2 s | 0.8 times |
+| Distraction (long pause) | 4 % of decisions, mean 6 s, at most 20 s | same |
+
+What a human-paced owner looks like in the events: about 5 to 11 seconds per wizard step and about a minute for the whole
+setup (a fast run took under 3 seconds). Only the onboarding case uses this layer so far; the analyst and influencer cases
+still act at machine speed.
+
+**Session replay later:** a replay is recorded inside the browser by a script in the page. That is a separate decision
+from the events, which are sent by the server: it needs a replay script added to the app, with what it hides (text
+typed into fields, any personal data) decided first. Nothing for it is built. The `session_id` on every event is there so
+a replay can be matched to its events.

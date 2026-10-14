@@ -6,6 +6,8 @@ import { chromium, type Page } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { BRANDS } from "../../datagen/config";
+import { hashSeed } from "../../datagen/rng";
+import { Human, type Pace } from "../human";
 import { Ledger } from "../ledger";
 import { loadCase } from "../cases";
 import { sampleProfile } from "../profile";
@@ -41,6 +43,8 @@ export async function runOnboardingCase(o: {
   outDir: string;
   clock?: string;
   headed?: boolean;
+  /** human (default): realistic pacing, mouse movement and typing. fast: no delays, for tests. */
+  pace?: Pace;
 }): Promise<{ result: OnboardingResult; dir: string; ledger: Ledger["entries"] }> {
   const assignment = loadCase(o.caseId);
   const profile = sampleProfile(o.agent, { provider: "scripted", model: "scripted" });
@@ -79,14 +83,27 @@ export async function runOnboardingCase(o: {
       },
     ]);
     const page = await context.newPage();
+    const human = new Human(
+      page,
+      hashSeed(o.agent.agent_id, "human"),
+      profile.traits.digital_fluency,
+      o.pace ?? (process.env.AGENT_PACE === "fast" ? "fast" : "human"),
+    );
+    ledger.record({
+      step: "pace",
+      tool: "setup",
+      intent: `work at a ${human.pace} pace`,
+      observed: { ...human.params },
+    });
     const go = async (path: string) => {
       await page.goto(`${o.baseUrl}${path}`);
       await page.waitForLoadState("networkidle");
     };
     await go("/login");
-    await page.getByTestId("login-email").fill(o.agent.email);
-    await page.getByTestId("login-password").fill(o.agent.password);
-    await page.getByTestId("login-submit").click();
+    await human.think("glance");
+    await human.type(page.getByTestId("login-email"), o.agent.email);
+    await human.type(page.getByTestId("login-password"), o.agent.password);
+    await human.click(page.getByTestId("login-submit"));
     await page.waitForURL(/\/(onboarding|hub|w\/[^/]+\/)/, { timeout: 30_000 });
     await page.waitForLoadState("networkidle");
     ledger.record({
@@ -106,10 +123,11 @@ export async function runOnboardingCase(o: {
       result.outcome = "already_onboarded";
       ledger.record({ step: "onboarding", tool: "observe", intent: "setup is already done" });
     } else {
-      await walkWizard(page, h, patience, result, ledger);
+      await walkWizard(page, human, h, patience, result, ledger);
     }
     result.seconds = Math.round((Date.now() - started) / 1000);
     // Leaving the page is what makes the wizard report that the person left; give the report a moment to go out.
+    if (result.outcome === "completed") await human.think("read", 40); // a look around the home screen
     if (result.outcome === "abandoned") {
       await page.goto("about:blank");
       await page.waitForTimeout(1500);
@@ -124,6 +142,7 @@ export async function runOnboardingCase(o: {
 
 async function walkWizard(
   page: Page,
+  human: Human,
   h: number,
   patience: number,
   result: OnboardingResult,
@@ -131,16 +150,22 @@ async function walkWizard(
 ) {
   const step = async () =>
     Number(/Step (\d) of/.exec(await page.getByTestId("onboarding-progress").innerText())?.[1]);
-  const next = () => page.getByTestId("onboarding-next").click();
+  const next = () => human.click(page.getByTestId("onboarding-next"));
+  // Take in the screen before touching it.
+  const read = async () => human.think("read", await human.wordsOnScreen());
 
   // 1. Who they are.
-  await page.getByTestId(`role-${pick(ROLE_CHOICES, h)}`).check();
+  await read();
+  await human.check(page.getByTestId(`role-${pick(ROLE_CHOICES, h)}`));
   ledger.record({ step: "onboarding_role", tool: "click", intent: "say what my role is" });
   await next();
   // 2. What they want to do first (optional): one or two goals.
   await page.getByTestId("onboarding-progress").getByText("Step 2").waitFor();
-  for (const g of [pick(GOAL_CHOICES, h >> 3), pick(GOAL_CHOICES, h >> 5)])
-    await page.getByTestId(`goal-${g}`).check();
+  await read();
+  for (const g of [pick(GOAL_CHOICES, h >> 3), pick(GOAL_CHOICES, h >> 5)]) {
+    await human.check(page.getByTestId(`goal-${g}`));
+    await human.think("decide");
+  }
   ledger.record({
     step: "onboarding_goals",
     tool: "click",
@@ -150,7 +175,8 @@ async function walkWizard(
   // 3. Their brand, one that exists in the data.
   await page.getByTestId("onboarding-progress").getByText("Step 3").waitFor();
   const brand = pick(BRAND_NAMES, h >> 7);
-  await page.getByTestId("brand-name").fill(brand);
+  await read();
+  await human.type(page.getByTestId("brand-name"), brand);
   ledger.record({
     step: "onboarding_brand",
     tool: "type",
@@ -160,6 +186,7 @@ async function walkWizard(
   // 4. The first query. This is where a plan with no free query slot refuses.
   await page.getByTestId("onboarding-progress").getByText("Step 4").waitFor();
   await page.getByTestId("query-estimate").waitFor({ timeout: 30_000 });
+  await read(); // the generated query and the estimate
   for (;;) {
     await next();
     const moved = await Promise.race([
@@ -176,6 +203,7 @@ async function walkWizard(
     if (moved) break;
     result.blocked_attempts++;
     const message = (await page.getByTestId("onboarding-error").innerText()).slice(0, 200);
+    await human.think("read", message.split(/\s+/).length + 10); // read what it says, then decide what to do
     const escape = page.getByTestId("onboarding-escape");
     if (await escape.count()) {
       result.used_escape = true;
@@ -185,7 +213,7 @@ async function walkWizard(
         intent: "the plan won't let me, but there is a way past it",
         observed: { message },
       });
-      await escape.click();
+      await human.click(escape);
       await page.getByTestId("onboarding-progress").getByText("Step 5").waitFor();
       break;
     }
@@ -207,7 +235,8 @@ async function walkWizard(
     }
   }
   // 5. Invite teammates: skipped, the team already exists.
-  await page.getByTestId("onboarding-skip").click();
+  await read();
+  await human.click(page.getByTestId("onboarding-skip"));
   await page.waitForURL(/\/w\/[^/]+\/home/, { timeout: 30_000 });
   ledger.record({
     step: "onboarding_done",

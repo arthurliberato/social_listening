@@ -1,4 +1,4 @@
-// Usage: npx tsx agents/run-case.ts --manifest agents.json --agent acc001_u04 --case CS-001
+// Usage: npx tsx agents/run-case.ts --manifest agents.json --agent acc001_u04 --case CS-001 [--pace fast]
 //          [--provider scripted|claude] [--base http://localhost:3000] [--out agents/out] [--headed] [--shots] [--vision] [--clock ISO]
 // Runs one agent through one case on a running platform, writes the ledger, the deliverable and the evaluation.
 import { chromium } from "@playwright/test";
@@ -168,6 +168,7 @@ async function main() {
       outDir: arg("out", "agents/out")!,
       clock: arg("clock"),
       headed: process.argv.includes("--headed"),
+      pace: arg("pace") === "fast" ? "fast" : undefined,
     });
     console.log(JSON.stringify(out.result, null, 2));
     console.log(`\nledger and outcome in ${out.dir}`);
