@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { createUser, pool } from "./helpers";
 
-test.afterAll(() => pool.end());
-
 const eventsFor = async (email: string, name: string) =>
   (
     await pool.query(
