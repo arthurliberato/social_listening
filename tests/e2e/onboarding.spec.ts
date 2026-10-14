@@ -206,3 +206,49 @@ test("invites respect the trial seat limit and can be accepted", async ({ page, 
   );
   expect(m.rows[0].n).toBe(1);
 });
+
+test("a Starter owner with every query slot used is blocked at step 4, and the funnel records it", async ({
+  page,
+  context,
+}) => {
+  const email = `e2e-limit-${Date.now()}@example.test`;
+  await signUp(page, email);
+  await verifyViaInbox(page);
+  await page.getByTestId("role-analyst").check();
+  await page.getByTestId("onboarding-next").click();
+  await page.getByTestId("onboarding-skip").click();
+  await page.getByTestId("brand-name").fill("Juniper Roast");
+
+  // The account is on Starter and already uses its three queries (what a seeded Starter account looks like).
+  await pool.query(
+    `UPDATE accounts SET plan_tier = 'starter' WHERE id IN (SELECT m.account_id FROM memberships m JOIN users u ON u.id = m.user_id WHERE lower(u.email) = $1)`,
+    [email],
+  );
+  await pool.query(
+    `INSERT INTO queries (workspace_id, name, boolean_text, status, created_by)
+     SELECT m.workspace_id, 'Slot ' || n, 'coffee', 'live', u.id
+     FROM users u JOIN memberships m ON m.user_id = u.id, generate_series(1, 3) n WHERE lower(u.email) = $1`,
+    [email],
+  );
+  await page.getByTestId("onboarding-next").click();
+  await expect(page.getByTestId("query-estimate")).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId("onboarding-next").click();
+  await expect(page.getByTestId("onboarding-error")).toContainText("3 active queries");
+  await expect(page.getByTestId("onboarding-skip")).toHaveCount(0); // no way past it: that is the dead end
+
+  const did = (await context.cookies()).find((c) => c.name === "rw_did")?.value ?? "";
+  await expect
+    .poll(async () => (await eventsFor(email, did)).includes("Onboarding Step Blocked"))
+    .toBe(true);
+  const { rows } = await pool.query(
+    `SELECT e.props FROM analytics_events e JOIN users u ON u.id = e.user_id
+     WHERE lower(u.email) = $1 AND e.name = 'Onboarding Step Blocked' ORDER BY e.id DESC LIMIT 1`,
+    [email],
+  );
+  expect(rows[0].props).toMatchObject({
+    step_name: "query",
+    step_index: 4,
+    block_reason: "plan_limit",
+    plan_tier: "starter",
+  });
+});

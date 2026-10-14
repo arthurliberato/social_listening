@@ -13,7 +13,9 @@ import { brandQuery } from "@/lib/query/generate";
 import { estimateMentions } from "@/lib/query/estimate";
 import { simNow } from "@/lib/simclock";
 
-export type StepResult = { ok: true } | { ok: false; error: string };
+/** `blocked` says the plan, not the input, stopped the step (the wizard reports it as a dead end if nothing lets the person past it). */
+export type StepResult =
+  { ok: true } | { ok: false; error: string; blocked?: "plan_limit" | "seat_limit" };
 
 const Roles = ["analyst", "social", "comms", "agency", "exec", "admin"] as const;
 const Goals = ["brand_monitoring", "competitor", "campaign", "crisis", "research"] as const;
@@ -97,7 +99,7 @@ export async function saveFirstQuery(): Promise<StepResult & { queryId?: string 
     workspaces: 0,
     alerts: 0,
   });
-  if (!gate.ok) return { ok: false, error: gate.reason };
+  if (!gate.ok) return { ok: false, error: gate.reason, blocked: "plan_limit" };
 
   const booleanText = brandQuery({ name: brand.brandName, handles: brand.handles });
   const [q] = await db
@@ -140,7 +142,12 @@ export async function sendInvites(rawEmails: string[]): Promise<StepResult & { s
   if (bad) return { ok: false, error: "One of those email addresses looks invalid.", sent };
   const blocked = results.find((r) => r.status === "seat_limit");
   if (blocked)
-    return { ok: false, error: blocked.reason ?? "You've reached your seat limit.", sent };
+    return {
+      ok: false,
+      error: blocked.reason ?? "You've reached your seat limit.",
+      sent,
+      blocked: "seat_limit",
+    };
   void upgradeTo;
   await saveData(user.id, {}, 5);
   if (sent)

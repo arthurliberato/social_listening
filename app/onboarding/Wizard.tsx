@@ -72,6 +72,25 @@ export function Wizard({
   const startedAt = useRef(Date.now());
   const stepStarted = useRef(Date.now());
   const name = STEPS[step]!;
+  const finished = useRef(false);
+  const exited = useRef(false);
+  const where = useRef({ name, index: step + 1 });
+  where.current = { name, index: step + 1 };
+
+  // Leaving before the last step is the drop-off the funnel needs; report it once, as the page goes away.
+  useEffect(() => {
+    const onHide = () => {
+      if (finished.current || exited.current) return;
+      exited.current = true;
+      track("Onboarding Exited", {
+        step_name: where.current.name,
+        step_index: where.current.index,
+        duration_ms: Date.now() - startedAt.current,
+      });
+    };
+    window.addEventListener("pagehide", onHide);
+    return () => window.removeEventListener("pagehide", onHide);
+  }, []);
 
   useEffect(() => {
     stepStarted.current = Date.now();
@@ -85,6 +104,11 @@ export function Wizard({
   function done(r: StepResult, extra: Record<string, number> = {}) {
     if (!r.ok) {
       setError(r.error);
+      track("Onboarding Step Blocked", {
+        step_name: name,
+        step_index: step + 1,
+        block_reason: r.blocked ?? "validation",
+      });
       return false;
     }
     setError("");
@@ -122,6 +146,7 @@ export function Wizard({
         if (list.length) {
           if (!done(await sendInvites(list))) return;
         } else track("Onboarding Skipped", { step_name: name });
+        finished.current = true;
         await completeOnboarding(Date.now() - startedAt.current);
         return;
       }
@@ -131,8 +156,10 @@ export function Wizard({
 
   function skip() {
     track("Onboarding Skipped", { step_name: name });
-    if (name === "invite") start(() => completeOnboarding(Date.now() - startedAt.current));
-    else setStep((s) => s + 1);
+    if (name === "invite") {
+      finished.current = true;
+      start(() => completeOnboarding(Date.now() - startedAt.current));
+    } else setStep((s) => s + 1);
   }
 
   return (

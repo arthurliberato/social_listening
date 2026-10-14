@@ -156,6 +156,34 @@ export const EVENTS = {
     "ga4Name": null,
     "product": "platform"
   },
+  "Onboarding Step Blocked": {
+    "side": "client",
+    "properties": [
+      "step_name",
+      "step_index",
+      "block_reason"
+    ],
+    "destinations": [
+      "rudderstack",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "platform"
+  },
+  "Onboarding Exited": {
+    "side": "client",
+    "properties": [
+      "step_name",
+      "step_index",
+      "duration_ms"
+    ],
+    "destinations": [
+      "rudderstack",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "platform"
+  },
   "Onboarding Completed": {
     "side": "client",
     "properties": [

@@ -207,6 +207,38 @@
   },
   {
    "area": "Onboarding",
+   "name": "Onboarding Step Blocked",
+   "side": "client",
+   "properties": [
+    "step_name",
+    "step_index",
+    "block_reason"
+   ],
+   "description": "A step refused to continue. block_reason: validation (fix your input), plan_limit or seat_limit (the plan does not allow it). A step with no way past a plan_limit is a dead end.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "platform"
+  },
+  {
+   "area": "Onboarding",
+   "name": "Onboarding Exited",
+   "side": "client",
+   "properties": [
+    "step_name",
+    "step_index",
+    "duration_ms"
+   ],
+   "description": "The person left the wizard (closed or navigated away) before finishing it. Sent once, from the page's pagehide.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "platform"
+  },
+  {
+   "area": "Onboarding",
    "name": "Onboarding Completed",
    "side": "client",
    "properties": [
