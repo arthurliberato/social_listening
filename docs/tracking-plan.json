@@ -2260,6 +2260,72 @@
     "warehouse"
    ],
    "product": "influencers"
+  },
+  {
+   "area": "Surveys",
+   "name": "Survey Eligibility Evaluated",
+   "side": "server",
+   "properties": [
+    "survey_id",
+    "eligible",
+    "reason"
+   ],
+   "description": "Once per visit and survey, when the person has reached the point where the survey could apply. reason: eligible, already_asked, cooldown, another_survey_recent, sampled_out. Separates 'never asked' from 'asked and did not answer'.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "platform"
+  },
+  {
+   "area": "Surveys",
+   "name": "Survey Shown",
+   "side": "server",
+   "properties": [
+    "survey_id",
+    "trigger"
+   ],
+   "description": "The survey card appeared. Once per person and survey.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "platform"
+  },
+  {
+   "area": "Surveys",
+   "name": "Survey Item Answered",
+   "side": "server",
+   "properties": [
+    "survey_id",
+    "item_id",
+    "item_index",
+    "response",
+    "scale_min",
+    "scale_max",
+    "seconds_to_answer"
+   ],
+   "description": "One event per question when a survey is submitted, so one row per answer in the warehouse. seconds_to_answer is the time from Survey Shown to submit.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "platform"
+  },
+  {
+   "area": "Surveys",
+   "name": "Survey Dismissed",
+   "side": "server",
+   "properties": [
+    "survey_id",
+    "seconds_open"
+   ],
+   "description": "The person chose Not now.",
+   "destinations": [
+    "rudderstack",
+    "warehouse"
+   ],
+   "product": "platform"
   }
  ],
  "destinations": {

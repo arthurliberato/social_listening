@@ -1935,6 +1935,64 @@ export const EVENTS = {
     ],
     "ga4Name": null,
     "product": "influencers"
+  },
+  "Survey Eligibility Evaluated": {
+    "side": "server",
+    "properties": [
+      "survey_id",
+      "eligible",
+      "reason"
+    ],
+    "destinations": [
+      "rudderstack",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "platform"
+  },
+  "Survey Shown": {
+    "side": "server",
+    "properties": [
+      "survey_id",
+      "trigger"
+    ],
+    "destinations": [
+      "rudderstack",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "platform"
+  },
+  "Survey Item Answered": {
+    "side": "server",
+    "properties": [
+      "survey_id",
+      "item_id",
+      "item_index",
+      "response",
+      "scale_min",
+      "scale_max",
+      "seconds_to_answer"
+    ],
+    "destinations": [
+      "rudderstack",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "platform"
+  },
+  "Survey Dismissed": {
+    "side": "server",
+    "properties": [
+      "survey_id",
+      "seconds_open"
+    ],
+    "destinations": [
+      "rudderstack",
+      "warehouse"
+    ],
+    "ga4Name": null,
+    "product": "platform"
   }
 } as const;
 

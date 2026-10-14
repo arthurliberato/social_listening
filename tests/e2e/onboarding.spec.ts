@@ -235,6 +235,7 @@ test("a Starter owner with every query slot used is blocked at step 4, and the f
   await page.getByTestId("onboarding-next").click();
   await expect(page.getByTestId("onboarding-error")).toContainText("3 active queries");
   await expect(page.getByTestId("onboarding-skip")).toHaveCount(0); // no way past it: that is the dead end
+  await expect(page.getByTestId("onboarding-escape")).toHaveCount(0); // the escape arm is off until an experiment starts
 
   const did = (await context.cookies()).find((c) => c.name === "rw_did")?.value ?? "";
   await expect
@@ -251,4 +252,13 @@ test("a Starter owner with every query slot used is blocked at step 4, and the f
     block_reason: "plan_limit",
     plan_tier: "starter",
   });
+  // The limit being hit counts as exposure to the escape-hatch flag, for the arm the account is in.
+  const exposed = await pool.query(
+    `SELECT e.props FROM analytics_events e JOIN users u ON u.id = e.user_id
+     WHERE lower(u.email) = $1 AND e.name = 'Experiment Exposed'`,
+    [email],
+  );
+  expect(exposed.rows.map((r) => r.props)).toEqual([
+    expect.objectContaining({ flag_key: "wizard_escape_hatch", variant: "control" }),
+  ]);
 });

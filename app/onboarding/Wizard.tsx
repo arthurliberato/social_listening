@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
+import { ExperimentExposure } from "@/components/ExperimentExposure";
 import { track } from "@/lib/analytics/client";
 import {
   completeOnboarding,
@@ -47,9 +48,12 @@ const GOALS = [
 ];
 
 export function Wizard({
+  escapeHatch,
   initialStep,
   initial,
 }: {
+  /** Which arm of the `wizard_escape_hatch` flag this account is in. */
+  escapeHatch: string;
   initialStep: number;
   initial: {
     role: string | null;
@@ -68,6 +72,7 @@ export function Wizard({
   const [emails, setEmails] = useState("");
   const [preview, setPreview] = useState<{ booleanText: string; estimate: number } | null>(null);
   const [error, setError] = useState("");
+  const [limitBlocked, setLimitBlocked] = useState(false);
   const [pending, start] = useTransition();
   const startedAt = useRef(Date.now());
   const stepStarted = useRef(Date.now());
@@ -94,6 +99,7 @@ export function Wizard({
 
   useEffect(() => {
     stepStarted.current = Date.now();
+    setLimitBlocked(false);
     track("Onboarding Step Viewed", { step_name: name, step_index: step + 1 });
     if (name === "query") {
       setPreview(null);
@@ -104,6 +110,7 @@ export function Wizard({
   function done(r: StepResult, extra: Record<string, number> = {}) {
     if (!r.ok) {
       setError(r.error);
+      if (r.blocked === "plan_limit") setLimitBlocked(true);
       track("Onboarding Step Blocked", {
         step_name: name,
         step_index: step + 1,
@@ -357,6 +364,24 @@ export function Wizard({
           <p role="alert" className="text-sm text-[var(--danger)]" data-testid="onboarding-error">
             {error}
           </p>
+        )}
+        {limitBlocked && (
+          <>
+            {/* Exposure is counted for both arms at the moment the limit is hit, so the arms stay comparable. */}
+            <ExperimentExposure flagKey="wizard_escape_hatch" variant={escapeHatch} />
+            {escapeHatch === "escape" && (
+              <div>
+                <Button
+                  variant="secondary"
+                  onClick={skip}
+                  disabled={pending}
+                  data-testid="onboarding-escape"
+                >
+                  Continue without a new query
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </main>
 

@@ -13,6 +13,7 @@ import { accounts, alertEvents, alertRules, db } from "@/db/client";
 import { BillingBanner } from "@/components/shell/BillingBanner";
 import { simNow } from "@/lib/simclock";
 import { productOfPath } from "@/lib/products";
+import { SurveyPrompt } from "@/components/surveys/SurveyPrompt";
 
 export default async function WorkspaceLayout({
   children,
@@ -105,6 +106,7 @@ export default async function WorkspaceLayout({
             {children}
           </main>
         </div>
+        {!isClient && <SurveyPrompt ws={slug} />}
       </div>
     </ToastProvider>
   );

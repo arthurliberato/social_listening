@@ -293,6 +293,28 @@ export const analyticsEvents = pgTable(
   ],
 );
 
+/**
+ * What each person has been asked in the in-product surveys (lib/surveys). One row per person and survey. It exists so
+ * cooldowns hold and so a visit that was asked and did not answer can be told apart from a visit that was never asked.
+ */
+export const surveyState = pgTable(
+  "survey_state",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    surveyId: text("survey_id").notNull(),
+    shownAt: ts("shown_at"),
+    answeredAt: ts("answered_at"),
+    dismissedAt: ts("dismissed_at"),
+    /** The visit the survey is open in; it stays on screen until answered or dismissed, or the visit ends. */
+    openSession: text("open_session"),
+    /** The last visit whose eligibility was logged, so each visit logs it once. */
+    lastEvalSession: text("last_eval_session"),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.surveyId] })],
+);
+
 /** Pending teammate invitations (accepted at sign-up via /signup?invite=<token>). */
 export const invitations = pgTable(
   "invitations",
