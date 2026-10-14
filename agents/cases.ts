@@ -12,11 +12,11 @@ export const loadTruth = (id: string): CaseTruth =>
   JSON.parse(readFileSync(join(dir, `${id}.truth.json`), "utf8"));
 
 // Influencer cases carry `kind: "influencers"` and have their own shapes.
-export const caseKind = (id: string): "listening" | "influencers" =>
-  (JSON.parse(readFileSync(join(dir, `${id}.json`), "utf8")) as { kind?: string }).kind ===
-  "influencers"
-    ? "influencers"
-    : "listening";
+export const caseKind = (id: string): "listening" | "influencers" | "onboarding" => {
+  const kind = (JSON.parse(readFileSync(join(dir, `${id}.json`), "utf8")) as { kind?: string })
+    .kind;
+  return kind === "influencers" || kind === "onboarding" ? kind : "listening";
+};
 export const loadInfluencerCase = (id: string): InfluencerCase =>
   JSON.parse(readFileSync(join(dir, `${id}.json`), "utf8"));
 export const loadInfluencerTruth = (id: string): InfluencerTruth =>

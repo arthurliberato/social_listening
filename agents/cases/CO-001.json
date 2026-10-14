@@ -1,0 +1,7 @@
+{
+  "id": "CO-001",
+  "kind": "onboarding",
+  "requester_role": "division_leader",
+  "brief": "You have just been given a Ripplewise login for your team's account. Sign in and set the account up the way the first-run screens ask: say who you are, pick what you want to do first, name the brand you care about and get its first query running. Finish setup if you can; if you cannot, stop when you would stop.",
+  "deliverable": "none"
+}

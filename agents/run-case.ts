@@ -10,6 +10,7 @@ import { ClaudeBrain, type CallRecord } from "./brain/claude";
 import { ScriptedBrain } from "./brain/scripted";
 import { caseKind, loadCase, loadTruth } from "./cases";
 import { runInfluencerCase } from "./influencer/run";
+import { runOnboardingCase } from "./onboarding/run";
 import { evaluate } from "./evaluate";
 import { Ledger } from "./ledger";
 import { sampleProfile } from "./profile";
@@ -156,6 +157,20 @@ async function main() {
     });
     console.log(JSON.stringify(out.evaluation, null, 2));
     console.log(`\nledger, campaign plan and evaluation in ${out.dir}`);
+    return;
+  }
+  if (caseKind(caseId) === "onboarding") {
+    const out = await runOnboardingCase({
+      agent,
+      caseId,
+      runId: arg("run", manifest.run)!,
+      baseUrl: arg("base", "http://localhost:3000")!,
+      outDir: arg("out", "agents/out")!,
+      clock: arg("clock"),
+      headed: process.argv.includes("--headed"),
+    });
+    console.log(JSON.stringify(out.result, null, 2));
+    console.log(`\nledger and outcome in ${out.dir}`);
     return;
   }
   const out = await runCase({

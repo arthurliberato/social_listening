@@ -145,3 +145,24 @@ countering, submitting content) is not played by an agent; no comparison or save
 starts the router's request and then cancels it, so the page does not change, while loading the link's address works in
 about 100 ms. Other links (for example *Lists*) navigate normally, and nothing is logged on the client or the server. The
 agent opens the link's address instead, as the browser tests already do. The cause is not known.
+
+## Onboarding agents (case `CO-001`)
+
+A newly given login, a first-run wizard. The agent signs in as the account's **owner** (`division_leader`; seeded owners
+have not finished setup), then walks the five wizard steps through the real screens: role, goals, a brand that exists in
+the data, the first query, and the invite step (skipped, the team already exists).
+
+What happens is decided by the product, not by the agent. An owner whose plan still has a free query slot finishes and
+lands on Home. An owner whose plan has none (every seeded Starter account) is refused at step 4, presses the button
+again a few times (1 to 3, fixed per agent) and leaves. That produces the real funnel in the events: `Onboarding Step
+Viewed`, `Step Completed`, `Step Blocked` (with `block_reason: plan_limit`), `Experiment Exposed` for
+`wizard_escape_hatch` and `Onboarding Exited`. If the `wizard_escape_hatch` experiment is launched
+(`FLAG_WEIGHTS`, see `docs/surveys-and-experiments.md`), agents in the escape arm take the way out.
+
+```
+npm run agents:batch -- --manifest agents-lab1.json --case CO-001 --profile starter-limit,growth,agency-low
+```
+
+The batch defaults to owners for this case. Output is the same `batch-results.jsonl` and `batch-summary.csv`, with
+`outcome` (completed, abandoned, already_onboarded) and `last_step` columns. It uses no language model and no hidden
+truth yet; patience is a fixed number per agent until the simulation's latent traits (`sim_truth`) drive it.

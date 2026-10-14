@@ -16,6 +16,7 @@ import { join } from "node:path";
 import { pool } from "@/db/client";
 import { selectAgents, type Selection } from "./select";
 import { caseKind } from "./cases";
+import { runOnboardingCase } from "./onboarding/run";
 import { runCase, type ManifestAgent } from "./run-case";
 
 type Agent = ManifestAgent & { account_profile?: string };
@@ -32,6 +33,10 @@ interface Row {
   spam_share: number | null;
   total_error_pct: number | null;
   rubric_pass: boolean | null;
+  /** Onboarding case only: completed, abandoned or already_onboarded. */
+  outcome: string;
+  /** Onboarding case only: the wizard step the agent finished or gave up on. */
+  last_step: number | null;
   llm_calls: number;
   input_tokens: number;
   output_tokens: number;
@@ -85,8 +90,11 @@ async function main() {
     agents: Agent[];
   };
   const caseId = arg("case", "CS-001")!;
-  if (caseKind(caseId) !== "listening")
-    throw new Error(`batch runs listening cases (CS-*); ${caseId} is not one`);
+  const kind = caseKind(caseId);
+  if (kind === "influencers")
+    throw new Error(
+      `batch runs listening (CS-*) and onboarding (CO-*) cases; ${caseId} is neither`,
+    );
   const provider = arg("provider", "scripted") as "scripted" | "claude";
   const base = arg("base", "http://localhost:3000")!;
   const out = arg("out", "agents/out")!;
@@ -98,7 +106,8 @@ async function main() {
 
   const selection: Selection = {
     agents: list(arg("agents")),
-    roles: list(arg("role")),
+    // The only role with a case: analysts for listening cases, the account owner for onboarding.
+    roles: list(arg("role")) ?? [kind === "onboarding" ? "division_leader" : "analyst"],
     profiles: list(arg("profile")),
     perAccount: num(arg("per-account")),
     seed: num(arg("seed")),
@@ -125,6 +134,26 @@ async function main() {
     return;
   }
 
+  const blank = (a: Agent, status: Row["status"], attempts: number, started: number): Row => ({
+    agent_id: a.agent_id,
+    account_profile: a.account_profile ?? "",
+    seniority: a.seniority,
+    status,
+    attempts,
+    seconds: Math.round((Date.now() - started) / 1000),
+    precision: null,
+    recall: null,
+    f1: null,
+    spam_share: null,
+    total_error_pct: null,
+    rubric_pass: null,
+    outcome: "",
+    last_step: null,
+    llm_calls: 0,
+    input_tokens: 0,
+    output_tokens: 0,
+    error: "",
+  });
   let finished = 0;
   const queue = [...todo];
   async function runOne(a: Agent) {
@@ -136,6 +165,18 @@ async function main() {
       attempts++;
       rmSync(join(dir, a.agent_id), { recursive: true, force: true }); // never mix a failed attempt into the next
       try {
+        if (kind === "onboarding") {
+          const res = await withTimeout(
+            runOnboardingCase({ agent: a, caseId, runId, baseUrl: base, outDir: out }),
+            timeoutMs,
+          );
+          row = {
+            ...blank(a, "ok", attempts, started),
+            outcome: res.result.outcome,
+            last_step: res.result.last_step,
+          };
+          continue;
+        }
         const res = await withTimeout(
           runCase({ agent: a, caseId, runId, baseUrl: base, outDir: out, provider }),
           timeoutMs,
@@ -160,6 +201,8 @@ async function main() {
           spam_share: ev.query.spam_share,
           total_error_pct: ev.deliverable.total_error_pct,
           rubric_pass: ev.deliverable.rubric_pass,
+          outcome: "",
+          last_step: null,
           llm_calls: calls.length,
           input_tokens: calls.reduce((s, c) => s + (c.observed?.input_tokens ?? 0), 0),
           output_tokens: calls.reduce((s, c) => s + (c.observed?.output_tokens ?? 0), 0),
@@ -169,32 +212,17 @@ async function main() {
         error = (e as Error).message.split("\n")[0]!.slice(0, 200);
       }
     }
-    row ??= {
-      agent_id: a.agent_id,
-      account_profile: a.account_profile ?? "",
-      seniority: a.seniority,
-      status: "failed",
-      attempts,
-      seconds: Math.round((Date.now() - started) / 1000),
-      precision: null,
-      recall: null,
-      f1: null,
-      spam_share: null,
-      total_error_pct: null,
-      rubric_pass: null,
-      llm_calls: 0,
-      input_tokens: 0,
-      output_tokens: 0,
-      error,
-    };
+    row ??= { ...blank(a, "failed", attempts, started), error };
     rows.set(a.agent_id, row);
     appendFileSync(resultsFile, JSON.stringify(row) + "\n");
     finished++;
     console.log(
       `[${finished}/${todo.length}] ${a.agent_id} ${row.account_profile || "-"} ${row.status}` +
-        (row.status === "ok"
-          ? `  precision ${row.precision} recall ${row.recall}  ${row.seconds}s  tokens ${row.input_tokens}/${row.output_tokens}`
-          : `  ${row.error} (${row.attempts} attempt${row.attempts === 1 ? "" : "s"})`),
+        (row.status === "ok" && row.outcome
+          ? `  ${row.outcome}${row.outcome === "abandoned" ? ` at step ${row.last_step}` : ""}  ${row.seconds}s`
+          : row.status === "ok"
+            ? `  precision ${row.precision} recall ${row.recall}  ${row.seconds}s  tokens ${row.input_tokens}/${row.output_tokens}`
+            : `  ${row.error} (${row.attempts} attempt${row.attempts === 1 ? "" : "s"})`),
     );
   }
   async function lane() {
@@ -213,6 +241,13 @@ async function main() {
   for (const p of [...new Set(all.map((r) => r.account_profile || "-"))].sort()) {
     const g = all.filter((r) => (r.account_profile || "-") === p);
     const ok = g.filter((r) => r.status === "ok");
+    if (kind === "onboarding") {
+      const done = ok.filter((r) => r.outcome === "completed").length;
+      console.log(
+        `  ${p.padEnd(14)} ${ok.length}/${g.length} ran  completed setup ${done}  abandoned ${ok.filter((r) => r.outcome === "abandoned").length}`,
+      );
+      continue;
+    }
     console.log(
       `  ${p.padEnd(14)} ${ok.length}/${g.length} ok  precision ${fmt(mean(ok.map((r) => r.precision)))}  ` +
         `recall ${fmt(mean(ok.map((r) => r.recall)))}  f1 ${fmt(mean(ok.map((r) => r.f1)))}`,
