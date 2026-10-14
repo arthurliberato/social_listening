@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { accounts, db, memberships, users } from "@/db/client";
 import { simNow } from "@/lib/simclock";
+import { currentSessionId } from "./session";
 
 export interface AnalyticsContext {
   userId?: string | null;
@@ -24,6 +25,8 @@ export interface GlobalProps {
   app_version: string;
   /** member: a signed-in person; creator: someone on an invitation page; anonymous: neither. */
   actor_type: "member" | "creator" | "anonymous" | "system";
+  /** The visit this event belongs to (30 idle minutes end it). Null for jobs and other events with no browser. */
+  session_id: string | null;
 }
 
 const APP_VERSION = process.env.APP_VERSION ?? "0.1.0";
@@ -75,6 +78,7 @@ export async function globalProps(ctx: AnalyticsContext): Promise<{
       is_synthetic: user?.isSynthetic ?? true,
       agent_run_id: user?.agentRunId ?? null,
       app_version: APP_VERSION,
+      session_id: ctx.system ? null : currentSessionId(),
       actor_type: ctx.system
         ? "system"
         : ctx.userId

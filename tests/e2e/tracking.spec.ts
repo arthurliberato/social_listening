@@ -261,3 +261,36 @@ for (const theme of ["light", "dark"] as const) {
     await ctx.close();
   });
 }
+
+test("events from one visit share a session id, and a new browser gets a new one", async ({
+  page,
+  browser,
+}) => {
+  const { slug, email } = await createUser(page, { prefix: "sess" });
+  await page.goto(`/w/${slug}/mentions`);
+  await page.goto(`/w/${slug}/dashboards`);
+  const sessionsOf = async () =>
+    (
+      await pool.query(
+        `SELECT DISTINCT props->>'session_id' AS sid FROM analytics_events
+         WHERE user_id = (SELECT id FROM users WHERE lower(email) = $1) AND props->>'route' LIKE $2`,
+        [email.toLowerCase(), `/w/${slug}/%`],
+      )
+    ).rows.map((r) => r.sid as string | null);
+  const first = await sessionsOf();
+  expect(first).toHaveLength(1);
+  expect(first[0]).toMatch(/^[0-9a-f-]{36}$/);
+
+  // Another browser has its own cookie jar, so its visit is a different session.
+  const ctx = await browser.newContext();
+  const other = await ctx.newPage();
+  await other.goto("/login");
+  await other.getByTestId("login-email").fill(email);
+  await other.getByTestId("login-password").fill("correct horse battery staple");
+  await other.getByTestId("login-submit").click();
+  await other.waitForURL(/\/w\/|\/hub|\/onboarding/);
+  await other.goto(`/w/${slug}/mentions`);
+  // Browser events arrive by beacon, a moment after the page loads.
+  await expect.poll(async () => (await sessionsOf()).length).toBeGreaterThanOrEqual(2);
+  await ctx.close();
+});

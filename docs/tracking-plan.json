@@ -15,7 +15,8 @@
   "route",
   "ui_theme",
   "product",
-  "actor_type"
+  "actor_type",
+  "session_id"
  ],
  "groups": [
   "account",

@@ -44,6 +44,7 @@ export async function trackServer<N extends EventName>(
       // Global properties are set last: an event's own properties can never overwrite where it happened.
       product: productFor(name, { route: extras.route, props: props as Record<string, unknown> }),
       actor_type: g.props.actor_type,
+      session_id: g.props.session_id,
     };
     // The agent's own clock when it has one (cookie `rw_sim`, see lib/simclock.ts), else the app's simulated now.
     const at = simNow();
