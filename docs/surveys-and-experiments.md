@@ -25,7 +25,7 @@ with a reason: eligible, already_asked, cooldown, another_survey_recent, sampled
 `Survey Item Answered` (one event per question, so one warehouse row per answer) and `Survey Dismissed`. The eligibility
 event is what lets analysis separate "never asked" from "asked and did not answer".
 
-Code: `lib/surveys/` (definitions, eligibility rules, service), `components/surveys/SurveyPrompt.tsx`, table `survey_state`.
+Code: `lib/surveys/` (definitions, eligibility rules, service), `app/api/survey/route.ts` (a plain route, not a server action, so a survey check never re-renders the page), `components/surveys/SurveyPrompt.tsx`, table `survey_state`.
 
 ## Experiment flags
 

@@ -2,13 +2,21 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { answerSurvey, dismissSurveyAction, getSurvey } from "@/lib/surveys/actions";
 import type { SurveyView } from "@/lib/surveys/service";
 
 /**
  * A short in-product question, shown bottom-right. It does not take focus or cover the page, can always be dismissed
  * with "Not now", and says nothing if it cannot load. It stays until answered or dismissed for the rest of the visit.
  */
+const post = async (body: unknown): Promise<{ ok: boolean; error?: string }> => {
+  const r = await fetch("/api/survey", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return r.json().catch(() => ({ ok: false, error: "Something went wrong. Try again." }));
+};
+
 export function SurveyPrompt({ ws }: { ws: string }) {
   const [survey, setSurvey] = useState<SurveyView | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -18,8 +26,9 @@ export function SurveyPrompt({ ws }: { ws: string }) {
 
   useEffect(() => {
     let alive = true;
-    void getSurvey(ws)
-      .then((s) => alive && setSurvey(s))
+    void fetch(`/api/survey?ws=${encodeURIComponent(ws)}`)
+      .then((r) => (r.ok ? r.json() : { survey: null }))
+      .then((d: { survey: SurveyView | null }) => alive && setSurvey(d.survey))
       .catch(() => undefined);
     return () => {
       alive = false;
@@ -44,8 +53,8 @@ export function SurveyPrompt({ ws }: { ws: string }) {
 
   function submit() {
     start(async () => {
-      const r = await answerSurvey(ws, survey!.id, answers);
-      if (!r.ok) return setError(r.error);
+      const r = await post({ action: "answer", ws, survey_id: survey!.id, answers });
+      if (!r.ok) return setError(r.error ?? "Something went wrong. Try again.");
       setThanks(true);
       setSurvey(null);
       setTimeout(() => setThanks(false), 4000);
@@ -54,7 +63,7 @@ export function SurveyPrompt({ ws }: { ws: string }) {
 
   function dismiss() {
     start(async () => {
-      await dismissSurveyAction(ws, survey!.id);
+      await post({ action: "dismiss", ws, survey_id: survey!.id });
       setSurvey(null);
     });
   }
