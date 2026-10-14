@@ -277,6 +277,8 @@ test("events from one visit share a session id, and a new browser gets a new one
         [email.toLowerCase(), `/w/${slug}/%`],
       )
     ).rows.map((r) => r.sid as string | null);
+  // Browser events arrive by beacon, a moment after the page loads.
+  await expect.poll(async () => (await sessionsOf()).length).toBeGreaterThan(0);
   const first = await sessionsOf();
   expect(first).toHaveLength(1);
   expect(first[0]).toMatch(/^[0-9a-f-]{36}$/);
@@ -290,7 +292,6 @@ test("events from one visit share a session id, and a new browser gets a new one
   await other.getByTestId("login-submit").click();
   await other.waitForURL(/\/w\/|\/hub|\/onboarding/);
   await other.goto(`/w/${slug}/mentions`);
-  // Browser events arrive by beacon, a moment after the page loads.
   await expect.poll(async () => (await sessionsOf()).length).toBeGreaterThanOrEqual(2);
   await ctx.close();
 });

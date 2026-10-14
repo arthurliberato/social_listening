@@ -1,6 +1,6 @@
 import { workUnitAsyncStorage } from "next/dist/server/app-render/work-unit-async-storage.external";
 
-import { SESSION_COOKIE, SESSION_HEADER } from "./session-constants";
+import { SESSION_COOKIE, SESSION_HEADER, sessionIdOf } from "./session-constants";
 
 const ID = /^[0-9a-f-]{36}$/;
 
@@ -13,8 +13,9 @@ export function currentSessionId(): string | null {
   try {
     const store = workUnitAsyncStorage.getStore();
     if (store?.type !== "request") return null;
-    const v = store.headers.get(SESSION_HEADER) ?? store.cookies.get(SESSION_COOKIE)?.value;
-    return v && ID.test(v) ? v : null;
+    // Pages carry the id in a header set by the middleware; API routes skip the middleware and use the cookie.
+    const h = store.headers.get(SESSION_HEADER);
+    return (h && ID.test(h) ? h : null) ?? sessionIdOf(store.cookies.get(SESSION_COOKIE)?.value);
   } catch {
     return null; // outside a request, or Next changed its internals
   }
