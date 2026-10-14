@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import type { SurveyView } from "@/lib/surveys/service";
 
 /**
- * A short in-product question, shown bottom-right. It does not take focus or cover the page, can always be dismissed
- * with "Not now", and says nothing if it cannot load. It stays until answered or dismissed for the rest of the visit.
+ * A short in-product question, shown as a bar above the page content. It sits in the page flow, so it pushes content
+ * down instead of covering it (a floating card hid buttons under it), does not take focus, can always be dismissed with
+ * "Not now", and says nothing if it cannot load. It stays until answered or dismissed for the rest of the visit.
  */
 const post = async (body: unknown): Promise<{ ok: boolean; error?: string }> => {
   const r = await fetch("/api/survey", {
@@ -40,7 +41,7 @@ export function SurveyPrompt({ ws }: { ws: string }) {
       <p
         role="status"
         data-testid="survey-thanks"
-        className="fixed bottom-4 right-4 z-40 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 text-sm shadow-lg"
+        className="border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm"
       >
         Thanks, that helps.
       </p>
@@ -73,43 +74,45 @@ export function SurveyPrompt({ ws }: { ws: string }) {
       aria-label={survey.title}
       data-testid="survey-prompt"
       data-survey-id={survey.id}
-      className="fixed bottom-4 right-4 z-40 w-[min(26rem,calc(100vw-2rem))] rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-lg"
+      className="border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3"
     >
-      <h2 className="text-base font-semibold">{survey.title}</h2>
-      {survey.items.map((item) => (
-        <fieldset key={item.id} className="mt-3">
-          <legend className="text-sm">{item.text}</legend>
-          <div className="mt-2 flex flex-wrap gap-1" role="radiogroup" aria-label={item.text}>
-            {points.map((p) => (
-              <label
-                key={p}
-                className={`flex min-h-8 min-w-8 cursor-pointer items-center justify-center rounded-md border px-2 text-sm ${answers[item.id] === p ? "border-[var(--primary)] bg-[var(--surface-2)] font-semibold" : "border-[var(--border)]"}`}
-              >
-                <input
-                  type="radio"
-                  className="sr-only"
-                  name={`${survey.id}-${item.id}`}
-                  value={p}
-                  checked={answers[item.id] === p}
-                  onChange={() => setAnswers((a) => ({ ...a, [item.id]: p }))}
-                  data-testid={`survey-${survey.id}-${item.id}-${p}`}
-                />
-                {p}
-              </label>
-            ))}
-          </div>
-          <p className="mt-1 flex justify-between text-xs text-[var(--text-muted)]">
-            <span>{lowLabel}</span>
-            <span>{highLabel}</span>
-          </p>
-        </fieldset>
-      ))}
+      <h2 className="text-sm font-semibold">{survey.title}</h2>
+      <div className="mt-2 flex flex-wrap items-end gap-x-8 gap-y-3">
+        {survey.items.map((item) => (
+          <fieldset key={item.id}>
+            <legend className="text-sm">{item.text}</legend>
+            <div className="mt-2 flex flex-wrap gap-1" role="radiogroup" aria-label={item.text}>
+              {points.map((p) => (
+                <label
+                  key={p}
+                  className={`flex min-h-8 min-w-8 cursor-pointer items-center justify-center rounded-md border px-2 text-sm ${answers[item.id] === p ? "border-[var(--primary)] bg-[var(--surface)] font-semibold ring-1 ring-[var(--primary)]" : "border-[var(--border)] bg-[var(--surface)]"}`}
+                >
+                  <input
+                    type="radio"
+                    className="sr-only"
+                    name={`${survey.id}-${item.id}`}
+                    value={p}
+                    checked={answers[item.id] === p}
+                    onChange={() => setAnswers((a) => ({ ...a, [item.id]: p }))}
+                    data-testid={`survey-${survey.id}-${item.id}-${p}`}
+                  />
+                  {p}
+                </label>
+              ))}
+            </div>
+            <p className="mt-1 flex justify-between text-xs text-[var(--text-muted)]">
+              <span>{lowLabel}</span>
+              <span>{highLabel}</span>
+            </p>
+          </fieldset>
+        ))}
+      </div>
       {error && (
         <p role="alert" data-testid="survey-error" className="mt-2 text-sm text-[var(--danger)]">
           {error}
         </p>
       )}
-      <div className="mt-4 flex justify-end gap-2">
+      <div className="mt-2 flex justify-end gap-2">
         <Button variant="ghost" onClick={dismiss} disabled={pending} data-testid="survey-dismiss">
           Not now
         </Button>

@@ -100,13 +100,13 @@ export default async function WorkspaceLayout({
             </a>
           </p>
         )}
+        {!isClient && <SurveyPrompt ws={slug} />}
         <div className="flex min-h-0 flex-1">
           <Sidebar ws={slug} clientOnly={isClient} />
           <main id="main" tabIndex={-1} className="flex-1 overflow-y-auto p-6">
             {children}
           </main>
         </div>
-        {!isClient && <SurveyPrompt ws={slug} />}
       </div>
     </ToastProvider>
   );
